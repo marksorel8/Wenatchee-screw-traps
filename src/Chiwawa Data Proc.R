@@ -167,10 +167,8 @@ Chiw_catch_dat_Proc<-function(disch_Scale){
   #add year columns
   trapRunDays$year<-format(trapRunDays$EndDate,form="%Y")
   
-  #add a column of days since February 21, because Feb 22 is the first day with catch data
-  sub_DOY<-as.Date(paste("2019",substr(trapRunDays$EndDate,6,10),sep="-"))-as.Date("2019-02-21")
-  
-  trapRunDays$sub_DOY<-as.numeric(sub_DOY)
+  #add a column of day of year
+  trapRunDays$DOY<-format(format(trapRunDays$EndDate,form="%j"))
   
   
   return(trapRunDays)

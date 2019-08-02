@@ -1,15 +1,5 @@
 “Sorel_compiled_ET.csv”  was constructed by copying and pasting from different excel workbooks (in "originals/efficiency" folder) for each year shared by Jeff Caisman Yakama Nation.
 
-“DailyOps (copy) 4132019.csv” was modified from “Compiled DailyOps.xlsx” file form Jeff Caiseman Yakama Tribe. I went through each row and where comments said that the trap was stopped or pulled I changed either the “Time” or “Trap Start Time” column to “Stopped” or “Pulled” (if it wasn’t already) to indicate that there was no data for that day. I tried to highlight in red every cell that I changed in the “Compiled DailyOps (copy)4132019.xlsl” file, which was then converted to “DailyOps (copy) 4132019.csv” to import into R. That file has data on trap operations and total catch by day but doesn’t differentiate between ages of fish captured (i.e. subyearlings and yearlings).
+“DailyOps (copy) 4132019.csv” was modified from “Compiled DailyOps.xlsx” file form Jeff Caiseman Yakama Tribe. I went through each row and where comments said that the trap was stopped or pulled I changed either the “Time” or “Trap Start Time” column to “Stopped” or “Pulled” (if it wasn’t already) to indicate that there was not complete data for that day. I tried to highlight in red every cell that I changed in the “Compiled DailyOps (copy)4132019.xlsx” file, which was then converted to “DailyOps (copy) 4132019.csv” to import into R. That file has data on trap operations and total catch by day but doesn’t differentiate between ages of fish captured (i.e. subyearlings and yearlings).
 
 “Compiled Biodata.csv” is just the two tabs (White and Nason) from "Compiled Biodata.xlsx" combined in one spreadsheet. Has trap, date, species, length (for most fish), and stage (for most fish) for each fish. 
-
-Discharge data in "Nason Discharge" and "White Discharge" was downloaded from WA Dept. of Ecology website:
-Nason:
-https://fortress.wa.gov/ecy/eap/flows/station.asp?sta=45J070
-
-White
-https://fortress.wa.gov/ecy/eap/flows/station.asp?sta=45K090#block2
-
-
-

@@ -1,0 +1,289 @@
+---
+title: "screw trap data explore"
+author: "Mark Sorel"
+date: "July 29, 2019"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+
+Load Packages
+```{r}
+pkgTest <- function(x)
+{
+  if (!require(x,character.only = TRUE))
+  {
+    install.packages(x,dep=TRUE)
+    if(!require(x,character.only = TRUE)) stop("Package not found")
+  }
+}#end of function
+
+pkgTest("here")
+```
+
+
+###Load data
+
+Note: The Chiwawa data are from WDFW and the Nason and White data are form the Yakama Tribe. They work together, but the datasets came in very different formats. 
+
+For the Chiwawa, I recieved 3 data tables of daily catch; one for each of fry, subyearlings, and yearlings. 
+
+I also recieved a seperate data table with biological data on idividual fish (e.g. FL (fork length), weight, tag date, lifestage, etc.), but that data doesn't appear to have a record for each fish represented in the catch data. 
+
+The delineation between fry and sbyearlings seems to be a hard 50 mm FL cutoff. The delination of subyearlings and yearlings appears to be based on FL and date. Plot of Chiwawa biodata FL vs DOY and lifestage is in next section.  
+
+For Nason and White, I did not receive data tables of catch per day and lifestage, but rather received a data table of "biological data" that presumably represents all fish captured. I used this data to produce the equivalent data table of catch per day and lifestage. I used the FL and DOY data to assign lifestages based on a visual examination of the data (many fish had assigned lifestages in the data but many did not), drawing a line (same for White and Nason) to seperate subyearling and yearlings. Fish with a FL <= 50 mm were assigned as "fry". See plots below for my delineation between subyearlings and yearlings. I suppose this delineation could be fit in a model using data on which fish were detected at mainstem dams the same year that they were tagged (making them yearlings), vs the next year (making them subyearlings). 
+
+For all traps I received data on daily trap operations, which I used to exclude any days when the trap was not operating or operations had a substantial interuption. 
+
+The 50 mm cutoff for fry is biologically unsatisfying, but it corrisponds with the length at which fish are large enough to be implanted with PIT tags. I was advised by Andrew Murdoch (WDFW) to start by excluding fry from the analysis because their behavior may be different than other fish and they cannot be PIT-tagged so it is difficult to estimate thir subsequent survival. Andrew suggested that I conduct analysis both with and without fry.
+
+
+Murdoch, Andrew R (DFW)
+Wed, Jul 31, 11:23 AM 
+to Mark
+
+Fry are tough.  Are they emigrating or simply being temporary displaced?  Past analysis also suggests when redds are built close to the trap we capture more fry. Also cold freshets produce more fry then normal hydrograph. These observations may not be valid today or maybe they are.   Since we can’t mark them it will be hard to track them in model framework (i.e., no SAR for fry).
+
+I would leave the out initially. Complete models.  Then see if adding them back in helps improve model performance. Or something like that.  My 2 cents.
+
+
+```{r}
+par(mfrow=c(1,1))
+
+load_dat<-function(){
+  
+  source(here("src","Chiwawa Data Proc.R"))
+  
+  chiw_dat<-Chiw_dat_Proc()
+  
+  source(here("src","Nason White Data Proc.R"))
+  
+  Nas_Whi_Dat<-Nason_White_data_Func()
+  
+  return(list(chiw=chiw_dat,nas=list(nas_effic=Nas_Whi_Dat$effic_dat$Nason_ET,nas_catch=Nas_Whi_Dat$catch_ops_dat$Nason_catch),whi=list(nhi_effic=Nas_Whi_Dat$effic_dat$White_ET,whi_catch=Nas_Whi_Dat$catch_ops_dat$White_catch)))
+}
+
+screw_trap_dat<-load_dat()
+
+```
+
+Above plots are of FL vs. DOY for Nason and White, with red line representing arbitraty lifestage delineations: <= 50 mm for fry, and line between subyearlings and yearlings chosen by Mark Sorel. Future work could include fitting cutoffs using data on which fish were detected as smolts in the same year as tagged (yearlings) vs. the next year (subyearlings).
+
+
+The Chiwawa data on daily catch was already delineated into lifestages, but we can look at biological data from the Chiwawa to see how the WDFW-assigned lifestages fall in terms of FL and DOY, and to compare with the arbitrary delineation chosen for Nason & White. 
+
+
+```{r}
+
+chiw_bio<-read.csv(here("data","chiwawa","Chiwawa_biodata.csv"))
+
+chiw_bio$date<-as.Date(chiw_bio[,1],format="%d-%b-%y")
+chiw_bio$DOY<-format(chiw_bio$date,form="%j")
+chiw_bio$year<-format(chiw_bio$date,form="%Y")
+
+
+plot(-1,-1,type="n",xlim=c(50,365),ylim=c(0,200),ylab="Fork Length", xlab="Tag DOY")
+
+table(chiw_bio$STAGE, chiw_bio$SPECIES )
+
+#fry
+points(as.numeric(chiw_bio$DOY)[chiw_bio$STAGE=="F"|chiw_bio$STAGE=="f"],chiw_bio$FORK..mm.[chiw_bio$STAGE=="F"|chiw_bio$STAGE=="f"],col=rgb(.5,.1,.1,.1),cex=.5,pch=20)
+#yearlings
+points(as.numeric(chiw_bio$DOY)[chiw_bio$SPECIES=="YCW"],chiw_bio$FORK..mm.[chiw_bio$SPECIES=="YCW"],col=rgb(.1,.1,.5,.1),cex=.5,pch=20)
+#subyearlings
+points(as.numeric(chiw_bio$DOY)[chiw_bio$SPECIES=="SBC"&(chiw_bio$STAGE!="F"&chiw_bio$STAGE!="f")],chiw_bio$FORK..mm.[chiw_bio$SPECIES=="SBC"&(chiw_bio$STAGE!="F"&chiw_bio$STAGE!="f")],col=rgb(.1,.5,.1,.1),cex=.5,pch=20)
+
+  segments(c(0,110,200),c(55,55,100),c(110,200,350),
+           c(55,100,137.5),col="black")
+
+
+
+#compare biodata to catch data
+  
+chiw_catch<-screw_trap_dat$chiw$chiw_catch  
+
+(table(chiw_bio$STAGE))
+table(subset(chiw_bio,STAGE=="T")$SPECIES)
+(table(chiw_bio$STAGE,chiw_bio$SPECIES))  
+
+
+#adds number of fish from each lifestage captured on each date in the biodata to the other catch data from the Chiwawa for comparrison. 
+
+for ( i in 1:nrow(chiw_catch)){
+  sub1<-subset(chiw_bio,date==chiw_catch[i,"EndDate"])
+  chiw_catch$fryCatch2[i]<-nrow(subset(sub1,STAGE=="f"|STAGE=="F"))
+  chiw_catch$allSubs2[i]<-nrow(subset(sub1,SPECIES=="SBC"))
+  chiw_catch$subCatch2[i]<-chiw_catch$allSubs2[i]-chiw_catch$fryCatch2[i]
+  chiw_catch$yrlngCatch2[i]<-nrow(subset(sub1,SPECIES=="YCW"))
+}
+
+#The chiwawa bio-data does not include all of the fish in the catch data  
+```
+
+
+
+###Daily Catch
+
+Now we will look at the time series of catch by lifestage and stream. Then we will look the the data on capture efficiency. Unfortunately, the data on capture efficience are quite sparse reletive to the catch data. 
+
+I am plotting each stream x lifestage in three panels to make it easier to see.
+
+```{r}
+
+#function to make a TS object out of catches
+make_ts<-function(myDates,myCounts,main){
+
+drop_leap_day<-function(x){
+  x[!(format(x,"%m") == "02" & format(x, "%d") == "29")]
+}
+
+out<-ts(
+myCounts[match(drop_leap_day(seq.Date(min(myDates),
+         max(myDates),by=1)),myDates)],start=as.numeric(c(format(min(myDates), "%Y"),format(min(myDates), "%j"))),frequency=365)
+
+plot_catch(out,main)
+
+out
+
+}
+
+#function to plot a TS of catches
+plot_catch<-function(catch,main){
+    
+  year<-start(catch)[1]
+  year_ln<-end(catch)[1]-year
+  par(mfrow=c(3,1),mar=c(3,5,1,2),oma=c(0,0,3,0))
+  
+  for ( i in 1:3){
+     
+     plot(catch,
+xlim=c(year,(year+floor(year_ln/3)+1)),ylab="",xlab="") 
+    
+    year<-year+floor(year_ln/3)+1
+  }
+  
+  mtext("catch",2,-1.5,outer=T)
+  mtext(main,3,0,outer=T,xpd=NA)
+  
+}
+
+
+
+
+Chiw_sub_ts<-make_ts(screw_trap_dat$chiw$chiw_catch$EndDate,screw_trap_dat$chiw$chiw_catch$fryCatch,"Chiwawa River FRY")
+
+Chiw_sub_ts<-make_ts(screw_trap_dat$chiw$chiw_catch$EndDate,screw_trap_dat$chiw$chiw_catch$subCatch,"Chiwawa River PARR")
+
+#Chiw_sub_ts<-make_ts(screw_trap_dat$chiw$chiw_catch$EndDate,screw_trap_dat$chiw$chiw_catch$allSubs,"Chiwawa River FRY + PARR")
+
+Chiw_yrlng_ts<-make_ts(screw_trap_dat$chiw$chiw_catch$EndDate,screw_trap_dat$chiw$chiw_catch$yrlngCatch,"Chiwawa River YEARLINGS")
+
+Nas_sub_ts<-make_ts(screw_trap_dat$nas$nas_catch$Date2,
+                   screw_trap_dat$nas$nas_catch$Fry_catch,"Nason Creek FRY")
+  
+Nas_sub_ts<-make_ts(screw_trap_dat$nas$nas_catch$Date2,
+                   screw_trap_dat$nas$nas_catch$Sub_catch,"Nason Creek PARR")
+  
+Nas_yrlng_ts<-make_ts(screw_trap_dat$nas$nas_catch$Date2,
+                screw_trap_dat$nas$nas_catch$Yrlng_catch, "Nason Creek YEARLINGS")
+  
+Whi_sub_ts<-make_ts(screw_trap_dat$whi$whi_catch$Date2,                    screw_trap_dat$whi$whi_catch$Fry_catch,"White River FRY")
+  
+Whi_sub_ts<-make_ts(screw_trap_dat$whi$whi_catch$Date2,                    screw_trap_dat$whi$whi_catch$Sub_catch,"White River PARR")
+
+  
+Whi_yrlng_ts<-make_ts(screw_trap_dat$whi$whi_catch$Date2,                  screw_trap_dat$whi$whi_catch$Yrlng_catch,"White River YEARLINGS")
+
+```
+
+
+###Efficiency data
+
+Here I plot some summaries of the capture efficiencies from individual trials, in which a batch of marked fish are released upstream of the trap. The numbers on the histograms are the median accross trials (not weighted by the number of fish in each trial). The right column shows the relationship between stream discharge and capture efficiency.
+
+```{r}
+
+#png("effic data.png",units="in",res=300,width=6.5,height=4)
+
+par(mfcol=c(3,2),mar=c(2,5,1,1),oma=c(2,0,2,2),cex=1.01)
+
+hist(screw_trap_dat$chiw$chiw_effic$effic/100,xlab="",ylab="",main="Chiwawa",xlim=c(0,1),breaks=seq(0,1,by=.05),col="black")
+text(.7,40,round(median(screw_trap_dat$chiw$chiw_effic$effic/100),3))
+hist(screw_trap_dat$nas$nas_effic$p,xlab="",ylab="",main="Nason",breaks=seq(0,1,by=.05),xlim=c(0,1),col="black")
+mtext("Frequency",2,2.5,xpd=NA,cex=1.2)
+text(.7,60,round(median(screw_trap_dat$nas$nas_effic$p),3))
+hist(screw_trap_dat$whi$nhi_effic$p,xlab="",ylab="",main="White",breaks=seq(0,1,by=.05),xlim=c(0,1),col="black")
+mtext("Daily Capture Prob.",1,2.5,xpd=NA,cex=1.2)
+text(.7,20,round(median(screw_trap_dat$whi$nhi_effic$p),3))
+
+
+
+
+plot(I(effic/100)~disch.cfs, data=screw_trap_dat$chiw$chiw_effic,xlab="",ylab="",main="",ylim=c(-0,1),cex=.25,pch=19)
+plot(p~discharge2,data=screw_trap_dat$nas$nas_effic,xlab="",ylab="",main="",ylim=c(-.0,1),cex=.25,pch=19)
+mtext("Daily Capture Prob.",2,2.5,xpd=NA,cex=1.2)
+plot(p~discharge2, data=screw_trap_dat$whi$nhi_effic,xlab="",ylab="",main="",ylim=c(-.05,1),cex=.25,pch=19)
+mtext("Discharge (scaled)",1,2.5,xpd=NA,cex=1.1)
+#dev.off()
+
+#summary stats of number of fish released per trial in each trap
+print("Chiwawa: # fish released per trial")
+summary(screw_trap_dat$chiw$chiw_effic$rel)#chiwawa
+print("Nason: # fish released per trial")
+summary(screw_trap_dat$nas$nas_effic$number.released)#nason
+print("White: # fish released per trial")
+summary(screw_trap_dat$whi$nhi_effic$number.released)#white
+
+```
+
+
+These are plots of capture efficiency vs. date. 
+
+In addition to the 143 efficiency trials conducted in the Chiwawa and represented in this plot, there are 186 for which only the year (or no date information) of the trial was included in the data. I will try to track down the dates of those trials.
+
+Some of the efficiency trials are labeled as consisting of subyearlings or yearlings, while others are labeled as a mix or not labeled at all. Trials consisting of yearlings are plotted in blue, subyearlings in red, and mixed or unknown in grey.
+
+```{r}
+#format date column in chiwawa data
+screw_trap_dat$chiw$chiw_effic$Date2<-as.Date(c(as.Date(screw_trap_dat$chiw$chiw_effic$Date[1:88],format="%d-%b-%y"),as.Date(screw_trap_dat$chiw$chiw_effic$Date[89:143],format="%m/%d/%y"),rep(NA, times=length(144:329))))
+
+
+#function to plot efficiency data
+plot_effic<-function(effic, dates, num_rel,main,cols){
+  dat_length<-diff(range(dates,na.rm = TRUE))
+  year_ln<-diff(range(as.numeric(format(dates,form="%Y")),na.rm = TRUE))
+  year<-min(as.numeric(format(dates,form="%Y")),na.rm = TRUE)
+  par(mfrow=c(3,1))
+  for ( i in 1:3){
+     
+     plot(dates,
+effic,cex=num_rel/100+.5,pch=19,col=cols,
+xlim=c(as.Date(paste0(year,"-01-01")),c(as.Date(paste0(year+floor(year_ln/3),"-12-30")))),ylab="") 
+    
+    #points(supsmu(dates,effic,span=0.01),type="l",col="red")
+    year<-year+floor(year_ln/3)+1
+  }
+  
+  mtext("capture efficiency",2,-1.5,outer=T)
+  mtext(main,3,0,outer=T)
+  
+}
+
+
+
+plot_effic(screw_trap_dat$chiw$chiw_effic$effic/100,screw_trap_dat$chiw$chiw_effic$Date2,screw_trap_dat$chiw$chiw_effic$rel,"Chiwawa River",ifelse(screw_trap_dat$chiw$chiw_effic$lifeStage=="SBC",rgb(.5,.1,.1,.3),ifelse(screw_trap_dat$chiw$chiw_effic$lifeStage=="YCW",rgb(.1,.1,.5,.3)
+  ,rgb(.1,.1,.1,.3))))
+
+plot_effic(screw_trap_dat$nas$nas_effic$p ,screw_trap_dat$nas$nas_effic$Rel.Date,screw_trap_dat$nas$nas_effic$number.released,"Nason Creek",ifelse(screw_trap_dat$nas$nas_effic$Lifestage=="Parr"|screw_trap_dat$nas$nas_effic$Lifestage=="Subyearling",rgb(.5,.1,.1,.3),ifelse(screw_trap_dat$nas$nas_effic$Lifestage=="Yearling"|screw_trap_dat$nas$nas_effic$Lifestage=="Smolt",rgb(.1,.1,.5,.3)
+  ,rgb(.1,.1,.1,.3))))
+
+
+plot_effic(screw_trap_dat$whi$nhi_effic$p,screw_trap_dat$whi$nhi_effic$Rel.Date,screw_trap_dat$whi$nhi_effic$number.released,"White River",ifelse(screw_trap_dat$whi$nhi_effic$Lifestage=="Parr"|screw_trap_dat$whi$nhi_effic$Lifestage=="Subyearling",rgb(.5,.1,.1,.3),ifelse(screw_trap_dat$whi$nhi_effic$Lifestage=="Yearling"|screw_trap_dat$whi$nhi_effic$Lifestage=="Smolt",rgb(.1,.1,.5,.3)
+  ,rgb(.1,.1,.1,.3))))
+
+
+```
+
+

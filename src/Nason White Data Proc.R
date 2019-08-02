@@ -14,7 +14,6 @@ pkgTest <- function(x)
 
 White_Nason_Effic_Func<-function(){
   pkgTest("here")
-  library(here)
   
   dat<-read.csv(here("data","Nason and White","Sorel_compiled_ET.csv"))
   
@@ -143,10 +142,10 @@ Nason_White_Catch_Ops_Dat_func<-function(){
   bioD<-read.csv(here("data","Nason and White","Compiled Biodata.csv"))
   
   #change a column name that reads in weird sometimes
-  colnames(wSpC)[1]<-"Trap"
+  colnames(bioD)[1]<-"Trap"
   
   #add a column of stream name
-  bioD$stream<-ifelse(substr(bioD$ï..Trap,1,1)=="N","Nason","White")
+  bioD$stream<-ifelse(substr(bioD$Trap,1,1)=="N","Nason","White")
   
   #supstet to wild spring Chinook
   wSpC<-droplevels(subset(bioD,Species=="Wild Spring Chinook"))
@@ -163,40 +162,44 @@ Nason_White_Catch_Ops_Dat_func<-function(){
   
   #make "length" numeric
   wSpC$Length<-as.numeric(as.character(wSpC$Length))
-  
+
   
   #Have to assign lifestages based on length and DOY at capture
 
   #White River
   plot(wSpC$DOY,as.numeric(as.character(wSpC$Length)),pch=19,cex=.4,type="n",ylab="Length",xlab='DOY',main="White River")
   
-  points(wSpC$DOY[wSpC$stream!="Nason"],wSpC$Length[wSpC$stream!="Nason"], type="p",col="black",pch=19,cex=.4)
+  points(wSpC$DOY[wSpC$stream!="Nason"],wSpC$Length[wSpC$stream!="Nason"], type="p",col=rgb(.1,.1,.1,.3),pch=19,cex=.4)
  
    #this line is what I came up with, where everythng below is a subyearling and everything above is a yearling
   segments(c(0,110,200),c(55,55,100),c(110,200,350),
            c(55,100,137.5),col="red")
+  abline(h=50,col="red")
   
   #Nason Creek
   plot(wSpC$DOY,as.numeric(as.character(wSpC$Length)),pch=19,cex=.4,type="n",ylab="Length",xlab='DOY',main="Nason Creek")
   
-  points(wSpC$DOY[wSpC$stream=="Nason"],wSpC$Length[wSpC$stream=="Nason"], type="p",col="black",pch=19,cex=.4) 
+  points(wSpC$DOY[wSpC$stream=="Nason"],wSpC$Length[wSpC$stream=="Nason"], type="p",col=rgb(.1,.1,.1,.3),pch=19,cex=.4) 
   
   
   #this line is what I came up with, where everythng below is a subyearling and everything above is a yearling
   segments(c(0,110,200),c(55,55,100),c(110,200,350),
            c(55,100,137.5),col="red")
   
+  abline(h=50,col="red")
+  
+  
   
   #add the stage based on my delineation
-  wSpC$Stage_2<-ifelse((wSpC$DOY<110 & wSpC$Length<=55) |
+  wSpC$Stage_2<-ifelse(wSpC$Length<=50,"fry",ifelse((wSpC$DOY<110 & wSpC$Length<=55) |
                          ((wSpC$DOY>=110 & wSpC$DOY<200)&((wSpC$Length/wSpC$DOY)<.5))|
                          ((wSpC$DOY>=200) &((wSpC$Length-(.25*wSpC$DOY))<50)),
-                       "sub","yrlng")
+                       "sub","yrlng"))
   
   
   #get rid of fish captured in 2.4 m trap in years >=2017, when that trap was used only to catch fish for efficiency trials, not to estimate abundance.
   wSpC$year<-as.numeric(format(wSpC$Date2,form="%Y"))
-  wSpC<-subset(wSpC,ï..Trap!="White 2.4 m"|year<2017)
+  wSpC<-subset(wSpC,Trap!="White 2.4 m"|year<2017)
   
   
   ##"guessing" lifestage of fish without lengths
@@ -206,14 +209,17 @@ Nason_White_Catch_Ops_Dat_func<-function(){
   
   
   #For fish that didn’t have length information, assigned age/lifestage based on data in “Stage” or “ConditionalComment” column. 
-  wSpC$Stage_2[is.na(wSpC$Stage_2)&wSpC$Stage=="F"]<-"sub"
-  wSpC$Stage_2[is.na(wSpC$Stage_2)&wSpC$Stage=="P"]<-"sub"
+  wSpC$Stage_2[is.na(wSpC$Stage_2)&(wSpC$Stage=="F"|wSpC$Stage=="      F")]<-"fry"
+  wSpC$Stage_2[is.na(wSpC$Stage_2)&(wSpC$Stage=="P"|wSpC$Stage=="   P")]<-"sub"
   
   wSpC$Stage_2[is.na(wSpC$Stage_2)&wSpC$Stage=="T"]<-"yrlng"
-  wSpC$Stage_2[is.na(wSpC$Stage_2)&wSpC$Stage=="S"]<-"yrlng"
+  wSpC$Stage_2[is.na(wSpC$Stage_2)&(wSpC$Stage=="S"|wSpC$Stage=="      S")]<-"yrlng"
   
   wSpC$Stage_2[is.na(wSpC$Stage_2)&
                  wSpC$ConditionalComment=="Y"]<-"yrlng"
+  
+  wSpC$Stage_2[is.na(wSpC$Stage_2)&
+                 wSpC$Weight>100]<-"yrlng"
   
   wSpC$Stage_2[is.na(wSpC$Stage_2)&
                  wSpC$ConditionalComment=="0"]<-"sub"
@@ -223,33 +229,39 @@ Nason_White_Catch_Ops_Dat_func<-function(){
   
   wSpC<-wSpC[wSpC$TextualComment!="MORTALITY, RECAP INSIDE OF SCULPIN STOMACH", ]
   
-  #Those with no information in those columns were assigned as subyearlings if they were tagged on DOY> 200 or if they were in a row with multiple fish (assuming that smaller fish (fry?) were not measured and given individual rows). 
+  #Those with no information in those columns were assigned as subyearlings if they were tagged on DOY> 200. If they were in a row with multiple fish they were assumed to be fry,assuming that smaller fish (fry?) were not measured and given individual rows). 
   wSpC$Stage_2[is.na(wSpC$Stage_2)&
                  wSpC$DOY>=200]<-"sub"
   
   wSpC$Stage_2[is.na(wSpC$Stage_2)&
-                 wSpC$Count>=10]<-"sub"
+                 wSpC$Count>=10]<-"fry"
+  
+  
+    
+  #summing daily counts
+  
+  
+  ##some counts are 0 even though their is a fork length and wight, so I will convert those to 1. 
+  wSpC$Count[wSpC$Count==0]<-1
   
   
   
   ##subsetting lifestages for processing
-  #plot(wSpC$DOY,as.numeric(as.character(wSpC$Length)),pch=19,cex=.4,type="n")
+  
+  fry<-subset(wSpC,Stage_2=="fry")
   subs<-subset(wSpC,Stage_2=="sub")
-  #points(subs$DOY,subs$Length,col="blue",pch=19,cex=.4)
   yrlngs<-subset(wSpC,Stage_2=="yrlng")
-  #points(yrlngs$DOY,yrlngs$Length,col="darkgreen",pch=19,cex=.4)
+  
+  
   
   #Fish I couldn't assign to lifestage
   NAs<-subset(wSpC,is.na(Stage_2))
+
+
   
-  #View(NAs)
-  # 
-  # abline(h=55,col="red")
-  # abline(a=0,b=.5,col="red")
-  # abline(a=50,b=.25,col="red")
-  
-  #summing daily counts
   DFbio<-t(tapply(wSpC$Count, wSpC[,c("stream","Date2")], sum))
+  
+  dailyFry<-t(tapply(fry$Count, fry[,c("stream","Date2")], sum))
   
   dailySubs<-t(tapply(subs$Count, subs[,c("stream","Date2")], sum))
   
@@ -258,11 +270,13 @@ Nason_White_Catch_Ops_Dat_func<-function(){
   #changing format to long
   pkgTest("reshape2")
   DFbio2<-melt(DFbio)
+  dailyFry2<-melt(dailyFry)
   dailySubs2<-melt(dailySubs)
   dailyYrlngs2<-melt(dailyYrlngs)
   
   #reformat date columns
   DFbio2$Date2<-as.Date(DFbio2$Date2)
+  dailyFry2$Date2<-as.Date(dailyFry2$Date2)
   dailySubs2$Date2<-as.Date(dailySubs2$Date2)
   dailyYrlngs2$Date2<-as.Date(dailyYrlngs2$Date2)
   
@@ -281,45 +295,17 @@ Nason_White_Catch_Ops_Dat_func<-function(){
   #add catch data to daily ops data
   Ops_catch<- merge(OpsData,DFbio2,by.x=c(17,16),by.y=1:2, all.x = TRUE,all.y = FALSE)
   
+  Ops_catch<- merge(Ops_catch,dailyFry2,by.x=1:2,by.y=1:2, all.x = TRUE,all.y = FALSE)
+  
   Ops_catch<- merge(Ops_catch,dailySubs2,by.x=1:2,by.y=1:2, all.x = TRUE,all.y = FALSE)
   
   Ops_catch<- merge(Ops_catch,dailyYrlngs2,by.x=1:2,by.y=1:2, all.x = TRUE,all.y = FALSE)
   
-  colnames(Ops_catch)[18:20]<-c("tot_catch","Sub_catch","Yrlng_catch")
+  colnames(Ops_catch)[18:21]<-c("tot_catch","Fry_catch","Sub_catch","Yrlng_catch")
   
+  # Change NAs to 0 on days when the trap was operating but no fish were captured of a given lifestage
   
-  # # assign unknown lifestage fish from Bio-data to lifestage (very sketchily)
-  # #SHOULD estimate stage in model in future
-  # 
-  # 
-  # NA_pos<- match(paste(NAs$stream ,NAs$Date2),
-  #       paste(OpsData$stream,OpsData$Date2)) # position of na's in Ops Data
-  # 
-  # #counts on days with unknown lifestage fish
-  # dailyCatch[NA_pos] #all
-  # dailyCatch_Subs[NA_pos] # "known" subyearling
-  # dailyCatch_Yrlngs[NA_pos] # "known" yearling
-  # 
-  # #are there any fish identified as subyearlings or yearlings on days where there was at leas one fish with an unknown lifestage 
-  # na_subs<-is.na(dailyCatch_Subs[NA_pos])
-  # na_yrlngs<-is.na(dailyCatch_Yrlngs[NA_pos])
-  # 
-  # #replace subyearling NAs with unknown lifestage fish
-  # dailyCatch_Subs[NA_pos][na_subs]<-
-  #   NAs$Count[na_subs]
-  # 
-  # #replace Yearling NAs with unknown lifestage fish
-  # dailyCatch_Yrlngs[NA_pos][na_yrlngs&
-  #                             !na_subs]<- NAs$Count[na_yrlngs&
-  #                                           !na_subs]
-  # 
-  # #leftovers 
-  # NAs$Count[!na_subs&!na_yrlngs]
-  # #add leftovers to yearlings
-  # dailyCatch_Yrlngs[NA_pos][!na_subs&!na_yrlngs]<-
-  #   dailyCatch_Yrlngs[NA_pos][!na_subs&!na_yrlngs]+
-  #   NAs$Count[!na_subs&!na_yrlngs]
-  # 
+  Ops_catch[,18:21][is.na(Ops_catch[,18:21])]<-0
   
   
   
@@ -341,7 +327,7 @@ Nason_White_Catch_Ops_Dat_func<-function(){
   # indicators of incomplete data
   notTrap<-c("Pulled ","Stopped ")
   
-  #drop incomplete data points
+  #drop incomplete data points (days)
   trapDatSub<-subset(Ops_catch,
                      is.na(match(Ops_catch$Trap.Stop.Time,notTrap ))&
                        is.na(match(Ops_catch$Trap.Start.Time,notTrap )) )
@@ -361,11 +347,6 @@ Nason_White_Catch_Ops_Dat_func<-function(){
   #add year and DOY
   trapDatSub$year<-format(trapDatSub$date2,form="%Y")
   trapDatSub$DOY <-format(trapDatSub$date2,form="%j")
-  
-  #change NA catches to zeros on das when the trap WAS operating
-  trapDatSub$tot_catch [which(is.na(trapDatSub$tot_catch))]<-0
-  trapDatSub$Sub_catch[which(is.na(trapDatSub$Sub_catch))]<-0
-  trapDatSub$Yrlng_catch [which(is.na(trapDatSub$Yrlng_catch))]<-0
   
   
   # for ( i in unique(trapDatSub$Trap.Location)){
