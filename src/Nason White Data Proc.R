@@ -219,7 +219,7 @@ Nason_White_Catch_Ops_Dat_func<-function(){
                  wSpC$ConditionalComment=="Y"]<-"yrlng"
   
   wSpC$Stage_2[is.na(wSpC$Stage_2)&
-                 wSpC$Weight>100]<-"yrlng"
+                as.numeric(as.character(wSpC$Weight)) >100]<-"yrlng"
   
   wSpC$Stage_2[is.na(wSpC$Stage_2)&
                  wSpC$ConditionalComment=="0"]<-"sub"
