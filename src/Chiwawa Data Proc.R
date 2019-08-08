@@ -49,6 +49,11 @@ Chiw_effic_dat_proc<-function(drop_unk_lifestage=FALSE){
   
   disScale<-attributes(scale(ChiwEffic$disch.cfs))$`scaled:scale`
   
+  
+  #format date column in chiwawa data
+  ChiwEffic$Date2<-as.Date(c(as.Date(ChiwEffic$Date[1:88],format="%d-%b-%y"),as.Date(ChiwEffic$Date[89:143],format="%m/%d/%y"),rep(NA, times=length(144:329))))
+  
+  
   return(list(ChiwEffic=ChiwEffic,scaleDis=c(disMean,disScale)))
   
 }#end function
