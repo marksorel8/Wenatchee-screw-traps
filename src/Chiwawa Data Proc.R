@@ -49,6 +49,11 @@ Chiw_effic_dat_proc<-function(drop_unk_lifestage=FALSE){
   
   disScale<-attributes(scale(ChiwEffic$disch.cfs))$`scaled:scale`
   
+  
+  #format date column in chiwawa data
+  ChiwEffic$Date2<-as.Date(c(as.Date(ChiwEffic$Date[1:88],format="%d-%b-%y"),as.Date(ChiwEffic$Date[89:143],format="%m/%d/%y"),rep(NA, times=length(144:329))))
+  
+  
   return(list(ChiwEffic=ChiwEffic,scaleDis=c(disMean,disScale)))
   
 }#end function
@@ -171,7 +176,7 @@ Chiw_catch_dat_Proc<-function(disch_Scale){
   trapRunDays$DOY<-format(format(trapRunDays$EndDate,form="%j"))
   
   
-  return(trapRunDays)
+  return(list(trapRunDays=trapRunDays,chiwDis=chiwDis))
   
 }#end of function
 
@@ -182,7 +187,7 @@ Chiw_catch_dat_Proc<-function(disch_Scale){
   Chiw_Catch_Ops<-Chiw_catch_dat_Proc(disch_Scale=Chiw_Effic$scaleDis)
   
   return(list(chiw_effic=Chiw_Effic$ChiwEffic,
-              chiw_catch=Chiw_Catch_Ops))
+              chiw_catch=Chiw_Catch_Ops$trapRunDays,chiwDis=Chiw_Catch_Ops$chiwDis))
   
 }#end of function
 

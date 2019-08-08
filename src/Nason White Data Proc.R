@@ -71,18 +71,21 @@ White_Nason_Effic_Func<-function(){
   
   #add a new column of discharge data downloaded from the Wa Dept of Ecology guages
   
-  #import data
+  #import discharge data
   source(here("src","Discharge data funcs.R"))
   disch_Dat<-Nason_White_Discharge_Func()
+  #reformat date column
+  disch_Dat$Nason_Dis$date<-as.Date(disch_Dat$Nason_Dis$date,format="%m/%d/%Y")#Nason
+  disch_Dat$White_Dis$date<-as.Date(disch_Dat$White_Dis$date,format="%m/%d/%Y")#White
   
   
   #reformat release date to "Date" format
   spChk_ET$Rel.Date<-as.Date(spChk_ET$Release.Date,format="%m/%d/%Y")
   
   #add Nason discharge data 
-  spChk_ET$discharge2[spChk_ET$TrapNames=="Nason"]<-disch_Dat$Nason_Dis$discharge[match(spChk_ET$Rel.Date[spChk_ET$TrapNames=="Nason"],as.Date(disch_Dat$Nason_Dis$date,format="%m/%d/%Y"))]
+  spChk_ET$discharge2[spChk_ET$TrapNames=="Nason"]<-disch_Dat$Nason_Dis$discharge[match(spChk_ET$Rel.Date[spChk_ET$TrapNames=="Nason"],disch_Dat$Nason_Dis$date)]
   #add white discharge data
-  spChk_ET$discharge2[spChk_ET$TrapNames=="White"]<-disch_Dat$White_Dis$discharge[match(spChk_ET$Rel.Date[spChk_ET$TrapNames=="White"],as.Date(disch_Dat$White_Dis$date,format="%m/%d/%Y"))]
+  spChk_ET$discharge2[spChk_ET$TrapNames=="White"]<-disch_Dat$White_Dis$discharge[match(spChk_ET$Rel.Date[spChk_ET$TrapNames=="White"],disch_Dat$White_Dis$date)]
   
   #change form character to numeric
   spChk_ET$discharge2<-as.numeric(  spChk_ET$discharge2)
@@ -124,7 +127,7 @@ White_spChk_ET<-droplevels(subset(spChk_ET,TrapNames=="White"))
   
 
 return(list(Nason_ET=Nas_spChk_ET,
-            White_ET=White_spChk_ET))
+            White_ET=White_spChk_ET,disch_Dat=disch_Dat))
 
 }
 
