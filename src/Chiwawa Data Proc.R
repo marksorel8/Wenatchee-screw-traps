@@ -171,7 +171,7 @@ Chiw_catch_dat_Proc<-function(disch_Scale){
   trapRunDays$DOY<-format(format(trapRunDays$EndDate,form="%j"))
   
   
-  return(trapRunDays)
+  return(list(trapRunDays=trapRunDays,chiwDis=chiwDis))
   
 }#end of function
 
@@ -182,7 +182,7 @@ Chiw_catch_dat_Proc<-function(disch_Scale){
   Chiw_Catch_Ops<-Chiw_catch_dat_Proc(disch_Scale=Chiw_Effic$scaleDis)
   
   return(list(chiw_effic=Chiw_Effic$ChiwEffic,
-              chiw_catch=Chiw_Catch_Ops))
+              chiw_catch=Chiw_Catch_Ops$trapRunDays,chiwDis=Chiw_Catch_Ops$chiwDis))
   
 }#end of function
 

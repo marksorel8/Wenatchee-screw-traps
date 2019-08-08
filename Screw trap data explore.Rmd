@@ -69,7 +69,7 @@ load_dat<-function(){
   
   Nas_Whi_Dat<-Nason_White_data_Func()
   
-  return(list(chiw=chiw_dat,nas=list(nas_effic=Nas_Whi_Dat$effic_dat$Nason_ET,nas_catch=Nas_Whi_Dat$catch_ops_dat$Nason_catch),whi=list(nhi_effic=Nas_Whi_Dat$effic_dat$White_ET,whi_catch=Nas_Whi_Dat$catch_ops_dat$White_catch)))
+  return(list(chiw=chiw_dat,nas=list(nas_effic=Nas_Whi_Dat$effic_dat$Nason_ET,nas_catch=Nas_Whi_Dat$catch_ops_dat$Nason_catch,nasDis=Nas_Whi_Dat$effic_dat$disch_Dat$Nason_Dis),whi=list(nhi_effic=Nas_Whi_Dat$effic_dat$White_ET,whi_catch=Nas_Whi_Dat$catch_ops_dat$White_catch,whiDis=Nas_Whi_Dat$effic_dat$disch_Dat$White_Dis)))
 }
 
 screw_trap_dat<-load_dat()
@@ -118,13 +118,13 @@ table(subset(chiw_bio,STAGE=="T")$SPECIES)
 
 #adds number of fish from each lifestage captured on each date in the biodata to the other catch data from the Chiwawa for comparrison. 
 
-for ( i in 1:nrow(chiw_catch)){
-  sub1<-subset(chiw_bio,date==chiw_catch[i,"EndDate"])
-  chiw_catch$fryCatch2[i]<-nrow(subset(sub1,STAGE=="f"|STAGE=="F"))
-  chiw_catch$allSubs2[i]<-nrow(subset(sub1,SPECIES=="SBC"))
-  chiw_catch$subCatch2[i]<-chiw_catch$allSubs2[i]-chiw_catch$fryCatch2[i]
-  chiw_catch$yrlngCatch2[i]<-nrow(subset(sub1,SPECIES=="YCW"))
-}
+# for ( i in 1:nrow(chiw_catch)){
+#   sub1<-subset(chiw_bio,date==chiw_catch[i,"EndDate"])
+#   chiw_catch$fryCatch2[i]<-nrow(subset(sub1,STAGE=="f"|STAGE=="F"))
+#   chiw_catch$allSubs2[i]<-nrow(subset(sub1,SPECIES=="SBC"))
+#   chiw_catch$subCatch2[i]<-chiw_catch$allSubs2[i]-chiw_catch$fryCatch2[i]
+#   chiw_catch$yrlngCatch2[i]<-nrow(subset(sub1,SPECIES=="YCW"))
+# }
 
 #The chiwawa bio-data does not include all of the fish in the catch data  
 ```
@@ -140,18 +140,18 @@ I am plotting each stream x lifestage in three panels to make it easier to see.
 ```{r}
 
 #function to make a TS object out of catches
-make_ts<-function(myDates,myCounts,main){
+make_ts<-function(myDates,myCounts,main,plot=FALSE){
 
 drop_leap_day<-function(x){
   x[!(format(x,"%m") == "02" & format(x, "%d") == "29")]
 }
 
 out<-ts(
-myCounts[match(drop_leap_day(seq.Date(min(myDates),
-         max(myDates),by=1)),myDates)],start=as.numeric(c(format(min(myDates), "%Y"),format(min(myDates), "%j"))),frequency=365)
-
+myCounts[match(drop_leap_day(seq.Date(min(myDates,na.rm=T),
+         max(myDates,na.rm=T),by=1)),myDates)],start=as.numeric(c(format(min(myDates,na.rm=T), "%Y"),format(min(myDates,na.rm=T), "%j"))),frequency=365)
+if(isTRUE(plot)){
 plot_catch(out,main)
-
+}
 out
 
 }
@@ -179,29 +179,29 @@ xlim=c(year,(year+floor(year_ln/3)+1)),ylab="",xlab="")
 
 
 
-Chiw_sub_ts<-make_ts(screw_trap_dat$chiw$chiw_catch$EndDate,screw_trap_dat$chiw$chiw_catch$fryCatch,"Chiwawa River FRY")
+Chiw_sub_ts<-make_ts(screw_trap_dat$chiw$chiw_catch$EndDate,screw_trap_dat$chiw$chiw_catch$fryCatch,"Chiwawa River FRY",plot=TRUE)
 
-Chiw_sub_ts<-make_ts(screw_trap_dat$chiw$chiw_catch$EndDate,screw_trap_dat$chiw$chiw_catch$subCatch,"Chiwawa River PARR")
+Chiw_sub_ts<-make_ts(screw_trap_dat$chiw$chiw_catch$EndDate,screw_trap_dat$chiw$chiw_catch$subCatch,"Chiwawa River PARR",plot=TRUE)
 
 #Chiw_sub_ts<-make_ts(screw_trap_dat$chiw$chiw_catch$EndDate,screw_trap_dat$chiw$chiw_catch$allSubs,"Chiwawa River FRY + PARR")
 
-Chiw_yrlng_ts<-make_ts(screw_trap_dat$chiw$chiw_catch$EndDate,screw_trap_dat$chiw$chiw_catch$yrlngCatch,"Chiwawa River YEARLINGS")
+Chiw_yrlng_ts<-make_ts(screw_trap_dat$chiw$chiw_catch$EndDate,screw_trap_dat$chiw$chiw_catch$yrlngCatch,"Chiwawa River YEARLINGS",plot=TRUE)
 
 Nas_sub_ts<-make_ts(screw_trap_dat$nas$nas_catch$Date2,
-                   screw_trap_dat$nas$nas_catch$Fry_catch,"Nason Creek FRY")
+                   screw_trap_dat$nas$nas_catch$Fry_catch,"Nason Creek FRY",plot=TRUE)
   
 Nas_sub_ts<-make_ts(screw_trap_dat$nas$nas_catch$Date2,
-                   screw_trap_dat$nas$nas_catch$Sub_catch,"Nason Creek PARR")
+                   screw_trap_dat$nas$nas_catch$Sub_catch,"Nason Creek PARR",plot=TRUE)
   
 Nas_yrlng_ts<-make_ts(screw_trap_dat$nas$nas_catch$Date2,
-                screw_trap_dat$nas$nas_catch$Yrlng_catch, "Nason Creek YEARLINGS")
+                screw_trap_dat$nas$nas_catch$Yrlng_catch, "Nason Creek YEARLINGS",plot=TRUE)
   
-Whi_sub_ts<-make_ts(screw_trap_dat$whi$whi_catch$Date2,                    screw_trap_dat$whi$whi_catch$Fry_catch,"White River FRY")
+Whi_sub_ts<-make_ts(screw_trap_dat$whi$whi_catch$Date2,                    screw_trap_dat$whi$whi_catch$Fry_catch,"White River FRY",plot=TRUE)
   
-Whi_sub_ts<-make_ts(screw_trap_dat$whi$whi_catch$Date2,                    screw_trap_dat$whi$whi_catch$Sub_catch,"White River PARR")
+Whi_sub_ts<-make_ts(screw_trap_dat$whi$whi_catch$Date2,                    screw_trap_dat$whi$whi_catch$Sub_catch,"White River PARR",plot=TRUE)
 
   
-Whi_yrlng_ts<-make_ts(screw_trap_dat$whi$whi_catch$Date2,                  screw_trap_dat$whi$whi_catch$Yrlng_catch,"White River YEARLINGS")
+Whi_yrlng_ts<-make_ts(screw_trap_dat$whi$whi_catch$Date2,                  screw_trap_dat$whi$whi_catch$Yrlng_catch,"White River YEARLINGS",plot=TRUE)
 
 ```
 
@@ -217,11 +217,14 @@ Here I plot some summaries of the capture efficiencies from individual trials, i
 par(mfcol=c(3,2),mar=c(2,5,1,1),oma=c(2,0,2,2),cex=1.01)
 
 hist(screw_trap_dat$chiw$chiw_effic$effic/100,xlab="",ylab="",main="Chiwawa",xlim=c(0,1),breaks=seq(0,1,by=.05),col="black")
+
 text(.7,40,round(median(screw_trap_dat$chiw$chiw_effic$effic/100),3))
 hist(screw_trap_dat$nas$nas_effic$p,xlab="",ylab="",main="Nason",breaks=seq(0,1,by=.05),xlim=c(0,1),col="black")
+
 mtext("Frequency",2,2.5,xpd=NA,cex=1.2)
 text(.7,60,round(median(screw_trap_dat$nas$nas_effic$p),3))
 hist(screw_trap_dat$whi$nhi_effic$p,xlab="",ylab="",main="White",breaks=seq(0,1,by=.05),xlim=c(0,1),col="black")
+
 mtext("Daily Capture Prob.",1,2.5,xpd=NA,cex=1.2)
 text(.7,20,round(median(screw_trap_dat$whi$nhi_effic$p),3))
 
@@ -258,7 +261,7 @@ screw_trap_dat$chiw$chiw_effic$Date2<-as.Date(c(as.Date(screw_trap_dat$chiw$chiw
 
 
 #function to plot efficiency data
-plot_effic<-function(effic, dates, num_rel,main,cols){
+plot_effic<-function(effic, dates, num_rel, main, cols, plot_Dis=FALSE, dis, dis_dat){
   dat_length<-diff(range(dates,na.rm = TRUE))
   year_ln<-diff(range(as.numeric(format(dates,form="%Y")),na.rm = TRUE))
   year<-min(as.numeric(format(dates,form="%Y")),na.rm = TRUE)
@@ -268,6 +271,14 @@ plot_effic<-function(effic, dates, num_rel,main,cols){
      plot(dates,
 effic,cex=num_rel/100+.5,pch=19,col=cols,
 xlim=c(as.Date(paste0(year,"-01-01")),c(as.Date(paste0(year+floor(year_ln/3),"-12-30")))),ylab="") 
+    
+    if (plot_Dis==TRUE){
+      par(new=T)
+           plot(dis_dat,
+dis,type="l",
+xlim=c(as.Date(paste0(year,"-01-01")),c(as.Date(paste0(year+floor(year_ln/3),"-12-30")))),ylab="",xlab="",axes=F,col=rgb(.1,.1,.1,.5)) 
+      
+    }
     
     #points(supsmu(dates,effic,span=0.01),type="l",col="red")
     year<-year+floor(year_ln/3)+1
@@ -280,15 +291,16 @@ xlim=c(as.Date(paste0(year,"-01-01")),c(as.Date(paste0(year+floor(year_ln/3),"-1
 
 
 
-plot_effic(screw_trap_dat$chiw$chiw_effic$effic/100,screw_trap_dat$chiw$chiw_effic$Date2,screw_trap_dat$chiw$chiw_effic$rel,"Chiwawa River",ifelse(screw_trap_dat$chiw$chiw_effic$lifeStage=="SBC",rgb(.5,.1,.1,.3),ifelse(screw_trap_dat$chiw$chiw_effic$lifeStage=="YCW",rgb(.1,.1,.5,.3)
-  ,rgb(.1,.1,.1,.3))))
+plot_effic(screw_trap_dat$chiw$chiw_effic$effic/100,screw_trap_dat$chiw$chiw_effic$Date2,screw_trap_dat$chiw$chiw_effic$rel,"Chiwawa River",ifelse(screw_trap_dat$chiw$chiw_effic$lifeStage=="SBC",rgb(.5,.1,.1,.6),ifelse(screw_trap_dat$chiw$chiw_effic$lifeStage=="YCW",rgb(.1,.1,.5,.6)
+  ,rgb(.1,.1,.1,.6))),
+  TRUE,screw_trap_dat$chiw$chiwDis$X_00060_00003,screw_trap_dat$chiw$chiwDis$Date)
 
-plot_effic(screw_trap_dat$nas$nas_effic$p ,screw_trap_dat$nas$nas_effic$Rel.Date,screw_trap_dat$nas$nas_effic$number.released,"Nason Creek",ifelse(screw_trap_dat$nas$nas_effic$Lifestage=="Parr"|screw_trap_dat$nas$nas_effic$Lifestage=="Subyearling",rgb(.5,.1,.1,.3),ifelse(screw_trap_dat$nas$nas_effic$Lifestage=="Yearling"|screw_trap_dat$nas$nas_effic$Lifestage=="Smolt",rgb(.1,.1,.5,.3)
-  ,rgb(.1,.1,.1,.3))))
+plot_effic(screw_trap_dat$nas$nas_effic$p ,screw_trap_dat$nas$nas_effic$Rel.Date,screw_trap_dat$nas$nas_effic$number.released,"Nason Creek",ifelse(screw_trap_dat$nas$nas_effic$Lifestage=="Parr"|screw_trap_dat$nas$nas_effic$Lifestage=="Subyearling",rgb(.5,.1,.1,.6),ifelse(screw_trap_dat$nas$nas_effic$Lifestage=="Yearling"|screw_trap_dat$nas$nas_effic$Lifestage=="Smolt",rgb(.1,.1,.5,.6)
+  ,rgb(.1,.1,.1,.6))),TRUE,screw_trap_dat$nas$nasDis$discharge,screw_trap_dat$nas$nasDis$date)
 
 
-plot_effic(screw_trap_dat$whi$nhi_effic$p,screw_trap_dat$whi$nhi_effic$Rel.Date,screw_trap_dat$whi$nhi_effic$number.released,"White River",ifelse(screw_trap_dat$whi$nhi_effic$Lifestage=="Parr"|screw_trap_dat$whi$nhi_effic$Lifestage=="Subyearling",rgb(.5,.1,.1,.3),ifelse(screw_trap_dat$whi$nhi_effic$Lifestage=="Yearling"|screw_trap_dat$whi$nhi_effic$Lifestage=="Smolt",rgb(.1,.1,.5,.3)
-  ,rgb(.1,.1,.1,.3))))
+plot_effic(screw_trap_dat$whi$nhi_effic$p,screw_trap_dat$whi$nhi_effic$Rel.Date,screw_trap_dat$whi$nhi_effic$number.released,"White River",ifelse(screw_trap_dat$whi$nhi_effic$Lifestage=="Parr"|screw_trap_dat$whi$nhi_effic$Lifestage=="Subyearling",rgb(.5,.1,.1,.6),ifelse(screw_trap_dat$whi$nhi_effic$Lifestage=="Yearling"|screw_trap_dat$whi$nhi_effic$Lifestage=="Smolt",rgb(.1,.1,.5,.6)
+  ,rgb(.1,.1,.1,.6))),TRUE,screw_trap_dat$whi$whiDis$discharge,screw_trap_dat$whi$whiDis$date)
 
 
 ```
