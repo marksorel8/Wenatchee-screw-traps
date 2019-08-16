@@ -311,6 +311,31 @@ with(stan_dat_my, {
   }
 })
 
+
+# Annual time series of standardized process errors in true outmigrants
+log_M_hat_z <- matrix(stan_mean(juv_trap_my_fit,"log_M_hat_z"),
+                      nrow = max(stan_dat_my$trap_year), ncol = max(stan_dat_my$trap_day),
+                      byrow = TRUE)
+
+dev.new(width = 10, height = 14)
+par(mfcol = c(7,2), mar = c(3,2,1,0.5), oma = c(1,1.5,1,0))
+
+with(stan_dat_my, {
+  c1 <- transparent("blue", 0.3)
+  for(i in 1:max(trap_year))
+  {
+    plot(1:max(trap_day), log_M_hat_z[i,], type = "l", col = "blue",
+         xlab = "", ylab = "", las = 1, cex.lab = 1.2, cex.axis = 1, xaxt = "n")
+    axis(1, at = axTicks(1), labels = format(axTicks(1) + as.Date("09-30", format = "%m-%d"), "%m/%d"), 
+         cex.axis = 1)
+    if(par("mfg")[1]==par("mfg")[3]) mtext(side = 1, line = 2.5, "Date") 
+    # if(par("mfg")[2]==1) mtext(side = 2, line = 3.5, "Process error")
+    mtext(side = 3, line = 0.1, sort(unique(trap_catch_my$brood_year))[i])
+  }
+  mtext("Process error", side = 2, outer = TRUE)
+})
+
+
 # Time series of total predicted true outmigrants and proportion fall by brood year
 M <- extract1(juv_trap_my_fit,"M")/1000
 M_tot <- extract1(juv_trap_my_fit,"M_tot")/1000
