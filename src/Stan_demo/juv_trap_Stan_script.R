@@ -60,7 +60,7 @@ trap_catch <- na.omit(trap_catch_all[trap_catch_all$brood_year==brood_year,])
 trap_catch <- trap_catch[trap_catch$elapsed_time != 0,]
 MR <- na.omit(MR_all[MR_all$brood_year==brood_year,])
 X_p <- cbind(1, scale(flow_weekly$flow[flow_weekly$brood_year==brood_year]))
-X_M <- matrix(1,max(trap_catch$week))
+X_M <- matrix(1,max(trap_catch$day))
 
 stan_dat <- list(N_MR = nrow(MR),
                  MR_week = MR$week,
