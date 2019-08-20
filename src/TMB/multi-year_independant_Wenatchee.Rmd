@@ -1,0 +1,254 @@
+---
+title: "multi-year independant ar1 wenatchee migrants"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+Load Packages
+```{r}
+pkgTest <- function(x)
+{
+  if (!require(x,character.only = TRUE))
+  {
+    install.packages(x,dep=TRUE)
+    if(!require(x,character.only = TRUE)) stop("Package not found")
+  }
+}#end of function
+
+pkgTest("here")
+```
+
+
+###Load data
+```{r}
+
+source(here("src","Load Screw Trap Data.R"))
+
+screw_trap_dat<-load_dat()
+
+```
+
+###function to make data and inits for model
+```{r}
+
+mod_ins<-function(p_mod_Mat, rel, rec, start_day, end_day, Catch, catch_dat, p_pred_mat){
+
+#Efficiency Data
+  
+  #p_mod_Mat = design matrix for trap efficiency model
+  
+  #number of efficiency trials
+  Ntrials<-nrow(p_mod_Mat)
+
+  #rel = number released in efficiency trials
+  
+  #rec = number recaptured in efficiency trials
+
+  #number of days to estimate migrants
+  max_day<-length(start_day:end_day)
+  
+  
+#Catch Data
+  
+  # number of years of data
+  Nyears<-length(unique(catch_dat$year))
+  
+  #Vector of year index of catch data
+  seriesFac<-as.numeric(catch_dat$year)-min(as.numeric(catch_dat$year))+1
+  
+  #Catch = Vector of Catch of subyearlings (fry and parr combined)
+
+  # day of year of catches
+  catch_DOY<-as.numeric(catch_dat$DOY)-start_day+1
+  
+  #Total length of catch vector
+  N_trap<-length(Catch)
+  
+  #p_pred_mat = model matrix for predicting daily capture efficiency
+
+  mod_data <- list(Ntrials=Ntrials,rec=rec,rel=rel,pDesign=p_mod_Mat,pDat=p_pred_mat,Catch=Catch,catch_DOY=catch_DOY,seriesFac=seriesFac,N_trap=N_trap, max_day=max_day,Nyears=Nyears)
+     
+     
+#initial values
+   #coefficients for capture efficiency model
+   pCoefs <-rnorm(ncol(p_mod_Mat))                                         
+   # intercepts of AR(1) process for log-mean daily outmigrants
+   mu_M<-runif(Nyears,2,7)                                                 
+   # AR(1) process error SD for log-mean daily outmigrants
+   log_sigma_M<-runif(Nyears,-1,1)
+  
+   # AR(1) coefficient for log-mean daily outmigrants
+   phi_M<-runif(Nyears,.1,.99)     
+   
+   #latent state z-scored log(expected migrants)
+   log_M_hat_z<-matrix(rnorm(Nyears*max_day),nrow=Nyears,ncol=max_day)   
+   
+   #paramater list
+   mod_pars=list(pCoefs=pCoefs,mu_M=mu_M, phi_M=phi_M, log_sigma_M=log_sigma_M,log_M_hat_z=log_M_hat_z)
+
+
+#bounds
+  lower=c(rep(-Inf,times=length(pCoefs)), rep(-Inf,Nyears),
+        rep(-1,Nyears),rep(-Inf,Nyears),
+         rep(-Inf,times=max_day*Nyears))
+
+
+
+  upper=c(rep(Inf,times=length(pCoefs)), rep(Inf,Nyears),
+        rep(1,Nyears),rep(Inf,Nyears),
+         rep(Inf,times=max_day*Nyears))
+
+#return
+       list(mod_data=mod_data,mod_pars=mod_pars,lower=lower,upper=upper)
+}
+
+
+```
+
+###load model
+```{r}
+require(TMB)
+
+#TMB model
+setwd(here("src","TMB"))
+compile("multi_year_independant.cpp")
+dyn.load(dynlib("multi_year_independant"))
+```
+
+
+###Chiwawa subyearlings
+```{r}
+
+#add scaled discharge column
+screw_trap_dat$chiw$chiw_effic$log.dis.scale<-scale(log(screw_trap_dat$chiw$chiw_effic$disch.cfs))
+#store mean
+mean.chiw.disch<-attributes(screw_trap_dat$chiw$chiw_effic$log.dis.scale)$`scaled:center`
+#store standard deviation
+sd.chiw.disch<-attributes(screw_trap_dat$chiw$chiw_effic$log.dis.scale)$`scaled:scale`
+#make design matrix
+p_mod_Mat<-model.matrix(~lifeStage+log.dis.scale*position2-1,screw_trap_dat$chiw$chiw_effic)
+
+
+#design matrix for observation model
+
+#make a copy of the catch data with no NA catches
+subs_no_NA<-droplevels(subset(screw_trap_dat$chiw$chiw_catch,!is.na(screw_trap_dat$chiw$chiw_catch$allSubs)))
+
+
+#*********   Guess at missing trap positions   **********
+#*********   should be estimated in model in future   ***
+tapply(screw_trap_dat$chiw$chiw_effic$disch.cfs,screw_trap_dat$chiw$chiw_effic$position2,summary)
+
+subs_no_NA$Position2[subs_no_NA$Position2==""& subs_no_NA$Position2<=475]<-"Upper"
+
+subs_no_NA$Position2[subs_no_NA$Position2==""]<-"Lower"
+
+
+#scale discharge
+subs_no_NA$log_scale_Dis<-(log(subs_no_NA$dis)-mean.chiw.disch)/sd.chiw.disch
+
+#add a column of the lifestage that we are estimating
+subs_no_NA$lifeStage<-factor("SBC",levels = c("SBC","YCW","YCW & SBC"))
+
+p_pred_mat<-model.matrix(~lifeStage+log_scale_Dis*Position2-1,subs_no_NA)
+
+
+mod_dat<-mod_ins(p_mod_Mat=p_mod_Mat,
+                 rel=screw_trap_dat$chiw$chiw_effic$rel,
+                 rec=screw_trap_dat$chiw$chiw_effic$recap,
+                 start_day=as.numeric(min(subs_no_NA$DOY)),
+                 end_day=as.numeric(max(subs_no_NA$DOY)),
+                 Catch=subs_no_NA$allSubs,
+                 catch_dat=subs_no_NA,
+                 p_pred_mat=p_pred_mat)
+
+#Settup subyearling model
+  model_1 <- MakeADFun(mod_dat$mod_data, mod_dat$mod_pars,  
+                         random=c("log_M_hat_z"),
+                     DLL="multi_year_independant",silent=T)
+  
+  model_1_fit<- nlminb(model_1$par, model_1$fn, model_1$gr, 
+                    control=list(rel.tol=1e-12,eval.max=1000000,
+                                 iter.max=10000),
+                    lower=mod_dat$lower, upper=mod_dat$upper)   
+
+
+
+  rep<-model_1$report()
+  
+  log_m_hat<-rep$log_M_hat
+
+plot(colMeans(exp(log_m_hat)),type="l",ylab="",xlab="",xaxt="n")
+seDa<-seq.Date(from=as.Date("2019-01-01"),to=as.Date("2019-12-31"),by=1)
+
+
+days<-c(91,182,274,366,(365+91))-50
+labs<-c("Apr","Jul","Oct","Jan","Apr")
+axis(1,at=days,labels=labs)
+
+
+# abline(v=87,col="red")
+# abline(v=215,col="red")
+# abline(v=345,col="red")
+
+
+```
+
+
+
+```{r}
+source(here("src","Discharge data funcs.R"))
+
+
+Chiw_discharge<-Chiw_discharge_func()
+
+dev.new(width = 10, height = 10)
+pdf(file="test.pdf")
+par(mfrow = c(4,3), mar = c(3,4.5,2,0.5), oma = c(1,0,1,0))
+
+
+  c1 <- transparent("blue", 0.3)
+  for(i in 22:1){
+      acf(diff(rep$log_M_hat_z[i,])*rep$phi_M[i],main="")
+    mtext(unique(subs_no_NA$year)[i],3,1,xpd=NA,outer=F,cex=1.5)
+    qqnorm(diff(rep$log_M_hat_z[i,])*rep$phi_M[i])
+  qqline(diff(rep$log_M_hat_z[i,])*rep$phi_M[i])
+  
+   plot(diff(rep$log_M_hat_z[i,])*rep$phi_M[i], pch = 1,type="l",col="blue",xlab = "", ylab = "process error",)
+    
+  }
+  dev.off()
+        # xlim = c(55,525), ylim = c(0, log(2500)),
+       #  xlab = "", ylab = "", las = 1, cex.lab = 1.2, cex.axis = 1,main=unique(subs_no_NA$year)[i])  }
+    #, xaxt = "n")
+
+
+```
+
+
+## 
+
+
+Link to documentation of AR1 function in TMB
+<https://kaskr.github.io/adcomp/classdensity_1_1AR1__t.html>.
+
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see 
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
