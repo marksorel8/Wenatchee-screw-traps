@@ -1,6 +1,6 @@
 
 #function to make a TS object out of catches
-make_ts<-function(myDates,myCounts,main,plot=FALSE,plotDis=FALSE,dis_dates=NULL,dis_vals=NULL){
+make_ts<-function(myDates,myCounts,main,plot=FALSE,plotDis=FALSE,dis_dates=NULL,dis_vals=NULL,range=NULL){
   
   ts_func<-function(my_dates,my_x){
     
@@ -32,7 +32,7 @@ make_ts<-function(myDates,myCounts,main,plot=FALSE,plotDis=FALSE,dis_dates=NULL,
 
 
 #function to plot a TS of catches
-plot_catch<-function(catch,main,plot_dis=FALSE,dis_series=NULL){
+plot_catch<-function(catch,main,plot_dis=FALSE,dis_series=NULL,range=range){
   
   year<-start(catch)[1]
   year_ln<-end(catch)[1]-year

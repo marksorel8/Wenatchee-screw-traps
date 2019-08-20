@@ -12,7 +12,7 @@ pkgTest <- function(x)
 
 
 
-White_Nason_Effic_Func<-function(){
+White_Nason_Effic_Func<-function(plot=TRUE){
   pkgTest("here")
   
   dat<-read.csv(here("data","Nason and White","Sorel_compiled_ET.csv"))
@@ -71,21 +71,18 @@ White_Nason_Effic_Func<-function(){
   
   #add a new column of discharge data downloaded from the Wa Dept of Ecology guages
   
-  #import discharge data
+  #import data
   source(here("src","Discharge data funcs.R"))
   disch_Dat<-Nason_White_Discharge_Func()
-  #reformat date column
-  disch_Dat$Nason_Dis$date<-as.Date(disch_Dat$Nason_Dis$date,format="%m/%d/%Y")#Nason
-  disch_Dat$White_Dis$date<-as.Date(disch_Dat$White_Dis$date,format="%m/%d/%Y")#White
   
   
   #reformat release date to "Date" format
   spChk_ET$Rel.Date<-as.Date(spChk_ET$Release.Date,format="%m/%d/%Y")
   
   #add Nason discharge data 
-  spChk_ET$discharge2[spChk_ET$TrapNames=="Nason"]<-disch_Dat$Nason_Dis$discharge[match(spChk_ET$Rel.Date[spChk_ET$TrapNames=="Nason"],disch_Dat$Nason_Dis$date)]
+  spChk_ET$discharge2[spChk_ET$TrapNames=="Nason"]<-disch_Dat$Nason_Dis$discharge[match(spChk_ET$Rel.Date[spChk_ET$TrapNames=="Nason"],as.Date(disch_Dat$Nason_Dis$date,format="%m/%d/%Y"))]
   #add white discharge data
-  spChk_ET$discharge2[spChk_ET$TrapNames=="White"]<-disch_Dat$White_Dis$discharge[match(spChk_ET$Rel.Date[spChk_ET$TrapNames=="White"],disch_Dat$White_Dis$date)]
+  spChk_ET$discharge2[spChk_ET$TrapNames=="White"]<-disch_Dat$White_Dis$discharge[match(spChk_ET$Rel.Date[spChk_ET$TrapNames=="White"],as.Date(disch_Dat$White_Dis$date,format="%m/%d/%Y"))]
   
   #change form character to numeric
   spChk_ET$discharge2<-as.numeric(  spChk_ET$discharge2)
@@ -127,7 +124,7 @@ White_spChk_ET<-droplevels(subset(spChk_ET,TrapNames=="White"))
   
 
 return(list(Nason_ET=Nas_spChk_ET,
-            White_ET=White_spChk_ET,disch_Dat=disch_Dat))
+            White_ET=White_spChk_ET))
 
 }
 
@@ -170,7 +167,7 @@ Nason_White_Catch_Ops_Dat_func<-function(){
   #Have to assign lifestages based on length and DOY at capture
 
   #White River
-  plot(wSpC$DOY,as.numeric(as.character(wSpC$Length)),pch=19,cex=.4,type="n",ylab="Length",xlab='DOY',main="White River")
+ if(isTRUE(TRUE) ){ plot(wSpC$DOY,as.numeric(as.character(wSpC$Length)),pch=19,cex=.4,type="n",ylab="Length",xlab='DOY',main="White River")
   
   points(wSpC$DOY[wSpC$stream!="Nason"],wSpC$Length[wSpC$stream!="Nason"], type="p",col=rgb(.1,.1,.1,.3),pch=19,cex=.4)
  
@@ -178,9 +175,9 @@ Nason_White_Catch_Ops_Dat_func<-function(){
   segments(c(0,110,200),c(55,55,100),c(110,200,350),
            c(55,100,137.5),col="red")
   abline(h=50,col="red")
-  
+ }
   #Nason Creek
-  plot(wSpC$DOY,as.numeric(as.character(wSpC$Length)),pch=19,cex=.4,type="n",ylab="Length",xlab='DOY',main="Nason Creek")
+ if (isTRUE(TRUE)) {plot(wSpC$DOY,as.numeric(as.character(wSpC$Length)),pch=19,cex=.4,type="n",ylab="Length",xlab='DOY',main="Nason Creek")
   
   points(wSpC$DOY[wSpC$stream=="Nason"],wSpC$Length[wSpC$stream=="Nason"], type="p",col=rgb(.1,.1,.1,.3),pch=19,cex=.4) 
   
@@ -191,7 +188,7 @@ Nason_White_Catch_Ops_Dat_func<-function(){
   
   abline(h=50,col="red")
   
-  
+ }
   
   #add the stage based on my delineation
   wSpC$Stage_2<-ifelse(wSpC$Length<=50,"fry",ifelse((wSpC$DOY<110 & wSpC$Length<=55) |
