@@ -81,8 +81,13 @@ row.names(dates) <- NULL
 
 dates$date <- as.Date(paste0(dates$year , "-01-01"), format = "%Y-%m-%d") + dates$day-1
 dates$week <- as.integer(format(dates$date,"%W"))
+
+flow_daily <- merge(dates, flow_all[,c("date","flow")], all.x = TRUE)
+
 flow_weekly <- aggregate(flow ~ week + year, data = flow_daily, mean)
 
+flow_weekly<-merge(trap_catch_all,flow_weekly,by.x = c(1,3),by.y = c(2,1),all.x = T,all.y = F)
+flow_weekly<-flow_weekly[!duplicated(flow_weekly[,c(1,2)]),]
 # Stan data for single-year model
 year <- 2011
 trap_catch <- na.omit(trap_catch_all[trap_catch_all$year==year,])
@@ -281,10 +286,10 @@ with(stan_dat, {
 #---------------------------
 
 # Time series of obs and predicted catch
-C_hat <- extract1(juv_trap_my_fit,"C_hat")
+C_hat <- extract1(juv_trap_my_fit_2,"C_hat")
 
 dev.new(width = 10, height = 14)
-par(mfcol = c(7,2), mar = c(3,4.5,1,0.5), oma = c(1,0,1,0))
+par(mfcol = c(5,2), mar = c(3,4.5,1,0.5), oma = c(1,0,1,0))
 
 with(stan_dat_my, {
   c1 <- transparent("blue", 0.3)
@@ -307,11 +312,11 @@ with(stan_dat_my, {
 })
 
 # Annual time series of predicted true outmigrants
-M <- extract1(juv_trap_my_fit,"M")
-M_tot <- extract1(juv_trap_my_fit,"M_tot")
+M <- extract1(juv_trap_my_fit_2,"M")
+M_tot <- extract1(juv_trap_my_fit_2,"M_tot")
 
 dev.new(width = 10, height = 14)
-par(mfcol = c(7,2), mar = c(3,5,1,0.5), oma = c(1,0,1,0))
+par(mfcol = c(5,2), mar = c(3,5,1,0.5), oma = c(1,0,1,0))
 
 with(stan_dat_my, {
   c1 <- transparent("blue", 0.3)
@@ -342,12 +347,12 @@ with(stan_dat_my, {
 
 
 # Annual time series of standardized process errors in true outmigrants
-log_M_hat_z <- matrix(stan_mean(juv_trap_my_fit,"log_M_hat_z"),
+log_M_hat_z <- matrix(stan_mean(juv_trap_my_fit_2,"log_M_hat_z"),
                       nrow = max(stan_dat_my$trap_year), ncol = max(stan_dat_my$trap_day),
                       byrow = TRUE)
 
 dev.new(width = 10, height = 14)
-par(mfcol = c(7,2), mar = c(3,2,1,0.5), oma = c(1,1.5,1,0))
+par(mfcol = c(3,2), mar = c(3,2,1,0.5), oma = c(1,1.5,1,0))
 
 with(stan_dat_my, {
   c1 <- transparent("blue", 0.3)
@@ -359,15 +364,15 @@ with(stan_dat_my, {
          cex.axis = 1)
     if(par("mfg")[1]==par("mfg")[3]) mtext(side = 1, line = 2.5, "Date") 
     # if(par("mfg")[2]==1) mtext(side = 2, line = 3.5, "Process error")
-    mtext(side = 3, line = 0.1, sort(unique(trap_catch_my$brood_year))[i])
+    mtext(side = 3, line = 0.1, sort(unique(trap_catch_my$year))[i])
   }
   mtext("Process error", side = 2, outer = TRUE)
 })
 
 
 # Time series of total predicted true outmigrants and proportion fall by brood year
-M <- extract1(juv_trap_my_fit,"M")/1000
-M_tot <- extract1(juv_trap_my_fit,"M_tot")/1000
+M <- extract1(juv_trap_my_fit_2,"M")/1000
+M_tot <- extract1(juv_trap_my_fit_2,"M_tot")/1000
 p_fall <- apply(M[,,1:125], 1:2, sum)/M_tot
 y <- sort(unique(trap_catch_my$brood_year))
 c1 <- transparent("blue", 0.7)
