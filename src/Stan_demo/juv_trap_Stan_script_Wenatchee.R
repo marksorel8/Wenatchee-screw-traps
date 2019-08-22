@@ -1,5 +1,18 @@
 if(.Platform$OS.type == "windows") options(device=windows)
 
+
+
+install.packages("dataRetrieval")
+install.packages("matrixStats")
+install.packages("lubridate")
+install.packages("rstan")
+install.packages("loo")
+install.packages("shinystan")
+install.packages("yarrr")
+install.packages("corrplot")
+install.packages("here")
+
+
 library(dataRetrieval)
 library(matrixStats)
 library(lubridate)
@@ -9,6 +22,8 @@ library(shinystan)
 library(yarrr)
 library(corrplot)
 library(here)
+
+
 
 if(file.exists(here("src","Stan_demo","juv_trap_fit.RData"))) 
   load(here("src","Stan_demo","juv_trap_fit.RData"))
@@ -39,19 +54,20 @@ screw_trap_dat$chiw$chiw_catch<-droplevels(screw_trap_dat$chiw$chiw_catch[!is.na
 
 # Read in Tucannon trap catch and mark-recapture datasets
 trap_catch_all <- read.table(here("src","Stan_demo","trap_catch_all.txt"), sep = "\t", header = T)
-screw_trap_dat$chiw$chiw_catch$week<-as.numeric(format(screw_trap_dat$chiw$chiw_catch$EndDat,"%W"))#add week
+screw_trap_dat$chiw$chiw_catch$week<-ceiling( (as.numeric(screw_trap_dat$chiw$chiw_catch$DOY)-50)/7)
+  #as.numeric(format(screw_trap_dat$chiw$chiw_catch$EndDat,"%W"))#add week
 screw_trap_dat$chiw$chiw_catch$elapsed_time<-1
 
 trap_catch_all <-screw_trap_dat$chiw$chiw_catch[,c("year","DOY","week","allSubs","elapsed_time")]
 trap_catch_all$year<-as.integer(trap_catch_all$year)
-trap_catch_all$DOY<-as.integer(trap_catch_all$DOY)
+trap_catch_all$DOY<-as.integer(trap_catch_all$DOY)-50
 
 MR_all <- read.table(here("src","Stan_demo","MR_all.txt"), sep = "\t", header = T)
 head(MR_all)
 
 screw_trap_dat$chiw$chiw_effic$Date2<-as.Date(c(as.Date(screw_trap_dat$chiw$chiw_effic$Date[1:88],format="%d-%b-%y"),as.Date(screw_trap_dat$chiw$chiw_effic$Date[89:143],format="%m/%d/%y"),rep(NA, times=length(144:329))))
 screw_trap_dat$chiw$chiw_effic$year<-as.integer(format(screw_trap_dat$chiw$chiw_effic$Date2,"%Y"))
-screw_trap_dat$chiw$chiw_effic$week<-as.integer(format(screw_trap_dat$chiw$chiw_effic$Date2,"%W"))
+screw_trap_dat$chiw$chiw_effic$week<-ceiling( (as.integer(format(screw_trap_dat$chiw$chiw_effic$Date2,"%j"))-50)/7)
 
 rel<-reshape::melt( tapply(screw_trap_dat$chiw$chiw_effic$rel, screw_trap_dat$chiw$chiw_effic[,c("year","week")], sum))
 rec<-reshape::melt( tapply(screw_trap_dat$chiw$chiw_effic$rec, screw_trap_dat$chiw$chiw_effic[,c("year","week")], sum))
@@ -79,11 +95,18 @@ dates <- data.frame(year = rep(unique(trap_catch_all$year),
                                         function(x) 1:x)))
 row.names(dates) <- NULL
 
+<<<<<<< HEAD
 dates$date <- as.Date(paste0(dates$year , "-01-01"), format = "%Y-%m-%d") + dates$day-1
 dates$week <- as.integer(format(dates$date,"%W"))
 
 flow_daily <- merge(dates, flow_all[,c("date","flow")], all.x = TRUE)
 
+=======
+dates$date <- as.Date(paste0(dates$year , "-02-19"), format = "%Y-%m-%d") + dates$day-1
+dates$week <- ceiling(dates$day/7)
+#dates$week <- as.integer(format(dates$date,"%W"))
+flow_daily <- merge(dates, flow_all[,c("date","flow")], all.x = TRUE)
+>>>>>>> 6d93b8738a73bf75edd34acf1e2462a2b5beda23
 flow_weekly <- aggregate(flow ~ week + year, data = flow_daily, mean)
 
 flow_weekly<-merge(trap_catch_all,flow_weekly,by.x = c(1,3),by.y = c(2,1),all.x = T,all.y = F)
@@ -111,7 +134,7 @@ stan_dat <- list(N_MR = nrow(MR),
                  elapsed_time = round(trap_catch$elapsed_time))
 
 # Stan data for multi-year model
-trap_catch_my <- na.omit(trap_catch_all[is.element(trap_catch_all$year, MR_all$year),])
+trap_catch_my <-trap_catch_all #na.omit(trap_catch_all[is.element(trap_catch_all$year, MR_all$year),])
 trap_catch_my <- trap_catch_my[trap_catch_my$elapsed_time != 0,]
 trap_catch_my$year_f <- as.numeric(factor(trap_catch_my$year))
 MR_my <- na.omit(MR_all[is.element(MR_all$year, trap_catch_all$year),])
@@ -127,12 +150,12 @@ stan_dat_my <- list(N_MR = nrow(MR_my),
                     NX_p = ncol(X_p_my),
                     X_p = X_p_my,
                     N_trap = nrow(trap_catch_my),
-                    trap_year = trap_catch_my$brood_year_f,
+                    trap_year = trap_catch_my$year_f,
                     trap_week = trap_catch_my$week,
-                    trap_day = trap_catch_my$day,
+                    trap_day = trap_catch_my$DOY,
                     NX_M = ncol(X_M_my),
                     X_M = X_M_my,
-                    C = trap_catch_my$catch,
+                    C = trap_catch_my$allSubs,
                     elapsed_time = round(trap_catch_my$elapsed_time))
 
 
@@ -207,7 +230,7 @@ stan_init_my <- function(data, chains)
 }
 
 # Call Stan to fit model
-juv_trap_my_fit <- stan(file = here("src","Stan_demo","juv_trap_multiyear.stan"),
+juv_trap_my_fit_2 <- stan(file = here("src","Stan_demo","juv_trap_multiyear.stan"),
                         data = stan_dat_my, 
                         init = stan_init_my(stan_dat_my,3), 
                         pars = c("mu_M","phi_M","sigma_M","Q_M",
@@ -289,7 +312,12 @@ with(stan_dat, {
 C_hat <- extract1(juv_trap_my_fit_2,"C_hat")
 
 dev.new(width = 10, height = 14)
+<<<<<<< HEAD
 par(mfcol = c(5,2), mar = c(3,4.5,1,0.5), oma = c(1,0,1,0))
+=======
+pdf("catch.pdf")
+par(mfcol = c(7,2), mar = c(3,4.5,1,0.5), oma = c(1,0,1,0))
+>>>>>>> 6d93b8738a73bf75edd34acf1e2462a2b5beda23
 
 with(stan_dat_my, {
   c1 <- transparent("blue", 0.3)
@@ -310,7 +338,7 @@ with(stan_dat_my, {
     mtext(side = 3, line = 0.1, sort(unique(trap_catch_my$brood_year))[i])
   }
 })
-
+dev.off()
 # Annual time series of predicted true outmigrants
 M <- extract1(juv_trap_my_fit_2,"M")
 M_tot <- extract1(juv_trap_my_fit_2,"M_tot")
@@ -374,7 +402,7 @@ with(stan_dat_my, {
 M <- extract1(juv_trap_my_fit_2,"M")/1000
 M_tot <- extract1(juv_trap_my_fit_2,"M_tot")/1000
 p_fall <- apply(M[,,1:125], 1:2, sum)/M_tot
-y <- sort(unique(trap_catch_my$brood_year))
+y <- sort(unique(trap_catch_my$year))
 c1 <- transparent("blue", 0.7)
 
 dev.new()
