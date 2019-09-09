@@ -12,6 +12,7 @@ data {
   matrix[max(trap_day),NX_M] X_M;     # design matrix of outmigrant covariates (first column is 1)
   int<lower=0> C[N_trap];             # daily trap catch observations
   int<lower=1> elapsed_time[N_trap];  # time (days) of sampling for each trap catch obs
+  int<lower=0, upper=1> Use_NB;                //Flag for whether to use the the Negative Binomial distribution in the observation model
 }
 
 transformed data {
@@ -30,6 +31,7 @@ parameters {
   real<lower=-1,upper=1> phi_M;      # AR(1) coefficient for log-mean daily outmigrants
   real<lower=0> sigma_M;             # AR(1) process error SD for log-mean daily outmigrants
   vector[max_day] log_M_hat_z;       # log-means of daily outmigrants (z-scores)
+  real<lower=0> phi_obs[Use_NB];     // dispersion paramater for the Negative Binomial observation model for catch. 
 }
 
 transformed parameters {
@@ -84,16 +86,25 @@ model {
   recap ~ binomial(mark, p[MR_week]); 
   
   # Trap catch observations
+ if(Use_NB){
+   C ~ neg_binomial_2(C_hat,phi_obs[1]);
+   }
+ else{
   # Note that a Poisson RV thinned by binomial sampling is Poisson
-  C ~ poisson(C_hat);
+ C ~ poisson(C_hat);}
 }
 
 generated quantities {
   int M[max_day];  # daily outmigrants
   int M_tot;       # total outmigrants
 
-  for(t in 1:max_day)
-    M[t] = poisson_log_rng(log_M_hat[t]);
-  
+ for(t in 1:max_day){
+
+   if(Use_NB){
+   M[t] = neg_binomial_2_rng(M_hat[t],phi_obs[1]);}
+   else{
+   M[t] = poisson_log_rng(log_M_hat[t]);}
+ }
+
   M_tot = sum(M);
 }

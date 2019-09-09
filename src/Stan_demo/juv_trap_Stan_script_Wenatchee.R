@@ -1,18 +1,5 @@
 if(.Platform$OS.type == "windows") options(device=windows)
 
-
-
-install.packages("dataRetrieval")
-install.packages("matrixStats")
-install.packages("lubridate")
-install.packages("rstan")
-install.packages("loo")
-install.packages("shinystan")
-install.packages("yarrr")
-install.packages("corrplot")
-install.packages("here")
-
-
 library(dataRetrieval)
 library(matrixStats)
 library(lubridate)
@@ -22,8 +9,6 @@ library(shinystan)
 library(yarrr)
 library(corrplot)
 library(here)
-
-
 
 if(file.exists(here("src","Stan_demo","juv_trap_fit.RData"))) 
   load(here("src","Stan_demo","juv_trap_fit.RData"))
@@ -52,22 +37,30 @@ source(here("src","Load Screw Trap Data.R"))
 screw_trap_dat<-load_dat()
 screw_trap_dat$chiw$chiw_catch<-droplevels(screw_trap_dat$chiw$chiw_catch[!is.na(screw_trap_dat$chiw$chiw_catch$allSubs),])
 
-# Read in Tucannon trap catch and mark-recapture datasets
-trap_catch_all <- read.table(here("src","Stan_demo","trap_catch_all.txt"), sep = "\t", header = T)
-screw_trap_dat$chiw$chiw_catch$week<-ceiling( (as.numeric(screw_trap_dat$chiw$chiw_catch$DOY)-50)/7)
-  #as.numeric(format(screw_trap_dat$chiw$chiw_catch$EndDat,"%W"))#add week
+
+
+min_DOY<-min(as.numeric(screw_trap_dat$chiw$chiw_catch$DOY))
+screw_trap_dat$chiw$chiw_catch$DOY<-as.numeric(screw_trap_dat$chiw$chiw_catch$DOY)-min_DOY+1
+
+# add week 
+screw_trap_dat$chiw$chiw_catch$week<-ceiling(as.numeric(screw_trap_dat$chiw$chiw_catch$DOY)/7)
+#min_week<-min(screw_trap_dat$chiw$chiw_catch$week)
+#screw_trap_dat$chiw$chiw_catch$week<-screw_trap_dat$chiw$chiw_catch$week
+#add elapsed time
 screw_trap_dat$chiw$chiw_catch$elapsed_time<-1
 
 trap_catch_all <-screw_trap_dat$chiw$chiw_catch[,c("year","DOY","week","allSubs","elapsed_time")]
 trap_catch_all$year<-as.integer(trap_catch_all$year)
-trap_catch_all$DOY<-as.integer(trap_catch_all$DOY)-50
+trap_catch_all$DOY<-as.integer(trap_catch_all$DOY)
 
-MR_all <- read.table(here("src","Stan_demo","MR_all.txt"), sep = "\t", header = T)
-head(MR_all)
 
+#Mark Recapture data
 screw_trap_dat$chiw$chiw_effic$Date2<-as.Date(c(as.Date(screw_trap_dat$chiw$chiw_effic$Date[1:88],format="%d-%b-%y"),as.Date(screw_trap_dat$chiw$chiw_effic$Date[89:143],format="%m/%d/%y"),rep(NA, times=length(144:329))))
-screw_trap_dat$chiw$chiw_effic$year<-as.integer(format(screw_trap_dat$chiw$chiw_effic$Date2,"%Y"))
-screw_trap_dat$chiw$chiw_effic$week<-ceiling( (as.integer(format(screw_trap_dat$chiw$chiw_effic$Date2,"%j"))-50)/7)
+screw_trap_dat$chiw$chiw_effic$year<-as.integer(format(screw_trap_dat$chiw$chiw_effic$Date2,"%Y"))#add year
+screw_trap_dat$chiw$chiw_effic$week<-ceiling((as.numeric(format(screw_trap_dat$chiw$chiw_effic$Date2,"%j"))-min_DOY+1)/7)#add week
+
+
+
 
 rel<-reshape::melt( tapply(screw_trap_dat$chiw$chiw_effic$rel, screw_trap_dat$chiw$chiw_effic[,c("year","week")], sum))
 rec<-reshape::melt( tapply(screw_trap_dat$chiw$chiw_effic$rec, screw_trap_dat$chiw$chiw_effic[,c("year","week")], sum))
@@ -76,16 +69,12 @@ MR_all <-cbind(rel[,1:3],rec[,3])[!is.na(rec[,3]),]
 colnames(MR_all)[3:4]<-c("mark","recap")
 
 # Download USGS daily mean discharge data
-
 Chiwawa<-"12456500"
-
 flow_all <- renameNWISColumns(readNWISdv(siteNumbers = Chiwawa, parameterCd = "00060", statCd = "00003",
                                          startDate = paste(min(trap_catch_all$year) , "01", "01", sep = "-"),
                                          endDate = paste(max(trap_catch_all$year), "12", "31", sep = "-")))
 names(flow_all)[3:4] <- c("date","flow")
 write.csv(flow_all, here("src","Stan_demo","flow_all.csv"), row.names = FALSE)
-
-
 
 
 # Align flow data to trapping dates and merge with trap and MR data
@@ -95,22 +84,15 @@ dates <- data.frame(year = rep(unique(trap_catch_all$year),
                                         function(x) 1:x)))
 row.names(dates) <- NULL
 
-<<<<<<< HEAD
-dates$date <- as.Date(paste0(dates$year , "-01-01"), format = "%Y-%m-%d") + dates$day-1
-dates$week <- as.integer(format(dates$date,"%W"))
+dates$date <- as.Date(paste0(dates$year , "-02-22"), format = "%Y-%m-%d") + dates$day-1
+dates$week <- ceiling( dates$day/7)
 
 flow_daily <- merge(dates, flow_all[,c("date","flow")], all.x = TRUE)
 
-=======
-dates$date <- as.Date(paste0(dates$year , "-02-19"), format = "%Y-%m-%d") + dates$day-1
-dates$week <- ceiling(dates$day/7)
-#dates$week <- as.integer(format(dates$date,"%W"))
-flow_daily <- merge(dates, flow_all[,c("date","flow")], all.x = TRUE)
->>>>>>> 6d93b8738a73bf75edd34acf1e2462a2b5beda23
 flow_weekly <- aggregate(flow ~ week + year, data = flow_daily, mean)
 
-flow_weekly<-merge(trap_catch_all,flow_weekly,by.x = c(1,3),by.y = c(2,1),all.x = T,all.y = F)
-flow_weekly<-flow_weekly[!duplicated(flow_weekly[,c(1,2)]),]
+
+
 # Stan data for single-year model
 year <- 2011
 trap_catch <- na.omit(trap_catch_all[trap_catch_all$year==year,])
@@ -131,10 +113,11 @@ stan_dat <- list(N_MR = nrow(MR),
                  NX_M = ncol(X_M),
                  X_M = X_M,
                  C = trap_catch$allSubs,
-                 elapsed_time = round(trap_catch$elapsed_time))
+                 elapsed_time = round(trap_catch$elapsed_time),
+                 Use_NB=)
 
 # Stan data for multi-year model
-trap_catch_my <-trap_catch_all #na.omit(trap_catch_all[is.element(trap_catch_all$year, MR_all$year),])
+trap_catch_my <- na.omit(trap_catch_all[is.element(trap_catch_all$year, MR_all$year),])
 trap_catch_my <- trap_catch_my[trap_catch_my$elapsed_time != 0,]
 trap_catch_my$year_f <- as.numeric(factor(trap_catch_my$year))
 MR_my <- na.omit(MR_all[is.element(MR_all$year, trap_catch_all$year),])
@@ -150,12 +133,12 @@ stan_dat_my <- list(N_MR = nrow(MR_my),
                     NX_p = ncol(X_p_my),
                     X_p = X_p_my,
                     N_trap = nrow(trap_catch_my),
-                    trap_year = trap_catch_my$year_f,
+                    trap_year = trap_catch_my$brood_year_f,
                     trap_week = trap_catch_my$week,
-                    trap_day = trap_catch_my$DOY,
+                    trap_day = trap_catch_my$day,
                     NX_M = ncol(X_M_my),
                     X_M = X_M_my,
-                    C = trap_catch_my$allSubs,
+                    C = trap_catch_my$catch,
                     elapsed_time = round(trap_catch_my$elapsed_time))
 
 
@@ -177,7 +160,8 @@ stan_init <- function(data, chains)
                 sigma_p = runif(1,0.1,2),
                 beta_M = array(rnorm(NX_M, c(log(20), rep(0, NX_M - 1)), 0.5), dim = NX_M),
                 phi_M = runif(1,0,0.9),
-                sigma_M = runif(1,0.5,2))))
+                sigma_M = runif(1,0.5,2),
+                phi_obs=array(runif(stan_dat$Use_NB,.2,2000)))))
        })
 }
 
@@ -187,12 +171,16 @@ juv_trap_fit <- stan(file = here::here("src","Stan_demo","juv_trap.stan"),
                      init = stan_init(stan_dat,3), 
                      pars = c("beta_M","phi_M","sigma_M",
                               "beta_p","sigma_p","p",
-                              "M_hat","M","M_tot","C_hat"),
+                              "M_hat","M","M_tot","C_hat","phi_obs"),
                      chains = 3, iter = 1500, warmup = 500, thin = 1, cores = 3,
                      control = list(adapt_delta = 0.99, max_treedepth = 13))
 
+
+
 # Print fitted model
-print(juv_trap_fit, pars = c("M_hat","M","p","C_hat"), include = F, probs = c(0.05,0.5,0.95))
+print(juv_trap_fit, pars = c("phi_M","sigma_M",
+                             "beta_p","sigma_p"
+                             ,"M_tot","phi_obs"), include =T, probs = c(0.05,0.5,0.95))
 
 # Check it out in Shinystan
 launch_shinystan(juv_trap_fit)
@@ -230,7 +218,7 @@ stan_init_my <- function(data, chains)
 }
 
 # Call Stan to fit model
-juv_trap_my_fit_2 <- stan(file = here("src","Stan_demo","juv_trap_multiyear.stan"),
+juv_trap_my_fit <- stan(file = here("src","Stan_demo","juv_trap_multiyear.stan"),
                         data = stan_dat_my, 
                         init = stan_init_my(stan_dat_my,3), 
                         pars = c("mu_M","phi_M","sigma_M","Q_M",
@@ -296,10 +284,11 @@ with(stan_dat, {
   legend("topleft", 
          paste("total = ", round(mean(M_tot), 1), 
                " (", round(quantile(M_tot, 0.025), 1), ", ",
-               round(quantile(M_tot, 0.975), 1), ") \n",
-               "proportion fall = ", round(quantile(p_fall, 0.975), 2), 
-               " (", round(quantile(p_fall, 0.025), 2), ", ",
-               round(quantile(p_fall, 0.975), 2), ")", sep = ""), 
+               round(quantile(M_tot, 0.975), 1), ")"#,
+               #"proportion fall = ", round(quantile(p_fall, 0.975), 2), 
+              # " (", round(quantile(p_fall, 0.025), 2), ", ",
+               #round(quantile(p_fall, 0.975), 2), ")", sep = ""
+              ), 
          bty = "n")
 })
 
@@ -312,12 +301,7 @@ with(stan_dat, {
 C_hat <- extract1(juv_trap_my_fit_2,"C_hat")
 
 dev.new(width = 10, height = 14)
-<<<<<<< HEAD
 par(mfcol = c(5,2), mar = c(3,4.5,1,0.5), oma = c(1,0,1,0))
-=======
-pdf("catch.pdf")
-par(mfcol = c(7,2), mar = c(3,4.5,1,0.5), oma = c(1,0,1,0))
->>>>>>> 6d93b8738a73bf75edd34acf1e2462a2b5beda23
 
 with(stan_dat_my, {
   c1 <- transparent("blue", 0.3)
@@ -335,10 +319,10 @@ with(stan_dat_my, {
             col = c1, border = NA)
     if(par("mfg")[1]==par("mfg")[3]) mtext(side = 1, line = 2.5, "Date") 
     if(par("mfg")[2]==1) mtext(side = 2, line = 3, "Catch")
-    mtext(side = 3, line = 0.1, sort(unique(trap_catch_my$brood_year))[i])
+    mtext(side = 3, line = 0.1, sort(unique(trap_catch_my$year))[i])
   }
 })
-dev.off()
+
 # Annual time series of predicted true outmigrants
 M <- extract1(juv_trap_my_fit_2,"M")
 M_tot <- extract1(juv_trap_my_fit_2,"M_tot")
@@ -360,7 +344,7 @@ with(stan_dat_my, {
          cex.axis = 1)
     if(par("mfg")[1]==par("mfg")[3]) mtext(side = 1, line = 2.5, "Date") 
     if(par("mfg")[2]==1) mtext(side = 2, line = 3.5, "Outmigrants")
-    mtext(side = 3, line = 0.1, sort(unique(trap_catch_my$brood_year))[i])
+    mtext(side = 3, line = 0.1, sort(unique(trap_catch_my$year))[i])
     p_fall <- rowSums(M[,i,1:125])/rowSums(M[,i,])
     legend("topleft", 
            paste("total = ", round(mean(M_tot[,i]), 1), 
@@ -380,7 +364,8 @@ log_M_hat_z <- matrix(stan_mean(juv_trap_my_fit_2,"log_M_hat_z"),
                       byrow = TRUE)
 
 dev.new(width = 10, height = 14)
-par(mfcol = c(3,2), mar = c(3,2,1,0.5), oma = c(1,1.5,1,0))
+pdf("Stan_chiwawa_subyearling_process_error.pdf" )
+par(mfcol = c(7,2), mar = c(3,2,1,0.5), oma = c(1,1.5,1,0))
 
 with(stan_dat_my, {
   c1 <- transparent("blue", 0.3)
@@ -397,12 +382,12 @@ with(stan_dat_my, {
   mtext("Process error", side = 2, outer = TRUE)
 })
 
-
+dev.off()
 # Time series of total predicted true outmigrants and proportion fall by brood year
 M <- extract1(juv_trap_my_fit_2,"M")/1000
 M_tot <- extract1(juv_trap_my_fit_2,"M_tot")/1000
 p_fall <- apply(M[,,1:125], 1:2, sum)/M_tot
-y <- sort(unique(trap_catch_my$year))
+y <- sort(unique(trap_catch_my$brood_year))
 c1 <- transparent("blue", 0.7)
 
 dev.new()
