@@ -113,8 +113,8 @@ require(TMB)
 
 #TMB model
 setwd(here("src","TMB"))
-compile("multi_year_independant.cpp")
-dyn.load(dynlib("multi_year_independant"))
+compile("multi_year_independant_1.cpp")
+dyn.load(dynlib("multi_year_independant_1"))
 ```
 
 
@@ -165,24 +165,39 @@ mod_dat<-mod_ins(p_mod_Mat=p_mod_Mat,
                  p_pred_mat=p_pred_mat)
 
 #Settup subyearling model
-  model_1 <- MakeADFun(mod_dat$mod_data, mod_dat$mod_pars,  
+  model_ch_subs <- MakeADFun(mod_dat$mod_data, mod_dat$mod_pars,  
                          random=c("log_M_hat_z"),
-                     DLL="multi_year_independant",silent=T)
+                     DLL="multi_year_independant_1",silent=T)
   
-  model_1_fit<- nlminb(model_1$par, model_1$fn, model_1$gr, 
+  model_ch_subs_fit<- nlminb(model_ch_subs$par, model_ch_subs$fn, model_ch_subs$gr, 
                     control=list(rel.tol=1e-12,eval.max=1000000,
                                  iter.max=10000),
                     lower=mod_dat$lower, upper=mod_dat$upper)   
 
 
 
-  rep<-model_1$report()
+  rep_ch_subs<-model_ch_subs$report()
+  rep$mu_M
+  log_m_hat_ch_subs<-rep_ch_subs$log_M_hat
   
-  log_m_hat<-rep$log_M_hat
+  cor(rep$mu_M,
+  rep2$mu_M)
+  
+  
+rowSums(exp(log_m_hat))
+rowSums(exp(log_m_hat2))
+rowSums(exp(log_m_hat3))
+rowSums(exp(log_m_hat4))
 
-plot(colMeans(exp(log_m_hat)),type="l",ylab="",xlab="",xaxt="n")
+
+  plot(colMeans(exp(log_m_hat_ch_subs)),type="l",ylab="",xlab="",xaxt="n")
 seDa<-seq.Date(from=as.Date("2019-01-01"),to=as.Date("2019-12-31"),by=1)
 
+
+km<-kmeans(rep(1:length(colMeans(exp(log_m_hat_ch_subs))),times=round(colMeans(exp(log_m_hat)))),3)
+
+km$centers
+table(km$cluster)
 
 days<-c(91,182,274,366,(365+91))-50
 labs<-c("Apr","Jul","Oct","Jan","Apr")
@@ -195,6 +210,304 @@ axis(1,at=days,labels=labs)
 
 
 ```
+
+###Chiwawa Yearlings
+```{r}
+
+
+#make a copy of the catch data with no NA catches
+yrlngs_no_NA<-droplevels(subset(screw_trap_dat$chiw$chiw_catch,!is.na(screw_trap_dat$chiw$chiw_catch$yrlngCatch)&screw_trap_dat$chiw$chiw_catch$DOY<=212 ))
+
+
+#scale discharge
+yrlngs_no_NA$log_scale_Dis<-(log(yrlngs_no_NA$dis)-mean.chiw.disch)/sd.chiw.disch
+
+#add a column of the lifestage that we are estimating
+yrlngs_no_NA$lifeStage<-factor("YCW",levels = c("SBC","YCW","YCW & SBC"))
+
+
+#*********   Guess at missing trap positions   **********
+#*********   should be estimated in model in future   ***
+tapply(screw_trap_dat$chiw$chiw_effic$disch.cfs,screw_trap_dat$chiw$chiw_effic$position2,summary)
+
+yrlngs_no_NA$Position2[yrlngs_no_NA$Position2==""& yrlngs_no_NA$Position2<=475]<-"Upper"
+
+yrlngs_no_NA$Position2[yrlngs_no_NA$Position2==""]<-"Lower"
+
+
+#scale discharge
+yrlngs_no_NA$log_scale_Dis<-(log(yrlngs_no_NA$dis)-mean.chiw.disch)/sd.chiw.disch
+
+#add a column of the lifestage that we are estimating
+yrlngs_no_NA$lifeStage<-factor("YCW",levels = c("SBC","YCW","YCW & SBC"))
+
+p_pred_mat<-model.matrix(~lifeStage+log_scale_Dis*Position2-1,yrlngs_no_NA)
+
+
+mod_dat<-mod_ins(p_mod_Mat=p_mod_Mat,
+                 rel=screw_trap_dat$chiw$chiw_effic$rel,
+                 rec=screw_trap_dat$chiw$chiw_effic$recap,
+                 start_day=as.numeric(min(yrlngs_no_NA$DOY)),
+                 end_day=as.numeric(max(yrlngs_no_NA$DOY)),
+                 Catch=yrlngs_no_NA$yrlngCatch,
+                 catch_dat=yrlngs_no_NA,
+                 p_pred_mat=p_pred_mat)
+
+#Settup subyearling model
+  model_Ch_yrlng <- MakeADFun(mod_dat$mod_data, mod_dat$mod_pars,  
+                         random=c("log_M_hat_z"),
+                     DLL="multi_year_independant_1",silent=T)
+  
+  model_1_fit<- nlminb(model_Ch_yrlng$par, model_Ch_yrlng$fn, model_Ch_yrlng$gr, 
+                    control=list(rel.tol=1e-12,eval.max=1000000,
+                                 iter.max=10000),
+                    lower=mod_dat$lower, upper=mod_dat$upper)   
+
+
+
+  rep_model_Ch_yrlng<-model_Ch_yrlng$report()
+  log_m_hat_model_Ch_yrlng<-rep_model_Ch_yrlng$log_M_hat
+  
+rowSums(exp(log_m_hat_model_Ch_yrlng))
+
+  plot(colMeans(exp(log_m_hat_model_Ch_yrlng)),type="l",ylab="",xlab="",xaxt="n")
+seDa<-seq.Date(from=as.Date("2019-01-01"),to=as.Date("2019-12-31"),by=1)
+
+days<-c(91,182,274,366,(365+91))-50
+labs<-c("Apr","Jul","Oct","Jan","Apr")
+axis(1,at=days,labels=labs)
+
+
+# abline(v=87,col="red")
+# abline(v=215,col="red")
+# abline(v=345,col="red")
+
+
+```
+
+
+
+
+###Nason Subyearlings
+```{r}
+
+#add scaled discharge column
+screw_trap_dat$nas$nas_effic$log.dis.scale<-scale(log(screw_trap_dat$nas$nas_effic$discharge2))
+#store mean
+mean.nas.disch<-attributes(screw_trap_dat$nas$nas_effic$log.dis.scale)$`scaled:center`
+#store standard deviation
+sd.nas.disch<-attributes(screw_trap_dat$nas$nas_effic$log.dis.scale)$`scaled:scale`
+#make design matrix
+p_mod_Mat<-model.matrix(~Lifestage2:log.dis.scale+moved-1,screw_trap_dat$nas$nas_effic)
+
+summary(glm(p~Lifestage2:log.dis.scale+moved-1,family="binomial",data=screw_trap_dat$nas$nas_effic,weights=number.released))
+#design matrix for observation model
+
+#make a copy of the catch data with no NA catches
+screw_trap_dat$nas$nas_catch$all_subs<-screw_trap_dat$nas$nas_catch$Sub_catch+screw_trap_dat$nas$nas_catch$Fry_catch
+subs_no_NA<-droplevels(subset(screw_trap_dat$nas$nas_catch,!is.na(screw_trap_dat$nas$nas_catch$all_subs)))
+
+
+#add "moved: factor to trap operations data
+subs_no_NA$moved<-as.factor(ifelse(subs_no_NA$Date2<=as.Date("2014-06-30"),"0","1"))
+
+
+
+#scale discharge
+subs_no_NA$log_scale_Dis<-(log(subs_no_NA$Discharge2)-mean.nas.disch)/sd.nas.disch
+
+#add a column of the lifestage that we are estimating
+subs_no_NA$lifeStage<-factor("Subyearling",levels = unique(screw_trap_dat$nas$nas_effic$Lifestage2))
+
+p_pred_mat<-model.matrix(~lifeStage:log_scale_Dis+moved-1,subs_no_NA)
+
+
+mod_dat<-mod_ins(p_mod_Mat=p_mod_Mat,
+                 rel=screw_trap_dat$nas$nas_effic$number.released,
+                 rec=screw_trap_dat$nas$nas_effic$number.recaptured,
+                 start_day=as.numeric(min(subs_no_NA$DOY)),
+                 end_day=as.numeric(max(subs_no_NA$DOY)),
+                 Catch=subs_no_NA$all_subs,
+                 catch_dat=subs_no_NA,
+                 p_pred_mat=p_pred_mat)
+
+#Settup subyearling model
+  model_nas_subs <- MakeADFun(mod_dat$mod_data, mod_dat$mod_pars,  
+                         random=c("log_M_hat_z"),
+                     DLL="multi_year_independant_1",silent=T)
+  
+  model_nas_subs_fit<- nlminb(model_nas_subs$par, model_nas_subs$fn, model_nas_subs$gr, 
+                    control=list(rel.tol=1e-12,eval.max=1000000,
+                                 iter.max=10000),
+                    lower=mod_dat$lower, upper=mod_dat$upper)   
+
+
+  model_nas_subs_SD<-sdreport(model_nas_subs)
+  summary(model_nas_subs_SD)
+model_nas_subs_rep<-model_nas_subs$report()
+model_nas_subs_log_m_hat<-model_nas_subs_rep$log_M_hat
+rowSums(exp(model_nas_subs_log_m_hat))
+plot(colMeans(exp(model_nas_subs_log_m_hat)),type="l")
+
+```
+
+
+###Nason Yearlings
+```{r}
+
+#make a copy of the catch data with no NA catches
+yrlngs_no_NA<-droplevels(subset(screw_trap_dat$nas$nas_catch,!is.na(screw_trap_dat$nas$nas_catch$Yrlng_catch)&screw_trap_dat$nas$nas_catch$DOY<=212))
+
+
+#add "moved: factor to trap operations data
+yrlngs_no_NA$moved<-as.factor(ifelse(yrlngs_no_NA$Date2<=as.Date("2014-06-30"),"0","1"))
+
+
+
+#scale discharge
+yrlngs_no_NA$log_scale_Dis<-(log(yrlngs_no_NA$Discharge2)-mean.nas.disch)/sd.nas.disch
+
+#add a column of the lifestage that we are estimating
+yrlngs_no_NA$lifeStage<-factor("Yearling",levels = unique(screw_trap_dat$nas$nas_effic$Lifestage2))
+
+p_pred_mat<-model.matrix(~lifeStage:log_scale_Dis+moved-1,yrlngs_no_NA)
+
+
+mod_dat<-mod_ins(p_mod_Mat=p_mod_Mat,
+                 rel=screw_trap_dat$nas$nas_effic$number.released,
+                 rec=screw_trap_dat$nas$nas_effic$number.recaptured,
+                 start_day=as.numeric(min(yrlngs_no_NA$DOY)),
+                 end_day=as.numeric(max(yrlngs_no_NA$DOY)),
+                 Catch=yrlngs_no_NA$Yrlng_catch,
+                 catch_dat=yrlngs_no_NA,
+                 p_pred_mat=p_pred_mat)
+
+#Settup subyearling model
+  model_nas_yrlngs <- MakeADFun(mod_dat$mod_data, mod_dat$mod_pars,  
+                         random=c("log_M_hat_z"),
+                     DLL="multi_year_independant_1",silent=T)
+  
+  model_nas_yrlngs_fit<- nlminb(model_nas_yrlngs$par, model_nas_yrlngs$fn, model_nas_yrlngs$gr, 
+                    control=list(rel.tol=1e-12,eval.max=1000000,
+                                 iter.max=10000),
+                    lower=mod_dat$lower, upper=mod_dat$upper)   
+
+
+  model_nas_yrlngs_SD<-sdreport(model_nas_yrlngs)
+  
+model_nas_yrlngs_rep<-model_nas_yrlngs$report()
+model_nas_yrlngs_log_m_hat<-model_nas_yrlngs_rep$log_M_hat
+rowSums(exp(model_nas_yrlngs_log_m_hat))
+plot(colMeans(exp(model_nas_yrlngs_log_m_hat)),type="l")
+
+```
+
+
+###White River subyearlings
+```{r}
+
+#add scaled discharge column
+screw_trap_dat$whi$nhi_effic$log.dis.scale<-scale(log(screw_trap_dat$whi$nhi_effic$discharge2))
+#store mean
+mean.whi.disch<-attributes(screw_trap_dat$whi$nhi_effic$log.dis.scale)$`scaled:center`
+#store standard deviation
+sd.whi.disch<-attributes(screw_trap_dat$whi$nhi_effic$log.dis.scale)$`scaled:scale`
+#make design matrix
+p_mod_Mat<-model.matrix(~Lifestage2*log.dis.scale-1,screw_trap_dat$whi$nhi_effic)
+
+summary(glm(p~Lifestage2*log.dis.scale-1,family="binomial",data=screw_trap_dat$whi$nhi_effic,weights=number.released))
+#design matrix for observation model
+
+#make a copy of the catch data with no NA catches
+screw_trap_dat$whi$whi_catch$all_subs<-screw_trap_dat$whi$whi_catch$Sub_catch+screw_trap_dat$whi$whi_catch$Fry_catch
+subs_no_NA<-droplevels(subset(screw_trap_dat$whi$whi_catch,!is.na(screw_trap_dat$whi$whi_catch$all_subs)))
+
+
+
+#scale discharge
+subs_no_NA$log_scale_Dis<-(log(subs_no_NA$Discharge2)-mean.whi.disch)/sd.whi.disch
+
+#add a column of the lifestage that we are estimating
+subs_no_NA$lifeStage<-factor("Subyearling",levels = unique(screw_trap_dat$whi$nhi_effic$Lifestage2))
+
+p_pred_mat<-model.matrix(~lifeStage*log_scale_Dis-1,subs_no_NA)
+
+
+mod_dat<-mod_ins(p_mod_Mat=p_mod_Mat,
+                 rel=screw_trap_dat$whi$nhi_effic$number.released,
+                 rec=screw_trap_dat$whi$nhi_effic$number.recaptured,
+                 start_day=as.numeric(min(subs_no_NA$DOY)),
+                 end_day=as.numeric(max(subs_no_NA$DOY)),
+                 Catch=subs_no_NA$all_subs,
+                 catch_dat=subs_no_NA,
+                 p_pred_mat=p_pred_mat)
+
+#Settup subyearling model
+  model_whi_subs <- MakeADFun(mod_dat$mod_data, mod_dat$mod_pars,  
+                         random=c("log_M_hat_z"),
+                     DLL="multi_year_independant_1",silent=T)
+  
+  model_whi_subs_fit<- nlminb(model_whi_subs$par, model_whi_subs$fn, model_whi_subs$gr, 
+                    control=list(rel.tol=1e-12,eval.max=1000000,
+                                 iter.max=10000),
+                    lower=mod_dat$lower, upper=mod_dat$upper)   
+
+
+  #model_nas_subs_SD<-sdreport(model_nas_subs)
+  #summary(model_nas_subs_SD)
+model_whi_subs_rep<-model_whi_subs$report()
+model_whi_subs_log_m_hat<-model_whi_subs_rep$log_M_hat
+rowSums(exp(model_whi_subs_log_m_hat))
+plot(colMeans(exp(model_whi_subs_log_m_hat)),type="l")
+```
+
+###White River Yearlings
+```{r}
+
+#make a copy of the catch data with no NA catches
+
+yrlngs_no_NA<-droplevels(subset(screw_trap_dat$whi$whi_catch,!is.na(screw_trap_dat$whi$whi_catch$Yrlng_catch)&screw_trap_dat$whi$whi_catch$DOY<=212))
+
+
+
+#scale discharge
+yrlngs_no_NA$log_scale_Dis<-(log(yrlngs_no_NA$Discharge2)-mean.whi.disch)/sd.whi.disch
+
+#add a column of the lifestage that we are estimating
+yrlngs_no_NA$lifeStage<-factor("Yearling",levels = unique(screw_trap_dat$whi$nhi_effic$Lifestage2))
+
+p_pred_mat<-model.matrix(~lifeStage*log_scale_Dis-1,yrlngs_no_NA)
+
+
+mod_dat<-mod_ins(p_mod_Mat=p_mod_Mat,
+                 rel=screw_trap_dat$whi$nhi_effic$number.released,
+                 rec=screw_trap_dat$whi$nhi_effic$number.recaptured,
+                 start_day=as.numeric(min(yrlngs_no_NA$DOY)),
+                 end_day=as.numeric(max(yrlngs_no_NA$DOY)),
+                 Catch=yrlngs_no_NA$Yrlng_catch,
+                 catch_dat=yrlngs_no_NA,
+                 p_pred_mat=p_pred_mat)
+
+#Settup subyearling model
+  model_whi_yrlng <- MakeADFun(mod_dat$mod_data, mod_dat$mod_pars,  
+                         random=c("log_M_hat_z"),
+                     DLL="multi_year_independant_1",silent=T)
+  
+  model_whi_yrlng_fit<- nlminb(model_whi_yrlng$par, model_whi_yrlng$fn, model_whi_yrlng$gr, 
+                    control=list(rel.tol=1e-12,eval.max=1000000,
+                                 iter.max=10000),
+                    lower=mod_dat$lower, upper=mod_dat$upper)   
+
+
+  #model_nas_subs_SD<-sdreport(model_nas_subs)
+  #summary(model_nas_subs_SD)
+model_whi_yrlng_rep<-model_whi_yrlng$report()
+model_whi_yrlng_log_m_hat<-model_whi_yrlng_rep$log_M_hat
+rowSums(exp(model_whi_yrlng_log_m_hat))
+plot(colMeans(exp(model_whi_yrlng_log_m_hat)),type="l")
+
+```
+
 
 
 
@@ -211,12 +524,12 @@ par(mfrow = c(4,3), mar = c(3,4.5,2,0.5), oma = c(1,0,1,0))
 
   c1 <- transparent("blue", 0.3)
   for(i in 22:1){
-      acf(diff(rep$log_M_hat_z[i,])*rep$phi_M[i],main="")
+      acf((rep$log_M_hat_z[i,]),main="")
     mtext(unique(subs_no_NA$year)[i],3,1,xpd=NA,outer=F,cex=1.5)
-    qqnorm(diff(rep$log_M_hat_z[i,])*rep$phi_M[i])
-  qqline(diff(rep$log_M_hat_z[i,])*rep$phi_M[i])
+    qqnorm((rep$log_M_hat_z[i,]))
+  qqline((rep$log_M_hat_z[i,]))
   
-   plot(diff(rep$log_M_hat_z[i,])*rep$phi_M[i], pch = 1,type="l",col="blue",xlab = "", ylab = "process error",)
+   plot((rep$log_M_hat_z[i,]), pch = 1,type="l",col="blue",xlab = "", ylab = "process error",)
     
   }
   dev.off()
