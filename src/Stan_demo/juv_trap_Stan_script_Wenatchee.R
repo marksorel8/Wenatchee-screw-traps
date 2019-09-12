@@ -114,7 +114,7 @@ stan_dat <- list(N_MR = nrow(MR),
                  X_M = X_M,
                  C = trap_catch$allSubs,
                  elapsed_time = round(trap_catch$elapsed_time),
-                 Use_NB=)
+                 Use_NB=1)
 
 # Stan data for multi-year model
 trap_catch_my <- na.omit(trap_catch_all[is.element(trap_catch_all$year, MR_all$year),])
@@ -166,7 +166,7 @@ stan_init <- function(data, chains)
 }
 
 # Call Stan to fit model
-juv_trap_fit <- stan(file = here::here("src","Stan_demo","juv_trap.stan"),
+juv_trap_fit2 <- stan(file = here::here("src","Stan_demo","juv_trap.stan"),
                      data = stan_dat, 
                      init = stan_init(stan_dat,3), 
                      pars = c("beta_M","phi_M","sigma_M",
@@ -178,7 +178,7 @@ juv_trap_fit <- stan(file = here::here("src","Stan_demo","juv_trap.stan"),
 
 
 # Print fitted model
-print(juv_trap_fit, pars = c("phi_M","sigma_M",
+print(juv_trap_fit2, pars = c("phi_M","sigma_M",
                              "beta_p","sigma_p"
                              ,"M_tot","phi_obs"), include =T, probs = c(0.05,0.5,0.95))
 
