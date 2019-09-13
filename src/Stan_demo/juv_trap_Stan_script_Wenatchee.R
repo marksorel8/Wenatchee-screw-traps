@@ -94,7 +94,7 @@ flow_weekly <- aggregate(flow ~ week + year, data = flow_daily, mean)
 
 
 # Stan data for single-year model
-year <- 2011
+year <- 2013
 trap_catch <- na.omit(trap_catch_all[trap_catch_all$year==year,])
 trap_catch <- trap_catch[trap_catch$elapsed_time != 0,]
 MR <- na.omit(MR_all[MR_all$year==year,])
@@ -113,8 +113,7 @@ stan_dat <- list(N_MR = nrow(MR),
                  NX_M = ncol(X_M),
                  X_M = X_M,
                  C = trap_catch$allSubs,
-                 elapsed_time = round(trap_catch$elapsed_time),
-                 Use_NB=1)
+                 elapsed_time = round(trap_catch$elapsed_time))
 
 # Stan data for multi-year model
 trap_catch_my <- na.omit(trap_catch_all[is.element(trap_catch_all$year, MR_all$year),])
@@ -161,29 +160,29 @@ stan_init <- function(data, chains)
                 beta_M = array(rnorm(NX_M, c(log(20), rep(0, NX_M - 1)), 0.5), dim = NX_M),
                 phi_M = runif(1,0,0.9),
                 sigma_M = runif(1,0.5,2),
-                phi_obs=array(runif(stan_dat$Use_NB,.2,2000)))))
+                beta_NB=10)))#array(runif(stan_dat$Use_NB,.001,1))
        })
 }
 
 # Call Stan to fit model
-juv_trap_fit2 <- stan(file = here::here("src","Stan_demo","juv_trap.stan"),
+juv_trap_fit3 <- stan(file = here::here("src","Stan_demo","juv_trap_NB.stan"),
                      data = stan_dat, 
                      init = stan_init(stan_dat,3), 
                      pars = c("beta_M","phi_M","sigma_M",
                               "beta_p","sigma_p","p",
-                              "M_hat","M","M_tot","C_hat","phi_obs"),
+                              "M_hat","M","M_tot","C_hat","beta_NB"),
                      chains = 3, iter = 1500, warmup = 500, thin = 1, cores = 3,
                      control = list(adapt_delta = 0.99, max_treedepth = 13))
 
 
 
 # Print fitted model
-print(juv_trap_fit2, pars = c("phi_M","sigma_M",
+print(juv_trap_fit3, pars = c("phi_M","sigma_M",
                              "beta_p","sigma_p"
-                             ,"M_tot","phi_obs"), include =T, probs = c(0.05,0.5,0.95))
+                             ,"M_tot","beta_NB"), include =T, probs = c(0.05,0.5,0.95))
 
 # Check it out in Shinystan
-launch_shinystan(juv_trap_fit)
+launch_shinystan(juv_trap_fit3)
 
 # Save stanfit
 save(juv_trap_fit, file = here("src","Stan_demo","juv_trap_fit.RData"))
@@ -213,7 +212,7 @@ stan_init_my <- function(data, chains)
                 # beta_M = array(rnorm(NX_M, c(log(20), rep(0, NX_M - 1)), 0.5), dim = NX_M),
                 mu_M = array(rnorm(N_year, log(20), 0.5), dim = N_year),
                 phi_M = runif(N_year,0,0.9),
-                sigma_M = runif(N_year,0.5,2))))
+                sigma_M = runif(N_year,0.001,.001))))
        })
 }
 
@@ -247,11 +246,11 @@ save(juv_trap_my_fit, file = here("src","Stan_demo","juv_trap_my_fit.RData"))
 
 # Time series of obs and predicted catch, capture probability, 
 # and predicted true outmigrants
-C_hat <- extract1(juv_trap_fit,"C_hat")
-p <- extract1(juv_trap_fit,"p")
-M <- extract1(juv_trap_fit,"M")
+C_hat <- extract1(juv_trap_fit3,"C_hat")
+p <- extract1(juv_trap_fit3,"p")
+M <- extract1(juv_trap_fit3,"M")
 p_fall <- rowSums(M[,1:125])/rowSums(M)
-M_tot <- extract1(juv_trap_fit,"M_tot")
+M_tot <- extract1(juv_trap_fit3,"M_tot")
 
 dev.new(width = 7, height = 14)
 par(mfrow = c(3,1), mar = c(4.5,4.5,1,1), oma = c(0,0,3,0))
