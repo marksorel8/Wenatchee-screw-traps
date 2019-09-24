@@ -6,7 +6,7 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-Load Packages
+Load Packagesplot_M_hat
 ```{r}
 pkgTest <- function(x)
 {
@@ -33,7 +33,7 @@ screw_trap_dat<-load_dat()
 ###function to make data and inits for model
 ```{r}
 
-mod_ins<-function(p_mod_Mat, rel, rec, start_day, end_day, Catch, catch_dat, p_pred_mat){
+mod_ins<-function(p_mod_Mat, rel, rec, start_day, end_day, Catch, catch_dat, p_pred_mat,use_NB){
 
 #Efficiency Data
   
@@ -68,7 +68,7 @@ mod_ins<-function(p_mod_Mat, rel, rec, start_day, end_day, Catch, catch_dat, p_p
   
   #p_pred_mat = model matrix for predicting daily capture efficiency
 
-  mod_data <- list(Ntrials=Ntrials,rec=rec,rel=rel,pDesign=p_mod_Mat,pDat=p_pred_mat,Catch=Catch,catch_DOY=catch_DOY,seriesFac=seriesFac,N_trap=N_trap, max_day=max_day,Nyears=Nyears)
+  mod_data <- list(Ntrials=Ntrials,rec=rec,rel=rel,pDesign=p_mod_Mat,pDat=p_pred_mat,Catch=Catch,catch_DOY=catch_DOY,seriesFac=seriesFac,N_trap=N_trap, max_day=max_day,Nyears=Nyears,use_NB=use_NB)
      
      
 #initial values
@@ -80,25 +80,34 @@ mod_ins<-function(p_mod_Mat, rel, rec, start_day, end_day, Catch, catch_dat, p_p
    log_sigma_M<-runif(Nyears,-1,1)
   
    # AR(1) coefficient for log-mean daily outmigrants
-   phi_M<-runif(Nyears,.1,.99)     
+   logit_phi_M<-rnorm(Nyears)     
    
    #latent state z-scored log(expected migrants)
-   log_M_hat_z<-matrix(rnorm(Nyears*max_day),nrow=Nyears,ncol=max_day)   
+   log_M_hat_z<-matrix(rnorm(Nyears*max_day),nrow=max_day,ncol=Nyears)   
    
+   #variance of negative binomial
+   
+   log_phi=rnorm(ifelse(use_NB==1,Nyears,0))
+   
+   #p paramater of negative binomial used in the "...NB_2.cpp" script, Which used the same paramaterixation as R.  
+     
+  logit_p_NB=rnorm(ifelse(use_NB==1,Nyears,0))
+  
    #paramater list
-   mod_pars=list(pCoefs=pCoefs,mu_M=mu_M, phi_M=phi_M, log_sigma_M=log_sigma_M,log_M_hat_z=log_M_hat_z)
+   mod_pars=list(pCoefs=pCoefs,mu_M=mu_M, logit_phi_M=logit_phi_M, log_sigma_M=log_sigma_M,log_M_hat_z=log_M_hat_z,log_phi=log_phi,logit_p_NB=logit_p_NB)
+
 
 
 #bounds
-  lower=c(rep(-Inf,times=length(pCoefs)), rep(-Inf,Nyears),
-        rep(-1,Nyears),rep(-Inf,Nyears),
-         rep(-Inf,times=max_day*Nyears))
+  lower=c(rep(-5,times=length(pCoefs)), rep(-3,Nyears),
+        rep(-5,Nyears),rep(-5,Nyears),rep(-5,times=Nyears),
+         rep(-5,times=max_day*Nyears))
 
 
 
-  upper=c(rep(Inf,times=length(pCoefs)), rep(Inf,Nyears),
-        rep(1,Nyears),rep(Inf,Nyears),
-         rep(Inf,times=max_day*Nyears))
+  upper=c(rep(5,times=length(pCoefs)), rep(5,Nyears),
+        rep(5,Nyears),rep(5,Nyears),rep(5,times=Nyears),
+         rep(5,times=max_day*Nyears))
 
 #return
        list(mod_data=mod_data,mod_pars=mod_pars,lower=lower,upper=upper)
@@ -113,8 +122,12 @@ require(TMB)
 
 #TMB model
 setwd(here("src","TMB"))
-compile("multi_year_independant_1.cpp")
-dyn.load(dynlib("multi_year_independant_1"))
+compile("multi_year_independant_1Poisson.cpp")
+dyn.load(dynlib("multi_year_independant_1Poisson"))
+  
+  
+compile("multi_year_independant_1NB_2.cpp")
+dyn.load(dynlib("multi_year_independant_1NB_2"))
 ```
 
 
@@ -128,149 +141,382 @@ mean.chiw.disch<-attributes(screw_trap_dat$chiw$chiw_effic$log.dis.scale)$`scale
 #store standard deviation
 sd.chiw.disch<-attributes(screw_trap_dat$chiw$chiw_effic$log.dis.scale)$`scaled:scale`
 #make design matrix
-p_mod_Mat<-model.matrix(~lifeStage+log.dis.scale*position2-1,screw_trap_dat$chiw$chiw_effic)
+p_mod_Mat_chiw<-model.matrix(~lifeStage+log.dis.scale*position2-1,screw_trap_dat$chiw$chiw_effic)
 
 
 #design matrix for observation model
 
 #make a copy of the catch data with no NA catches
-subs_no_NA<-droplevels(subset(screw_trap_dat$chiw$chiw_catch,!is.na(screw_trap_dat$chiw$chiw_catch$allSubs)))
+subs_no_NA_chiw<-droplevels(subset(screw_trap_dat$chiw$chiw_catch,!is.na(screw_trap_dat$chiw$chiw_catch$allSubs)))
 
 
 #*********   Guess at missing trap positions   **********
 #*********   should be estimated in model in future   ***
 tapply(screw_trap_dat$chiw$chiw_effic$disch.cfs,screw_trap_dat$chiw$chiw_effic$position2,summary)
 
-subs_no_NA$Position2[subs_no_NA$Position2==""& subs_no_NA$Position2<=475]<-"Upper"
+subs_no_NA_chiw$Position2[subs_no_NA_chiw$Position2==""& subs_no_NA_chiw$Position2<=475]<-"Upper"
 
-subs_no_NA$Position2[subs_no_NA$Position2==""]<-"Lower"
+subs_no_NA_chiw$Position2[subs_no_NA_chiw$Position2==""]<-"Lower"
 
 
 #scale discharge
-subs_no_NA$log_scale_Dis<-(log(subs_no_NA$dis)-mean.chiw.disch)/sd.chiw.disch
+subs_no_NA_chiw$log_scale_Dis<-(log(subs_no_NA_chiw$dis)-mean.chiw.disch)/sd.chiw.disch
 
 #add a column of the lifestage that we are estimating
-subs_no_NA$lifeStage<-factor("SBC",levels = c("SBC","YCW","YCW & SBC"))
+subs_no_NA_chiw$lifeStage<-factor("SBC",levels = c("SBC","YCW","YCW & SBC"))
 
-p_pred_mat<-model.matrix(~lifeStage+log_scale_Dis*Position2-1,subs_no_NA)
+p_pred_mat<-model.matrix(~lifeStage+log_scale_Dis*Position2-1,subs_no_NA_chiw)
 
 
-mod_dat<-mod_ins(p_mod_Mat=p_mod_Mat,
+chiw_sub_mod_dat<-mod_ins(p_mod_Mat=p_mod_Mat_chiw,
                  rel=screw_trap_dat$chiw$chiw_effic$rel,
                  rec=screw_trap_dat$chiw$chiw_effic$recap,
-                 start_day=as.numeric(min(subs_no_NA$DOY)),
-                 end_day=as.numeric(max(subs_no_NA$DOY)),
-                 Catch=subs_no_NA$allSubs,
-                 catch_dat=subs_no_NA,
-                 p_pred_mat=p_pred_mat)
+                 start_day=as.numeric(min(subs_no_NA_chiw$DOY)),
+                 end_day=as.numeric(max(subs_no_NA_chiw$DOY)),
+                 Catch=subs_no_NA_chiw$allSubs,
+                 catch_dat=subs_no_NA_chiw,
+                 p_pred_mat=p_pred_mat,
+                 use_NB=0)
 
 #Settup subyearling model
-  model_ch_subs <- MakeADFun(mod_dat$mod_data, mod_dat$mod_pars,  
+  model_ch_subs <- MakeADFun(chiw_sub_mod_dat$mod_data, chiw_sub_mod_dat$mod_pars,  
                          random=c("log_M_hat_z"),
-                     DLL="multi_year_independant_1",silent=T)
+                     DLL="multi_year_independant_1Poisson",silent=F)
   
   model_ch_subs_fit<- nlminb(model_ch_subs$par, model_ch_subs$fn, model_ch_subs$gr, 
                     control=list(rel.tol=1e-12,eval.max=1000000,
-                                 iter.max=10000),
-                    lower=mod_dat$lower, upper=mod_dat$upper)   
+                                 iter.max=10000))   
+
+  
+  ch_subs_SD_<-sdreport(model_ch_subs)
+  
+  
+test<-summary(ch_subs_SD_)
 
 
+  
+  model_ch_subs_NB <- MakeADFun(chiw_sub_mod_dat$mod_data, chiw_sub_mod_dat$mod_pars,  
+                         random=c("log_M_hat_z"),
+                     DLL="multi_year_independant_1NB_2",silent=T)
+  
+    
+    
+  model_ch_subs_fit_NB<- nlminb(model_ch_subs_NB$par, model_ch_subs_NB$fn, model_ch_subs_NB$gr, 
+                    control=list(rel.tol=1e-12,eval.max=1000000,
+                                 iter.max=10000),lower=chiw_sub_mod_dat$lower,upper=chiw_sub_mod_dat$upper)   
+  
+  model_ch_subs_NB$fn()
+
+  ch_subs_SD_NB<-sdreport(model_ch_subs_NB)
+
+  
+  
+  
+  nrow(m_hat_SD_chiw_subs)
+  head(ch_subs_SD_sum)
+  
+  
+  
+  tail(summary(ch_subs_SD_NB))
+
+# library(tmbstan)
+
+ # test<-tmbstan(model_ch_subs,chains=1,init="last.par.best")
+  
+  
+  model_ch_subs$env$last.par.best[1:100]
 
   rep_ch_subs<-model_ch_subs$report()
-  rep$mu_M
+  
+  rep_ch_subs_NB<-model_ch_subs_NB$report()
+  
+  rep_ch_subs$LikeCatch
+  rep_ch_subs$var_NB_day
+  rep_ch_subs$mu_M
   log_m_hat_ch_subs<-rep_ch_subs$log_M_hat
+  log_m_hat_ch_subsNB<-rep_ch_subs_NB$log_M_hat
   
-  cor(rep$mu_M,
-  rep2$mu_M)
+colSums(exp(log_m_hat_ch_subs))
+colSums(exp(log_m_hat_ch_subsNB))
+
+plot(rowMeans(exp(log_m_hat_ch_subs)),type="l",ylab="",xlab="",xaxt="n")
+
+  plot(rowMeans(exp(log_m_hat_ch_subsNB)),type="l",ylab="",xlab="",xaxt="n")
   
-  
-rowSums(exp(log_m_hat))
-rowSums(exp(log_m_hat2))
-rowSums(exp(log_m_hat3))
-rowSums(exp(log_m_hat4))
-
-
-  plot(colMeans(exp(log_m_hat_ch_subs)),type="l",ylab="",xlab="",xaxt="n")
-seDa<-seq.Date(from=as.Date("2019-01-01"),to=as.Date("2019-12-31"),by=1)
-
-
-km<-kmeans(rep(1:length(colMeans(exp(log_m_hat_ch_subs))),times=round(colMeans(exp(log_m_hat)))),3)
-
-km$centers
-table(km$cluster)
-
-days<-c(91,182,274,366,(365+91))-50
+ abline(v=87,col="red")
+ abline(v=215,col="red")
+# abline(v=345,col="red")
+ 
+ days<-c(91,182,274,366,(365+91))-50
 labs<-c("Apr","Jul","Oct","Jan","Apr")
 axis(1,at=days,labels=labs)
 
 
-# abline(v=87,col="red")
-# abline(v=215,col="red")
-# abline(v=345,col="red")
+plot(exp(log_m_hat_ch_subsNB[,22]),type="l")
 
 
+
+Chiw_redds<-read.csv(here("data","Chiwawa","ChiwEscapement.csv"))
+Chiw_spawners<-rowSums(Chiw_redds[8:29,2:3])
+library(mvtnorm)
+
+
+
+################### Function to bootstrap recruits ##################
+bootstrap_migrants<-function(n_Draws=2000,dat=mod_dat,SD_obj=ch_subs_SD_NB,redds,breaks=NA){
+
+#Bootstrap migrants
+N_years<-dat$mod_data$Nyears
+N_days<-ncol(SD_obj$cov)/ dat$mod_data$Nyears
+out<-array(NA,dim=c(n_Draws,N_days,N_years))
+
+log_M_hat_array<-array(NA, dim=c(N_days,N_years,3))
+log_M_hat_SD<-summary(SD_obj)[]
+m_hat_SD<-log_M_hat_SD[rownames(log_M_hat_SD)=="log_M_hat",]
+ 
+
+for ( i in 1:N_years){
+
+draws<-rmvnorm(n_Draws , SD_obj$value[((1+(i-1)*N_days):(i*N_days))], SD_obj$cov[((1+(i-1)*N_days):(i*N_days)),((1+(i-1)*N_days):(i*N_days))] )
+
+out[,,i]<-draws
+
+    log_M_hat_array[,i,1]<-(m_hat_SD[((1+(i-1)*N_days):(i*N_days)),1])
+    log_M_hat_array[,i,2]<-qnorm(.025,m_hat_SD[((1+(i-1)*N_days):(i*N_days)),1],m_hat_SD[((1+(i-1)*N_days):(i*N_days)),2])
+    log_M_hat_array[,i,3]<-qnorm(.975,m_hat_SD[((1+(i-1)*N_days):(i*N_days)),1],m_hat_SD[((1+(i-1)*N_days):(i*N_days)),2])
+
+}
+
+
+#break into groups
+num_groups<-length(breaks)+1-sum(is.na(breaks))
+groups<-list()
+for ( i in 1:num_groups){
+  first_day<-ifelse(i==1,1,breaks[i-1]+1)
+  end_day<-ifelse(i==num_groups,N_days,breaks[i])
+  groups[[i]]<-apply((exp(out[,first_day:end_day,])),c(1,3),sum)
+  plot(redds,colMeans(groups[[i]]),main=paste(first_day,"-",end_day),ylab="recruits")
+  }
+return(list(groups,log_M_hat_array))
+}
+########End of funcion #####################
+chiw_subs<-bootstrap_migrants(n_Draws=2000,dat=chiw_sub_mod_dat,SD_obj=ch_subs_SD_NB,redds=Chiw_spawners,breaks=c(87,214))
+
+chiw_subs_M_hat<-chiw_subs[[2]]
+
+
+chiw_subs<-chiw_subs[[1]]
+
+foo<-function(pars){
+  alpha<-exp(pars[1])
+  Rmax<-exp(pars[2])
+  sd<-exp(pars[3])
+  R<-(alpha*Chiw_spawners)/(1+alpha*Chiw_spawners/Rmax)
+  
+  return(-sum(dnorm(log(colMeans(chiw_falls)),log(R),sd,log=TRUE)))
+}
+
+fall_Chiw_BH<-optim(c(log(10),log(4000),log(500)),foo)
+Chiw_fall_BH_Alpha<-exp(fall_Chiw_BH$par[1])
+Chiw_fall_BH_Rmax<-exp(fall_Chiw_BH$par[2])
+Chiw_fall_BH_proc_SD<-exp(fall_Chiw_BH$par[3])
+ R_pred<-(Chiw_fall_BH_Alpha*seq(0,2000,100))/(1+Chiw_fall_BH_Alpha*seq(0,2000,100)/Chiw_fall_BH_Rmax)
+
+ points(seq(0,2000,100),(R_pred),type="l")
+ 
+ 
+ setwd(here("src","TMB"))
+ compile("Stock_recruit.cpp")
+ dyn.load(dynlib("Stock_recruit"))
+ 
+ ##############################################################
+ #  Function to fit SR model
+ ###############################################################
+fit_SR<-function(R_obs,S_obs,Model,SD=FALSE){
+ compile("Stock_recruit.cpp")
+ dyn.load(dynlib("Stock_recruit"))
+
+  
+SR_dat<-list(R_obs=R_obs,                 # Observed recruits (posterior from juvenile modle)
+                   S_obs=S_obs,               # Observed spawners (from redd counts)
+                   S_obs_sd_hyper_mu=0.004,           #spawner observation error hyper mean
+                   S_obs_sd_hyper_sd=0.0012,        #spawner observation error hyper variance
+                   Model=Model)
+
+
+mean_R<-colMeans(R_obs)
+SR_pars<-list(log_R_hat=log(mean_R),      # latent true number of juveniles
+                    log_R_obs_sd=log(apply(R_obs,2,sd)),  # juvenile observation error
+                    log_S_hat=log(as.numeric(S_obs)),  # latent true number of spawners
+                    log_S_obs_sd=log(0.06),                         # Spawner observation error
+                    log_alpha=ifelse(Model==3,1.5,log(60)),         # intrinsic productivity
+                    log_R_max=ifelse(Model==3,5,log(60000)),          # Asymptotic maximum recruitment
+                    log_proc_sigma=log(.4),  # process error standard deviation
+                    log_d=0)
+if(Model==2){
+  map<-list(log_d=factor(1))
+}else{
+  map<-list(log_d=factor(NA))
+}
+
+SR<-MakeADFun(SR_dat,SR_pars,random = c("log_R_hat","log_S_hat"),DLL="Stock_recruit", map = map,silent = T)
+
+
+SR_fit<-nlminb(SR$par,SR$fn,SR$gr, 
+                    control=list(rel.tol=1e-12,eval.max=1000000,
+                                 iter.max=10000))
+
+Npar<-ifelse(Model==2,3,2)
+Nsamp<-N_years
+AICc<-SR$fn()*2+2*Npar+(2*Npar*(Npar+1))/(Nsamp-Npar-1)
+
+SR_Rep<-SR$report()
+
+
+plot(SR_Rep$S_hat,SR_Rep$R_hat,col="red")
+points(S_obs,mean_R)
+points(SR_Rep$S_hat,SR_Rep$R_pred,col="blue")
+
+if(isTRUE(SD)){
+  SR_sd<-sdreport(SR)
+  
+}
+
+out<-list(AICc=AICc,SR_Rep=SR_Rep)
+
+if(isTRUE(SD)){
+  out[[3]]<-SR_sd
+}
+
+return(out)
+
+}
+###################### End Function ##############################
+ 
+SR_compare<-function(R_dat,S_dat){
+  out<-list()
+  for ( i in 1:3){
+    out[[i]]<-fit_SR(R_obs=R_dat,S_obs=S_dat,Model=i)
+  print(out[[i]][[1]])
+    }
+  
+  return(out)
+}
+ 
+ Rmax_table<-matrix(NA,nrow=4,ncol=3,dimnames = list(c("fry","sum","fall","smolt"),c("chiw","nas","white")))
+ 
+ Chiw_fry_SR<-SR_compare(chiw_subs[[1]],Chiw_spawners)
+  lapply(Chiw_fry_SR, function(x)print(x[[1]]))
+  
+  plot_SR<-function(fit_list=Chiw_fry_SR,model=1){
+    s_hats<-fit_list[[model]]$SR_Rep$S_hat
+    r_hats<-fit_list[[model]]$SR_Rep$R_hat
+    
+    plot(s_hats,r_hats,xlim=c(0,max(s_hats)*1.2),ylim=c(0,max(r_hats*1.2)))
+    
+    alpha<-fit_list[[model]]$SR_Rep$
+    if(model==1) R_pred<-(alpha*S_hat)/(1+alpha*S_hat/R_max)
+
+    if(model==2) R_pred<-(R_max*pow(S_hat,d))/(alpha+pow(S_hat,d))
+  }
+  
+  plot_SR(fit_list=Chiw_fry_SR,model=2)
+  
+  
+ Chiw_fry_SR[[2]]$SR_Rep$R_max
+ Chiw_fry_SR_SD<-fit_SR(chiw_subs[[1]],Chiw_spawners,2,TRUE)
+Chiw_fry_SR_SD[[3]]
+
+ 
+ Rmax_table[1,1]<- Chiw_fry_SR[[2]]$SR_Rep$R_max
+ 
+ Chiw_sum_SR<-SR_compare(chiw_subs[[2]],Chiw_spawners)
+
+ 
+ Chiw_sum_SR[[2]]$SR_Rep$R_max
+ Rmax_table[2,1]<- Chiw_sum_SR[[2]]$SR_Rep$R_max
+ Chiw_sum_SR_SD<-fit_SR(chiw_subs[[2]],Chiw_spawners,2,TRUE)
+ Chiw_sum_SR_SD[[3]]
+ exp(11.4744345)
+ exp(11.4744345+1.96* 0.44245874)
+ exp(11.4744345-1.96* 0.44245874)
+ 
+ Chiw_fall_SR<-SR_compare(chiw_subs[[3]],Chiw_spawners)
+ Chiw_fall_SR[[1]]$SR_Rep$R_max
+ Rmax_table[3,1]<-Chiw_fall_SR[[1]]$SR_Rep$R_max
+ Chiw_fall_SR[[1]]$SR_Rep$alpha
+ Chiw_fal_SR_SD<-fit_SR(chiw_subs[[3]],Chiw_spawners,1,TRUE)
+Chiw_fal_SR_SD[[3]]
+exp(10.8825529)
+exp(10.8825529+1.96*.31297405)
+exp(10.8825529-1.96*.31297405)
 ```
 
 ###Chiwawa Yearlings
 ```{r}
-
-
 #make a copy of the catch data with no NA catches
-yrlngs_no_NA<-droplevels(subset(screw_trap_dat$chiw$chiw_catch,!is.na(screw_trap_dat$chiw$chiw_catch$yrlngCatch)&screw_trap_dat$chiw$chiw_catch$DOY<=212 ))
+yrlngs_no_NA_chiw<-droplevels(subset(screw_trap_dat$chiw$chiw_catch,!is.na(screw_trap_dat$chiw$chiw_catch$yrlngCatch)&screw_trap_dat$chiw$chiw_catch$DOY<=182 ))
 
 
 #scale discharge
-yrlngs_no_NA$log_scale_Dis<-(log(yrlngs_no_NA$dis)-mean.chiw.disch)/sd.chiw.disch
+yrlngs_no_NA_chiw$log_scale_Dis<-(log(yrlngs_no_NA_chiw$dis)-mean.chiw.disch)/sd.chiw.disch
 
 #add a column of the lifestage that we are estimating
-yrlngs_no_NA$lifeStage<-factor("YCW",levels = c("SBC","YCW","YCW & SBC"))
+yrlngs_no_NA_chiw$lifeStage<-factor("YCW",levels = c("SBC","YCW","YCW & SBC"))
 
 
 #*********   Guess at missing trap positions   **********
 #*********   should be estimated in model in future   ***
 tapply(screw_trap_dat$chiw$chiw_effic$disch.cfs,screw_trap_dat$chiw$chiw_effic$position2,summary)
 
-yrlngs_no_NA$Position2[yrlngs_no_NA$Position2==""& yrlngs_no_NA$Position2<=475]<-"Upper"
+yrlngs_no_NA_chiw$Position2[yrlngs_no_NA_chiw$Position2==""& yrlngs_no_NA_chiw$Position2<=475]<-"Upper"
 
-yrlngs_no_NA$Position2[yrlngs_no_NA$Position2==""]<-"Lower"
+yrlngs_no_NA_chiw$Position2[yrlngs_no_NA_chiw$Position2==""]<-"Lower"
 
 
 #scale discharge
-yrlngs_no_NA$log_scale_Dis<-(log(yrlngs_no_NA$dis)-mean.chiw.disch)/sd.chiw.disch
+yrlngs_no_NA_chiw$log_scale_Dis<-(log(yrlngs_no_NA_chiw$dis)-mean.chiw.disch)/sd.chiw.disch
 
 #add a column of the lifestage that we are estimating
-yrlngs_no_NA$lifeStage<-factor("YCW",levels = c("SBC","YCW","YCW & SBC"))
+yrlngs_no_NA_chiw$lifeStage<-factor("YCW",levels = c("SBC","YCW","YCW & SBC"))
 
 p_pred_mat<-model.matrix(~lifeStage+log_scale_Dis*Position2-1,yrlngs_no_NA)
 
 
-mod_dat<-mod_ins(p_mod_Mat=p_mod_Mat,
+chiw_yrlng_mod_dat<-mod_ins(p_mod_Mat=p_mod_Mat_chiw,
                  rel=screw_trap_dat$chiw$chiw_effic$rel,
                  rec=screw_trap_dat$chiw$chiw_effic$recap,
-                 start_day=as.numeric(min(yrlngs_no_NA$DOY)),
-                 end_day=as.numeric(max(yrlngs_no_NA$DOY)),
-                 Catch=yrlngs_no_NA$yrlngCatch,
-                 catch_dat=yrlngs_no_NA,
-                 p_pred_mat=p_pred_mat)
+                 start_day=as.numeric(min(yrlngs_no_NA_chiw$DOY)),#53
+                 end_day=as.numeric(max(yrlngs_no_NA_chiw$DOY)),#212
+                 Catch=yrlngs_no_NA_chiw$yrlngCatch,
+                 catch_dat=yrlngs_no_NA_chiw,
+                 p_pred_mat=p_pred_mat,
+                 use_NB = 1)
 
 #Settup subyearling model
-  model_Ch_yrlng <- MakeADFun(mod_dat$mod_data, mod_dat$mod_pars,  
+  model_Ch_yrlng <- MakeADFun(chiw_yrlng_mod_dat$mod_data, chiw_yrlng_mod_dat$mod_pars,  
                          random=c("log_M_hat_z"),
-                     DLL="multi_year_independant_1",silent=T)
+                     DLL="multi_year_independant_1NB_2",silent=T)
   
   model_1_fit<- nlminb(model_Ch_yrlng$par, model_Ch_yrlng$fn, model_Ch_yrlng$gr, 
                     control=list(rel.tol=1e-12,eval.max=1000000,
-                                 iter.max=10000),
-                    lower=mod_dat$lower, upper=mod_dat$upper)   
+                                 iter.max=10000),lower = chiw_yrlng_mod_dat$lower,upper=chiw_yrlng_mod_dat$upper)   
+ 
+  model_Ch_yrlng$fn()
 
 
+  model_1_fit<- nlminb(model_Ch_yrlng$env$last.par.best[1:length(model_Ch_yrlng$par)], model_Ch_yrlng$fn, model_Ch_yrlng$gr, 
+                    control=list(rel.tol=1e-12,eval.max=1000000,
+                                 iter.max=10000),lower = chiw_yrlng_mod_dat$lower,upper=chiw_yrlng_mod_dat$upper)  
 
+  model_Ch_yrlng$fn()
+  
   rep_model_Ch_yrlng<-model_Ch_yrlng$report()
   log_m_hat_model_Ch_yrlng<-rep_model_Ch_yrlng$log_M_hat
   
-rowSums(exp(log_m_hat_model_Ch_yrlng))
+colSums(exp(log_m_hat_model_Ch_yrlng))
 
-  plot(colMeans(exp(log_m_hat_model_Ch_yrlng)),type="l",ylab="",xlab="",xaxt="n")
+  plot(rowMeans(exp(log_m_hat_model_Ch_yrlng)),type="l",ylab="",xlab="",xaxt="n")
 seDa<-seq.Date(from=as.Date("2019-01-01"),to=as.Date("2019-12-31"),by=1)
 
 days<-c(91,182,274,366,(365+91))-50
@@ -282,6 +528,61 @@ axis(1,at=days,labels=labs)
 # abline(v=215,col="red")
 # abline(v=345,col="red")
 
+chiw_yrlng_SE<-sdreport(model_Ch_yrlng)
+Chiw_redds
+unique(screw_trap_dat$chiw$chiw_catch$year)
+Chiw_yrlng_spawners<-rowSums(Chiw_redds[7:28,2:3])
+chiw_yrlngs<-bootstrap_migrants(n_Draws=2000,dat=chiw_yrlng_mod_dat,SD_obj=chiw_yrlng_SE,redds=Chiw_yrlng_spawners,breaks=c(NA))
+
+chiw_yrlngs_M_hat<-chiw_yrlngs[[2]]
+chiw_yrlngs<-chiw_yrlngs[[1]]
+
+plot_M_hat<-function(M_hat_array_subs,M_hat_array_yrlngs,SL,ymax,date_labels=FALSE,main_text="",label_LH=FALSE,label_LH_cex=1,plot_dis=FALSE,dis_path,dis_ymax=120){
+  
+  
+  upper_subs<-apply(exp(M_hat_array_subs[,,3]),1,mean)/SL
+  lower_subs<-apply(exp(M_hat_array_subs[,,2]),1,mean)/SL
+  med_subs<-apply(exp(M_hat_array_subs[,,1]),1,mean)/SL
+  
+    upper_yrlngs<-apply(exp(M_hat_array_yrlngs[,,3]),1,mean)/SL
+  lower_yrlngs<-apply(exp(M_hat_array_yrlngs[,,2]),1,mean)/SL
+  med_yrlngs<-apply(exp(M_hat_array_yrlngs[,,1]),1,mean)/SL
+  
+  plot(0,type = "n",ylim=c(0,ymax),xlim=c(0,length(upper_subs)+185),xaxt="n",ylab="m",xlab="",main="")
+  title(main_text,line=.4)
+  polygon(c(1:length(upper_subs),length(upper_subs):1),y=(c(upper_subs,rev(lower_subs))),border=FALSE,col="grey")
+  points((med_subs),type="l",lwd=2)
+abline(v=c(87,214),col="red")
+
+  polygon(c(1:length(upper_yrlngs),length(upper_yrlngs):1)+365,y=(c(upper_yrlngs,rev(lower_yrlngs))),border=FALSE,col="grey")
+  points(366:(length(med_yrlngs)+365),(med_yrlngs),type="l",lwd=2)
+ days<-c(91,182,274,366,(365+91))-50
+labs<-FALSE
+if(date_labels) labs<-c("Apr","Jul","Oct","Jan","Apr")
+
+axis(1,at=days,labels=labs)
+if(label_LH)text(c("Fry","Summer parr","Fall parr", "Smolts"),x=c(61,142,265,430)-53,y=rep(70,4),cex=label_LH_cex,pos=4)
+  
+
+if(plot_dis){
+par(new=T)
+plot(1:(365-52+182),c(dis_path[53:365],dis_path[1:182])/35.3,type="l",lwd=2,col=rgb(.1,.1,.9,.75),axes=FALSE,ylab="",xlab="",ylim=c(0,dis_ymax),xlim=c(0,length(upper_subs)+185))
+axis(4)
+}
+
+}
+plot_M_hat(chiw_subs_M_hat,chiw_yrlngs_M_hat,30,75,TRUE,"Chiwawa",TRUE,1,TRUE,Chiw_mean_dist,120)
+
+
+apply(chiw_yrlngs[[1]],2,mean)
+apply(chiw_yrlngs[[1]],2,median)
+apply(chiw_yrlngs[[1]],2,sd)
+
+Chiw_yrlngs_SR<-SR_compare(chiw_yrlngs[[1]],Chiw_yrlng_spawners)
+Chiw_yrlngs_SR[[1]]$SR_Rep$R_max
+Rmax_table[4,1]<-Chiw_yrlngs_SR[[1]]$SR_Rep$R_max
+Chiw_yrlngs_SR_Sd<-fit_SR(chiw_yrlngs[[1]],Chiw_spawners,1,TRUE)
+Chiw_yrlngs_SR_Sd[[3]]
 
 ```
 
@@ -290,7 +591,6 @@ axis(1,at=days,labels=labs)
 
 ###Nason Subyearlings
 ```{r}
-
 #add scaled discharge column
 screw_trap_dat$nas$nas_effic$log.dis.scale<-scale(log(screw_trap_dat$nas$nas_effic$discharge2))
 #store mean
@@ -298,56 +598,115 @@ mean.nas.disch<-attributes(screw_trap_dat$nas$nas_effic$log.dis.scale)$`scaled:c
 #store standard deviation
 sd.nas.disch<-attributes(screw_trap_dat$nas$nas_effic$log.dis.scale)$`scaled:scale`
 #make design matrix
-p_mod_Mat<-model.matrix(~Lifestage2:log.dis.scale+moved-1,screw_trap_dat$nas$nas_effic)
+p_mod_Mat_nas<-model.matrix(~Lifestage2:log.dis.scale+moved-1,screw_trap_dat$nas$nas_effic)
 
 summary(glm(p~Lifestage2:log.dis.scale+moved-1,family="binomial",data=screw_trap_dat$nas$nas_effic,weights=number.released))
 #design matrix for observation model
 
 #make a copy of the catch data with no NA catches
 screw_trap_dat$nas$nas_catch$all_subs<-screw_trap_dat$nas$nas_catch$Sub_catch+screw_trap_dat$nas$nas_catch$Fry_catch
-subs_no_NA<-droplevels(subset(screw_trap_dat$nas$nas_catch,!is.na(screw_trap_dat$nas$nas_catch$all_subs)))
+subs_no_NA_nas<-droplevels(subset(screw_trap_dat$nas$nas_catch,!is.na(screw_trap_dat$nas$nas_catch$all_subs)))
 
 
 #add "moved: factor to trap operations data
-subs_no_NA$moved<-as.factor(ifelse(subs_no_NA$Date2<=as.Date("2014-06-30"),"0","1"))
+subs_no_NA_nas$moved<-as.factor(ifelse(subs_no_NA_nas$Date2<=as.Date("2014-06-30"),"0","1"))
 
 
 
 #scale discharge
-subs_no_NA$log_scale_Dis<-(log(subs_no_NA$Discharge2)-mean.nas.disch)/sd.nas.disch
+subs_no_NA_nas$log_scale_Dis<-(log(subs_no_NA_nas$Discharge2)-mean.nas.disch)/sd.nas.disch
 
 #add a column of the lifestage that we are estimating
-subs_no_NA$lifeStage<-factor("Subyearling",levels = unique(screw_trap_dat$nas$nas_effic$Lifestage2))
+subs_no_NA_nas$lifeStage<-factor("Subyearling",levels = unique(screw_trap_dat$nas$nas_effic$Lifestage2))
 
-p_pred_mat<-model.matrix(~lifeStage:log_scale_Dis+moved-1,subs_no_NA)
+p_pred_mat_nas<-model.matrix(~lifeStage:log_scale_Dis+moved-1,subs_no_NA_nas)
 
 
-mod_dat<-mod_ins(p_mod_Mat=p_mod_Mat,
+Nas_sub_mod_dat<-mod_ins(p_mod_Mat=p_mod_Mat_nas,
                  rel=screw_trap_dat$nas$nas_effic$number.released,
                  rec=screw_trap_dat$nas$nas_effic$number.recaptured,
-                 start_day=as.numeric(min(subs_no_NA$DOY)),
-                 end_day=as.numeric(max(subs_no_NA$DOY)),
-                 Catch=subs_no_NA$all_subs,
-                 catch_dat=subs_no_NA,
-                 p_pred_mat=p_pred_mat)
+                 start_day=53,#as.numeric(min(subs_no_NA_nas$DOY)),
+                 end_day=as.numeric(max(subs_no_NA_nas$DOY)),
+                 Catch=subs_no_NA_nas$all_subs,
+                 catch_dat=subs_no_NA_nas,
+                 p_pred_mat=p_pred_mat_nas,
+                 use_NB = 1)
 
 #Settup subyearling model
-  model_nas_subs <- MakeADFun(mod_dat$mod_data, mod_dat$mod_pars,  
+  model_nas_subs <- MakeADFun(Nas_sub_mod_dat$mod_data, Nas_sub_mod_dat$mod_pars,  
                          random=c("log_M_hat_z"),
-                     DLL="multi_year_independant_1",silent=T)
+                     DLL="multi_year_independant_1NB_2",silent=T)
   
   model_nas_subs_fit<- nlminb(model_nas_subs$par, model_nas_subs$fn, model_nas_subs$gr, 
                     control=list(rel.tol=1e-12,eval.max=1000000,
-                                 iter.max=10000),
-                    lower=mod_dat$lower, upper=mod_dat$upper)   
+                                 iter.max=10000),lower=Nas_sub_mod_dat$lower,upper=Nas_sub_mod_dat$upper)   
+  
+  
+  model_nas_subs$fn()
+    model_nas_subs_fit<- nlminb(model_nas_subs$env$last.par.best[1:65], model_nas_subs$fn, model_nas_subs$gr, 
+                    control=list(rel.tol=1e-12,eval.max=1000000,
+                                 iter.max=10000),lower=Nas_sub_mod_dat$lower,upper=Nas_sub_mod_dat$upper)  
+  model_nas_subs$fn()
 
-
-  model_nas_subs_SD<-sdreport(model_nas_subs)
-  summary(model_nas_subs_SD)
 model_nas_subs_rep<-model_nas_subs$report()
 model_nas_subs_log_m_hat<-model_nas_subs_rep$log_M_hat
-rowSums(exp(model_nas_subs_log_m_hat))
-plot(colMeans(exp(model_nas_subs_log_m_hat)),type="l")
+colSums(exp(model_nas_subs_log_m_hat))
+plot(rowMeans(exp(model_nas_subs_log_m_hat)),type="l")
+
+abline(v=87,col="red")
+ abline(v=215,col="red")
+# abline(v=345,col="red")
+ 
+  model_nas_subs_SD<-sdreport(model_nas_subs)
+ 
+unique(screw_trap_dat$nas$nas_catch$year)
+ 
+nason_redds<-read.csv(here("data","Nason and White","Nas_Escapement.csv")) 
+  
+Nason_sub_spawners<-rowSums(nason_redds[15:29,2:3])
+
+ nason_subs<-bootstrap_migrants(n_Draws=2000,dat=Nas_sub_mod_dat,SD_obj=model_nas_subs_SD,redds=Nason_sub_spawners,breaks=c(87,215))
+ 
+ nas_subs_M_hat<-nason_subs[[2]]
+ 
+nason_subs<-nason_subs[[1]]
+ 
+apply(nason_subs[[1]],2,median)
+apply(nason_subs[[1]],2,sd)
+
+nas_fry_SR<-SR_compare(nason_subs[[1]],Nason_sub_spawners)
+nas_fry_SR[[1]]$SR_Rep$R_max
+nas_fry_SR[[1]]$SR_Rep$alpha
+Rmax_table[1,2]<-nas_fry_SR[[1]]$SR_Rep$R_max
+nas_fry_SR_SD<-fit_SR(nason_subs[[1]],Nason_sub_spawners,1,TRUE)
+nas_fry_SR_SD[[3]]
+exp( 8.1840682)
+exp( 8.1840682-1.96*4.914700e-01)
+exp( 8.1840682+1.96*4.914700e-01)
+
+nas_sum_SR<-SR_compare(nason_subs[[2]],Nason_sub_spawners)
+nas_sum_SR[[1]]$SR_Rep$R_max
+nas_sum_SR[[1]]$SR_Rep$alpha
+Rmax_table[2,2]<-nas_sum_SR[[1]]$SR_Rep$R_max
+nas_sum_SR_SD<-fit_SR(nason_subs[[2]],Nason_sub_spawners,1,TRUE)
+nas_sum_SR_SD[[3]]
+exp( 10.0032963)
+exp( 10.0032963 -1.96* 1.27952846)
+exp( 10.0032963 +1.96*  1.27952846)
+
+
+
+nas_fall_SR<-SR_compare(nason_subs[[3]],Nason_sub_spawners)
+nas_fall_SR[[1]]$SR_Rep$R_max
+nas_fall_SR[[1]]$SR_Rep$alpha
+Rmax_table[3,2]<-nas_fall_SR[[1]]$SR_Rep$R_max
+
+nas_fall_SR_SD<-fit_SR(nason_subs[[3]],Nason_sub_spawners,1,TRUE)
+nas_fall_SR_SD[[3]]
+exp( 10.0008633)
+exp( 10.0008633 -1.96* 0.82137119)
+exp( 10.0008633 +1.96*  0.82137119)
+
 
 ```
 
@@ -356,49 +715,88 @@ plot(colMeans(exp(model_nas_subs_log_m_hat)),type="l")
 ```{r}
 
 #make a copy of the catch data with no NA catches
-yrlngs_no_NA<-droplevels(subset(screw_trap_dat$nas$nas_catch,!is.na(screw_trap_dat$nas$nas_catch$Yrlng_catch)&screw_trap_dat$nas$nas_catch$DOY<=212))
+yrlngs_no_NA_nas<-droplevels(subset(screw_trap_dat$nas$nas_catch,!is.na(screw_trap_dat$nas$nas_catch$Yrlng_catch)&screw_trap_dat$nas$nas_catch$DOY<=182))
 
 
 #add "moved: factor to trap operations data
-yrlngs_no_NA$moved<-as.factor(ifelse(yrlngs_no_NA$Date2<=as.Date("2014-06-30"),"0","1"))
+yrlngs_no_NA_nas$moved<-as.factor(ifelse(yrlngs_no_NA_nas$Date2<=as.Date("2014-06-30"),"0","1"))
 
 
 
 #scale discharge
-yrlngs_no_NA$log_scale_Dis<-(log(yrlngs_no_NA$Discharge2)-mean.nas.disch)/sd.nas.disch
+yrlngs_no_NA_nas$log_scale_Dis<-(log(yrlngs_no_NA_nas$Discharge2)-mean.nas.disch)/sd.nas.disch
 
 #add a column of the lifestage that we are estimating
-yrlngs_no_NA$lifeStage<-factor("Yearling",levels = unique(screw_trap_dat$nas$nas_effic$Lifestage2))
+yrlngs_no_NA_nas$lifeStage<-factor("Yearling",levels = unique(screw_trap_dat$nas$nas_effic$Lifestage2))
 
-p_pred_mat<-model.matrix(~lifeStage:log_scale_Dis+moved-1,yrlngs_no_NA)
+p_pred_mat_nas<-model.matrix(~lifeStage:log_scale_Dis+moved-1,yrlngs_no_NA_nas)
 
 
-mod_dat<-mod_ins(p_mod_Mat=p_mod_Mat,
+Nas_yrlng_mod_dat<-mod_ins(p_mod_Mat=p_mod_Mat_nas,
                  rel=screw_trap_dat$nas$nas_effic$number.released,
                  rec=screw_trap_dat$nas$nas_effic$number.recaptured,
-                 start_day=as.numeric(min(yrlngs_no_NA$DOY)),
-                 end_day=as.numeric(max(yrlngs_no_NA$DOY)),
-                 Catch=yrlngs_no_NA$Yrlng_catch,
-                 catch_dat=yrlngs_no_NA,
-                 p_pred_mat=p_pred_mat)
+                 start_day=53,
+                 end_day=as.numeric(max(yrlngs_no_NA_nas$DOY)),
+                 Catch=yrlngs_no_NA_nas$Yrlng_catch,
+                 catch_dat=yrlngs_no_NA_nas,
+                 p_pred_mat=p_pred_mat_nas,
+                 use_NB = 1)
 
 #Settup subyearling model
-  model_nas_yrlngs <- MakeADFun(mod_dat$mod_data, mod_dat$mod_pars,  
+  model_nas_yrlngs <- MakeADFun(Nas_yrlng_mod_dat$mod_data, Nas_yrlng_mod_dat$mod_pars,  
                          random=c("log_M_hat_z"),
-                     DLL="multi_year_independant_1",silent=T)
+                     DLL="multi_year_independant_1NB_2",silent=T)
   
   model_nas_yrlngs_fit<- nlminb(model_nas_yrlngs$par, model_nas_yrlngs$fn, model_nas_yrlngs$gr, 
                     control=list(rel.tol=1e-12,eval.max=1000000,
-                                 iter.max=10000),
-                    lower=mod_dat$lower, upper=mod_dat$upper)   
+                                 iter.max=10000),lower =Nas_yrlng_mod_dat$lower,upper=Nas_yrlng_mod_dat$upper )   
 
+model_nas_yrlngs$fn()
 
-  model_nas_yrlngs_SD<-sdreport(model_nas_yrlngs)
-  
 model_nas_yrlngs_rep<-model_nas_yrlngs$report()
 model_nas_yrlngs_log_m_hat<-model_nas_yrlngs_rep$log_M_hat
-rowSums(exp(model_nas_yrlngs_log_m_hat))
-plot(colMeans(exp(model_nas_yrlngs_log_m_hat)),type="l")
+colSums(exp(model_nas_yrlngs_log_m_hat))
+plot(rowMeans(exp(model_nas_yrlngs_log_m_hat)),type="l")
+
+
+model_nas_yrlngs_SD<-sdreport(model_nas_yrlngs)
+
+unique(screw_trap_dat$nas$nas_catch$year)
+ 
+nason_redds
+  
+Nason_yrlngs_spawners<-rowSums(nason_redds[14:28,2:3])
+
+ nason_yrlngs<-bootstrap_migrants(n_Draws=2000,dat=Nas_yrlng_mod_dat,SD_obj=model_nas_yrlngs_SD,redds=Nason_yrlngs_spawners,breaks=c(NA))
+
+
+ nas_yrlngs_M_hat<-nason_yrlngs[[2]]
+ 
+ nason_yrlngs<-nason_yrlngs[[1]]
+ 
+ plot_M_hat(nas_subs_M_hat[,c(-3),],nas_yrlngs_M_hat[,-3,])
+ 
+ 
+apply(nason_yrlngs[[1]],2,mean)
+apply(nason_yrlngs[[1]],2,median)
+apply(nason_yrlngs[[1]],2,sd)
+
+nas_yrlng_SR<-SR_compare(nason_yrlngs[[1]],Nason_yrlngs_spawners)
+
+plot(nas_yrlng_SR[[1]]$SR_Rep$S_hat,nas_yrlng_SR[[1]]$SR_Rep$R_hat,ylim=c(0,2e4))
+points(nas_yrlng_SR[[1]]$SR_Rep$S_hat,nas_yrlng_SR[[1]]$SR_Rep$R_pred,col="blue")
+
+nas_yrlng_SR[[1]]$SR_Rep$R_max
+nas_yrlng_SR[[1]]$SR_Rep$alpha
+Rmax_table[4,2]<-nas_yrlng_SR[[1]]$SR_Rep$R_max
+
+nas_smolt_SR_SD<-fit_SR(nason_yrlngs[[1]],Nason_yrlngs_spawners,1,TRUE)
+nas_smolt_SR_SD[[3]]
+exp( 8.6435646)
+exp( 8.6435646 -1.96* 0.99613438)
+exp( 8.6435646 +1.96*  0.99613438)
+
+
 
 ```
 
@@ -413,52 +811,103 @@ mean.whi.disch<-attributes(screw_trap_dat$whi$nhi_effic$log.dis.scale)$`scaled:c
 #store standard deviation
 sd.whi.disch<-attributes(screw_trap_dat$whi$nhi_effic$log.dis.scale)$`scaled:scale`
 #make design matrix
-p_mod_Mat<-model.matrix(~Lifestage2*log.dis.scale-1,screw_trap_dat$whi$nhi_effic)
+p_mod_Mat_whi<-model.matrix(~Lifestage2*log.dis.scale-1,screw_trap_dat$whi$nhi_effic)
 
 summary(glm(p~Lifestage2*log.dis.scale-1,family="binomial",data=screw_trap_dat$whi$nhi_effic,weights=number.released))
 #design matrix for observation model
 
 #make a copy of the catch data with no NA catches
 screw_trap_dat$whi$whi_catch$all_subs<-screw_trap_dat$whi$whi_catch$Sub_catch+screw_trap_dat$whi$whi_catch$Fry_catch
-subs_no_NA<-droplevels(subset(screw_trap_dat$whi$whi_catch,!is.na(screw_trap_dat$whi$whi_catch$all_subs)))
+subs_no_NA_whi<-droplevels(subset(screw_trap_dat$whi$whi_catch,!is.na(screw_trap_dat$whi$whi_catch$all_subs)))
 
 
 
 #scale discharge
-subs_no_NA$log_scale_Dis<-(log(subs_no_NA$Discharge2)-mean.whi.disch)/sd.whi.disch
+subs_no_NA_whi$log_scale_Dis<-(log(subs_no_NA_whi$Discharge2)-mean.whi.disch)/sd.whi.disch
 
 #add a column of the lifestage that we are estimating
-subs_no_NA$lifeStage<-factor("Subyearling",levels = unique(screw_trap_dat$whi$nhi_effic$Lifestage2))
+subs_no_NA_whi$lifeStage<-factor("Subyearling",levels = unique(screw_trap_dat$whi$nhi_effic$Lifestage2))
 
-p_pred_mat<-model.matrix(~lifeStage*log_scale_Dis-1,subs_no_NA)
+p_pred_mat_whi<-model.matrix(~lifeStage*log_scale_Dis-1,subs_no_NA_whi)
 
 
-mod_dat<-mod_ins(p_mod_Mat=p_mod_Mat,
+white_subs_mod_dat<-mod_ins(p_mod_Mat=p_mod_Mat_whi,
                  rel=screw_trap_dat$whi$nhi_effic$number.released,
                  rec=screw_trap_dat$whi$nhi_effic$number.recaptured,
-                 start_day=as.numeric(min(subs_no_NA$DOY)),
-                 end_day=as.numeric(max(subs_no_NA$DOY)),
-                 Catch=subs_no_NA$all_subs,
-                 catch_dat=subs_no_NA,
-                 p_pred_mat=p_pred_mat)
+                 start_day=53,
+                 end_day=as.numeric(max(subs_no_NA_whi$DOY)),
+                 Catch=subs_no_NA_whi$all_subs,
+                 catch_dat=subs_no_NA_whi,
+                 p_pred_mat=p_pred_mat_whi,
+                 use_NB = 1)
 
 #Settup subyearling model
-  model_whi_subs <- MakeADFun(mod_dat$mod_data, mod_dat$mod_pars,  
+  model_whi_subs <- MakeADFun(white_subs_mod_dat$mod_data, white_subs_mod_dat$mod_pars,  
                          random=c("log_M_hat_z"),
-                     DLL="multi_year_independant_1",silent=T)
+                     DLL="multi_year_independant_1NB_2",silent=T)
   
   model_whi_subs_fit<- nlminb(model_whi_subs$par, model_whi_subs$fn, model_whi_subs$gr, 
                     control=list(rel.tol=1e-12,eval.max=1000000,
-                                 iter.max=10000),
-                    lower=mod_dat$lower, upper=mod_dat$upper)   
+                                 iter.max=10000),lower=white_subs_mod_dat$lower,upper=white_subs_mod_dat$upper)   
 
-
+model_whi_subs$fn()
   #model_nas_subs_SD<-sdreport(model_nas_subs)
   #summary(model_nas_subs_SD)
 model_whi_subs_rep<-model_whi_subs$report()
 model_whi_subs_log_m_hat<-model_whi_subs_rep$log_M_hat
-rowSums(exp(model_whi_subs_log_m_hat))
-plot(colMeans(exp(model_whi_subs_log_m_hat)),type="l")
+colSums(exp(model_whi_subs_log_m_hat))
+plot(rowMeans(exp(model_whi_subs_log_m_hat)),type="l")
+
+whi_subs_sd<-sdreport(model_whi_subs)
+
+white_spawners_dat<-read.csv(here("data","Nason and White","White_Escapement.csv"))
+
+unique(screw_trap_dat$whi$whi_catch$year)
+range(as.numeric(screw_trap_dat$whi$whi_catch$year))
+
+white_spawners<-rowSums(white_spawners_dat[18:29,2:3],na.rm = T)
+
+whi_subs<-bootstrap_migrants(n_Draws=2000,dat=white_subs_mod_dat,SD_obj=whi_subs_sd,redds=white_spawners,breaks=c(87,215))
+
+whi_subs_M_hat<-whi_subs[[2]]
+
+whi_subs<-whi_subs[[1]]
+
+whi_fry_SR<-SR_compare(whi_subs[[1]],white_spawners)
+whi_fry_SR[[2]]$SR_Rep$R_max
+Rmax_table[1,3]<-whi_fry_SR[[2]]$SR_Rep$R_max
+
+whi_fry_SR_SD<-fit_SR(whi_subs[[1]],white_spawners,2,TRUE)
+nas_smolt_SR_SD[[3]]
+exp( 8.6435646)
+exp( 8.6435646 -1.96* 0.99613438)
+exp( 8.6435646 +1.96*  0.99613438)
+
+
+
+whi_sum_SR<-SR_compare(whi_subs[[2]],white_spawners)
+whi_sum_SR[[2]]$SR_Rep$R_max
+Rmax_table[2,3]<-whi_sum_SR[[2]]$SR_Rep$R_max
+
+whi_sum_SR_SD<-fit_SR(whi_subs[[2]],white_spawners,2,TRUE)
+whi_sum_SR_SD[[3]]
+exp( 9.9430746)
+exp( 9.9430746 -1.96* 0.49461650)
+exp( 9.9430746 +1.96*  0.49461650)
+
+
+
+
+whi_fal_SR<-SR_compare(whi_subs[[3]],white_spawners)
+whi_fal_SR[[1]]$SR_Rep$R_max
+Rmax_table[3,3]<-whi_fal_SR[[1]]$SR_Rep$R_max
+
+whi_fal_SR_SD<-fit_SR(whi_subs[[3]],white_spawners,1,TRUE)
+whi_fal_SR_SD[[3]]
+exp( 10.3407838)
+exp( 10.3407838 -1.96* 0.87616073)
+exp( 10.3407838 +1.96*  0.87616073)
+
 ```
 
 ###White River Yearlings
@@ -466,46 +915,85 @@ plot(colMeans(exp(model_whi_subs_log_m_hat)),type="l")
 
 #make a copy of the catch data with no NA catches
 
-yrlngs_no_NA<-droplevels(subset(screw_trap_dat$whi$whi_catch,!is.na(screw_trap_dat$whi$whi_catch$Yrlng_catch)&screw_trap_dat$whi$whi_catch$DOY<=212))
+yrlngs_no_NA_whi<-droplevels(subset(screw_trap_dat$whi$whi_catch,!is.na(screw_trap_dat$whi$whi_catch$Yrlng_catch)&screw_trap_dat$whi$whi_catch$DOY<=182))
 
 
 
 #scale discharge
-yrlngs_no_NA$log_scale_Dis<-(log(yrlngs_no_NA$Discharge2)-mean.whi.disch)/sd.whi.disch
+yrlngs_no_NA_whi$log_scale_Dis<-(log(yrlngs_no_NA_whi$Discharge2)-mean.whi.disch)/sd.whi.disch
 
 #add a column of the lifestage that we are estimating
-yrlngs_no_NA$lifeStage<-factor("Yearling",levels = unique(screw_trap_dat$whi$nhi_effic$Lifestage2))
+yrlngs_no_NA_whi$lifeStage<-factor("Yearling",levels = unique(screw_trap_dat$whi$nhi_effic$Lifestage2))
 
-p_pred_mat<-model.matrix(~lifeStage*log_scale_Dis-1,yrlngs_no_NA)
+p_pred_mat_whi<-model.matrix(~lifeStage*log_scale_Dis-1,yrlngs_no_NA_whi)
 
 
-mod_dat<-mod_ins(p_mod_Mat=p_mod_Mat,
+whi_yrlng_mod_dat<-mod_ins(p_mod_Mat=p_mod_Mat_whi,
                  rel=screw_trap_dat$whi$nhi_effic$number.released,
                  rec=screw_trap_dat$whi$nhi_effic$number.recaptured,
-                 start_day=as.numeric(min(yrlngs_no_NA$DOY)),
-                 end_day=as.numeric(max(yrlngs_no_NA$DOY)),
-                 Catch=yrlngs_no_NA$Yrlng_catch,
-                 catch_dat=yrlngs_no_NA,
-                 p_pred_mat=p_pred_mat)
+                 start_day=53,
+                 end_day=as.numeric(max(yrlngs_no_NA_whi$DOY)),
+                 Catch=yrlngs_no_NA_whi$Yrlng_catch,
+                 catch_dat=yrlngs_no_NA_whi,
+                 p_pred_mat=p_pred_mat_whi,
+                 use_NB = 1)
 
 #Settup subyearling model
-  model_whi_yrlng <- MakeADFun(mod_dat$mod_data, mod_dat$mod_pars,  
+  model_whi_yrlng <- MakeADFun(whi_yrlng_mod_dat$mod_data, whi_yrlng_mod_dat$mod_pars,  
                          random=c("log_M_hat_z"),
-                     DLL="multi_year_independant_1",silent=T)
+                     DLL="multi_year_independant_1NB_2",silent=T)
   
   model_whi_yrlng_fit<- nlminb(model_whi_yrlng$par, model_whi_yrlng$fn, model_whi_yrlng$gr, 
                     control=list(rel.tol=1e-12,eval.max=1000000,
-                                 iter.max=10000),
-                    lower=mod_dat$lower, upper=mod_dat$upper)   
+                                 iter.max=10000),lower=whi_yrlng_mod_dat$lower,upper=whi_yrlng_mod_dat$upper)   
 
-
+model_whi_yrlng$fn()
   #model_nas_subs_SD<-sdreport(model_nas_subs)
   #summary(model_nas_subs_SD)
 model_whi_yrlng_rep<-model_whi_yrlng$report()
 model_whi_yrlng_log_m_hat<-model_whi_yrlng_rep$log_M_hat
-rowSums(exp(model_whi_yrlng_log_m_hat))
-plot(colMeans(exp(model_whi_yrlng_log_m_hat)),type="l")
+colSums(exp(model_whi_yrlng_log_m_hat))
+plot(rowMeans(exp(model_whi_yrlng_log_m_hat)),type="l")
 
+model_whi_yrlngs_SD<-sdreport(model_whi_yrlng)
+
+white_yrlng_spawners<-rowSums(white_spawners_dat[17:28,2:3],na.rm = T)
+
+ white_yrlngs<-bootstrap_migrants(n_Draws=2000,dat=whi_yrlng_mod_dat,SD_obj=model_whi_yrlngs_SD,redds=white_yrlng_spawners,breaks=c(NA))
+
+
+whi_yrlngs_M_hat<-white_yrlngs[[2]]
+
+whi_yrlngs<-white_yrlngs[[1]] 
+ 
+plot_M_hat(whi_subs_M_hat,whi_yrlngs_M_hat) 
+png("seasonal_M_hat_dis.png",units="in",height=4,width=4.5,res=300)
+par(mfrow=c(3,1),mar=c(1,3,2,3),oma=c(2,2,1,2))
+plot_M_hat(chiw_subs_M_hat,chiw_yrlngs_M_hat,32.5,75,FALSE,"Chiwawa River",TRUE,plot_dis = TRUE,dis_path = Chiw_mean_dist,dis_ymax=120) 
+plot_M_hat(nas_subs_M_hat[,-3,],nas_yrlngs_M_hat[,-3,],15.4,75,FALSE,"Nason Creek",plot_dis = TRUE,dis_path = Nason_mean_dist,dis_ymax=120) 
+plot_M_hat(whi_subs_M_hat,whi_yrlngs_M_hat,16.1,75,TRUE,"White River",plot_dis = TRUE,dis_path = White_mean_dist,dis_ymax=120) 
+mtext("Emigrants/ km",2,outer=TRUE)
+mtext(expression("Discharge m"^3) ,4,outer=TRUE)
+dev.off()
+
+par(mfrow=c(1,1))
+
+apply(white_yrlngs[[1]],2,median)
+apply(white_yrlngs[[1]],2,median)
+apply(white_yrlngs[[1]],2,sd)
+
+whi_yrlng_SR<-SR_compare(white_yrlngs[[1]],white_yrlng_spawners)
+
+whi_yrlng_SR[[1]]$SR_Rep$R_max
+whi_yrlng_SR[[1]]$SR_Rep$alpha
+Rmax_table[4,3]<-whi_yrlng_SR[[1]]$SR_Rep$R_max
+
+
+whi_yrlng_SR_SD<-fit_SR(white_yrlngs[[1]],white_yrlng_spawners,1,TRUE)
+whi_yrlng_SR_SD[[3]]
+exp( 8.46882557)
+exp( 8.46882557 -1.96* 2.727062e-01)
+exp( 8.46882557 +1.96*  2.727062e-01)
 ```
 
 
@@ -516,6 +1004,33 @@ source(here("src","Discharge data funcs.R"))
 
 
 Chiw_discharge<-Chiw_discharge_func()
+
+Chiw_discharge_sub<-subset(Chiw_discharge,Year>=1997&Year<=2018)
+Chiw_mean_dist<-(tapply(Chiw_discharge_sub$X_00060_00003, as.numeric(Chiw_discharge_sub$doy), mean))
+par(new=T)
+plot(tapply(Chiw_discharge_sub$X_00060_00003, as.numeric(Chiw_discharge_sub$doy), mean),type="l",lwd=2,col=rgb(.1,.1,.9,.75),axes=FALSE,ylab="",xlab="")
+
+plot(tapp)
+Nas_White_discharge<-Nason_White_Discharge_Func()
+
+Nason_discharge_sub<-Nas_White_discharge$Nason_Dis[-1,]
+Nason_discharge_sub$date2<-as.Date(Nason_discharge_sub$date,format="%m/%d/%Y")
+Nason_discharge_sub$year<-format(Nason_discharge_sub$date2,"%Y")
+Nason_discharge_sub$doy<-format(Nason_discharge_sub$date2,"%j")
+Nason_discharge_sub<-subset(Nason_discharge_sub,year>=2004&year<=2018)
+Nason_mean_dist<-(tapply(as.numeric(Nason_discharge_sub$discharge), as.numeric(Nason_discharge_sub$doy), mean))
+
+White_discharge_sub<-Nas_White_discharge$White_Dis[-1,]
+White_discharge_sub$date2<-as.Date(White_discharge_sub$date,format="%m/%d/%Y")
+White_discharge_sub$year<-format(White_discharge_sub$date2,"%Y")
+White_discharge_sub$doy<-format(White_discharge_sub$date2,"%j")
+White_discharge_sub<-subset(White_discharge_sub,year>=2007&year<=2018)
+White_mean_dist<-(tapply(as.numeric(White_discharge_sub$discharge), as.numeric(White_discharge_sub$doy), mean,na.rm=T))
+
+head(White_discharge_sub)
+
+
+
 
 dev.new(width = 10, height = 10)
 pdf(file="test.pdf")
