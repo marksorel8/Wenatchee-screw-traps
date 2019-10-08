@@ -30,7 +30,7 @@ parameters {
   real<lower=-1,upper=1> phi_M;      // AR(1) coefficient for log-mean daily outmigrants
   real<lower=0> sigma_M;             // AR(1) process error SD for log-mean daily outmigrants
   vector[max_day] log_M_hat_z;       // log-means of daily outmigrants (z-scores)
-  real<lower=0> beta_NB;             //scale paramater for the Negative Binomial observation model for catch. 
+  real<lower=0,upper=1> p_NB;        //scale paramater for the Negative Binomial observation model for catch. 
   }
 
 transformed parameters {
@@ -40,7 +40,7 @@ transformed parameters {
   vector<lower=0>[max_day] M_hat;        // means of daily outmigrants
   vector<lower=0>[N_trap] M_hat_cumsum;  // daily means summed over days that trap is fishing
   vector[N_trap] C_hat;                  // expected catches
- 
+  real beta_NB = (1 - p_NB)/p_NB;           //
   
   // Hierarchical noncentering for weekly capture probability
   // (aka "Matt trick"; see Stan 2.17.0 manual Ch. 28.6)
@@ -62,6 +62,7 @@ transformed parameters {
 }
 
 model {
+  
   //----------------
   // Priors
   //----------------
@@ -70,14 +71,14 @@ model {
   // implies mean(p) ~ Unif(0,1) given all covariates are at their sample means
   target += log_inv_logit(beta_p[1]) + log1m_inv_logit(beta_p[1]);
   if(NX_p > 1)
-    beta_p[2:NX_p] ~ normal(0,5);
+  beta_p[2:NX_p] ~ normal(0,5);
   sigma_p ~ normal(0,5);        // implicitly truncated to [0,Inf)
   logit_p_z ~ normal(0,1);      // implies logit(p) ~ N(logit(mu_p), sigma_p)
   beta_M ~ normal(0,5); 
   // phi_M ~ uniform(-1,1) implicit
   sigma_M ~ normal(0,10);       // implicitly truncated to [0,Inf)
   log_M_hat_z ~ normal(0,1);    // implies log(M_hat[t]) ~ AR1(mu_M, phi_M, sigma_M)
-  beta_NB ~ normal(0,1);
+
   //----------------
   // Likelihood
   //----------------
