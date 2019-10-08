@@ -11,7 +11,6 @@ data {
   int<lower=1> NX_M;                  // number of covariates for daily outmigrants
   matrix[max(trap_day),NX_M] X_M;     // design matrix of outmigrant covariates (first column is 1)
   int<lower=0> C[N_trap];             // daily trap catch observations
-  int<lower=1> elapsed_time[N_trap];  // time (days) of sampling for each trap catch obs
 }
 
 transformed data {
@@ -30,6 +29,7 @@ parameters {
   real<lower=-1,upper=1> phi_M;      // AR(1) coefficient for log-mean daily outmigrants
   real<lower=0> sigma_M;             // AR(1) process error SD for log-mean daily outmigrants
   vector[max_day] log_M_hat_z;       // log-means of daily outmigrants (z-scores)
+  real<lower=0> inv_sqrt_phi_obs;     // inverse square root dispersion paramater for the Negative Binomial observation model for catch. 
 }
 
 transformed parameters {
@@ -37,8 +37,10 @@ transformed parameters {
   vector[max_day] mu_M;                  // intercept of AR(1) process for log-mean daily outmigrants
   vector[max_day] log_M_hat;             // log-means of daily outmigrants
   vector<lower=0>[max_day] M_hat;        // means of daily outmigrants
-  vector[N_trap] C_hat;                  // expected catches
-  vector<lower=0>[N_trap] M_hat_cumsum;  // daily means summed over days that trap is fishing
+  vector<lower=0>[N_trap] M_hat_dat;       // daily means on days that trap is fishing
+vector[N_trap] C_hat;                  // expected catches
+  real<lower=0> phi_obs;         // dispersion paramater for the Negative Binomial observation model for catch. 
+  phi_obs= (1/inv_sqrt_phi_obs)^2;
 
   
   // Hierarchical noncentering for weekly capture probability
@@ -54,10 +56,11 @@ transformed parameters {
   M_hat = exp(log_M_hat);
   
   // Expected catches
-  // Note that the Poisson distribution is closed under addition
   for(i in 1:N_trap)
-    M_hat_cumsum[i] = sum(M_hat[(trap_day[i] - elapsed_time[i] + 1):trap_day[i]]);
-  C_hat = M_hat_cumsum .* p[trap_week];
+    M_hat_dat[i] = M_hat[trap_day[i]];
+
+  C_hat = M_hat_dat .* p[trap_week];
+
 }
 
 model {
@@ -76,8 +79,8 @@ model {
   // phi_M ~ uniform(-1,1) implicit
   sigma_M ~ normal(0,10);       // implicitly truncated to [0,Inf)
   log_M_hat_z ~ normal(0,1);    // implies log(M_hat[t]) ~ AR1(mu_M, phi_M, sigma_M)
-  
-   //----------------
+   inv_sqrt_phi_obs ~ normal(0,1);
+  //----------------
   // Likelihood
   //----------------
   
@@ -85,9 +88,7 @@ model {
   recap ~ binomial(mark, p[MR_week]); 
   
   // Trap catch observations
-
-  // Note that a Poisson RV thinned by binomial sampling is Poisson
- C ~ poisson(C_hat);
+   C ~ neg_binomial_2(C_hat,phi_obs);
 }
 
 generated quantities {
@@ -95,8 +96,8 @@ generated quantities {
   int M_tot;       // total outmigrants
 
  for(t in 1:max_day){
-
-   M[t] = poisson_log_rng(log_M_hat[t]);
+   M[t] = neg_binomial_2_rng(M_hat[t],phi_obs);
+   
  }
 
   M_tot = sum(M);
