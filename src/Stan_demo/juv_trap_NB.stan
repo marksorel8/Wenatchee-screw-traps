@@ -95,13 +95,23 @@ generated quantities {
   
   int M[max_day];  // daily outmigrants
   int M_tot;       // total outmigrants
+  vector[N_MR] LL_MR;  //pointwise log-likelihood values for Mark Recapture data
+  vector[N_trap] LL_trap; // pointwise log-likelood values for trap catch data
 
  for(t in 1:max_day){
-
 
    M[t] = neg_binomial_rng(M_hat[t]*beta_NB,beta_NB);
 
  }
 
   M_tot = sum(M);
+
+
+  for(i in 1:N_MR) {
+    LL_MR[i] = binomial_lpmf( recap[i] | mark[i], p[MR_week[i]]); // evaluate mark-recap log-likelihood for obs i
+  }
+
+  for(i in 1:N_trap) {
+    LL_trap[i] = neg_binomial_lpmf(C[i] | C_hat[i]*beta_NB,beta_NB); // evaluate catch log-likelihood for obs i
+  }
 }

@@ -74,9 +74,7 @@ stan_dat <- list(N_MR = nrow(MR),
                  NX_M = ncol(X_M),
                  X_M = X_M,
                  C = trap_catch$catch,
-                 elapsed_time = round(trap_catch$elapsed_time),
-                 Use_NB=1) #Flag to use Negative Binomial (1) or Poisson (0)
-
+                 elapsed_time = round(trap_catch$elapsed_time)) #Flag to use Negative Binomial (1) or Poisson (0)
 # Stan data for multi-year model
 trap_catch_my <- na.omit(trap_catch_all[is.element(trap_catch_all$brood_year, MR_all$brood_year),])
 trap_catch_my <- trap_catch_my[trap_catch_my$elapsed_time != 0,]
@@ -122,7 +120,8 @@ stan_init <- function(data, chains)
                 beta_M = array(rnorm(NX_M, c(log(20), rep(0, NX_M - 1)), 0.5), dim = NX_M),
                 phi_M = runif(1,0,0.9),
                 sigma_M = runif(1,0.5,2),
-                phi_obs=array(runif(stan_dat$Use_NB,.2,2000)))))
+                p_NB=runif(1,.25,.75)
+               )))
        })
 }
 
@@ -133,14 +132,50 @@ juv_trap_fit <- stan(file = here("src","Stan_demo","juv_trap.stan"),
                      init = stan_init(stan_dat,3), 
                      pars = c("beta_M","phi_M","sigma_M",
                               "beta_p","sigma_p","p",
-                              "M_hat","M","M_tot","C_hat","phi_obs"),
+                              "M_hat","M","M_tot","C_hat","LL_MR","LL_trap"),
                      chains = 3, iter = 1500, warmup = 500, thin = 1, cores = 3,
                      control = list(adapt_delta = 0.99, max_treedepth = 13))
+
+
+print(juv_trap_fit, pars = c("phi_M","sigma_M",
+                             "beta_p","sigma_p"
+                             ,"M_tot"), include = T, probs = c(0.05,0.5,0.95))
+
+
+LL <- as.array(juv_trap_fit, pars = c("LL_MR","LL_trap"))
+r_eff <- loo::relative_eff(exp(LL))
+loo1 <- loo::loo.array(LL, r_eff = r_eff)
+print(loo1)
+
+
+
+juv_trap_fit_NB <- stan(file = here("src","Stan_demo","juv_trap_NB.stan"),
+                     data = stan_dat, 
+                     init = stan_init(stan_dat,3), 
+                     pars = c("beta_M","phi_M","sigma_M",
+                              "beta_p","sigma_p","p",
+                              "M_hat","M","M_tot","p_NB","C_hat","LL_MR","LL_trap"),
+                     chains = 3, iter = 1500, warmup = 500, thin = 1, cores = 3,
+                     control = list(adapt_delta = 0.99, max_treedepth = 13))
+
+print(juv_trap_fit_NB, pars = c("phi_M","sigma_M",
+                             "beta_p","sigma_p"
+                             ,"M_tot","p_NB"), include = T, probs = c(0.05,0.5,0.95))
+
+
+LL_NB <- as.array(juv_trap_fit_NB, pars = c("LL_MR","LL_trap"))
+r_eff_NB <- loo::relative_eff(exp(LL_NB))
+loo_NB <- loo::loo.array(LL_NB, r_eff = r_eff_NB)
+print(loo_NB)
+
+loo::compare(loo1,loo_NB)
+
+
 
 # Print fitted model
 print(juv_trap_fit, pars = c("phi_M","sigma_M",
                              "beta_p","sigma_p"
-                             ,"M_tot","phi_obs"), include = T, probs = c(0.05,0.5,0.95))
+                             ,"M_tot"), include = T, probs = c(0.05,0.5,0.95))
 
 # Check it out in Shinystan
 launch_shinystan(juv_trap_fit)
@@ -180,17 +215,17 @@ stan_init_my <- function(data, chains)
 }
 
 # Call Stan to fit model
-juv_trap_my_fit <- stan(file = here("src","Stan_demo","juv_trap_multiyear.stan"),
+juv_trap_my_fit2 <- stan(file = here("src","Stan_demo","juv_trap_multiyear_independent.stan"),
                         data = stan_dat_my, 
                         init = stan_init_my(stan_dat_my,3), 
-                        pars = c("mu_M","phi_M","sigma_M","Q_M",
+                        pars = c("mu_M","phi_M","sigma_M",
                                  "beta_p","sigma_p_year","sigma_p_week","p",
                                  "M_hat","M","M_tot","C_hat"),
-                        chains = 3, iter = 1500, warmup = 500, thin = 1, cores = 3,
+                        chains = 3, iter = 150, warmup = 50, thin = 1, cores = 3,
                         control = list(adapt_delta = 0.99, max_treedepth = 13))
 
 # Print fitted model
-print(juv_trap_my_fit, pars = c("M_hat","M","p","C_hat","Q_M"), include = F, probs = c(0.05,0.5,0.95))
+print(juv_trap_my_fit2, pars = c("M_hat","M","p","C_hat","Q_M"), include = F, probs = c(0.05,0.5,0.95))
 
 # Check it out in Shinystan
 launch_shinystan(juv_trap_my_fit)
