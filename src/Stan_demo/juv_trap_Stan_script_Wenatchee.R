@@ -176,7 +176,7 @@ juv_trap_fit <- stan(file = here::here("src","Stan_demo","juv_trap.stan"),
                                 "beta_p","sigma_p","p",
                                 "M_hat","M","M_tot","C_hat","LL_MR","LL_trap"),
                        chains = 3, iter = 4000, warmup = 500, thin = 1, cores = 3,
-                       control = list(adapt_delta = 0.99, max_treedepth = 13))
+                       control = list(adapt_delta = 0.99, max_treedepth = 13),seed =2004351991)
 
 
 print(juv_trap_fit, pars = c("phi_M","sigma_M",
@@ -185,6 +185,7 @@ print(juv_trap_fit, pars = c("phi_M","sigma_M",
 
 
 #Negative Binomial (1) observation model
+
 juv_trap_fit_2 <- stan(file = here::here("src","Stan_demo","juv_trap_NB.stan"),
                      data = stan_dat, 
                      init = stan_init(stan_dat,3), 
@@ -192,7 +193,7 @@ juv_trap_fit_2 <- stan(file = here::here("src","Stan_demo","juv_trap_NB.stan"),
                               "beta_p","sigma_p","p",
                               "M_hat","M","M_tot","C_hat","p_NB","LL_MR","LL_trap"),
                      chains = 3, iter = 4000, warmup = 500, thin = 1, cores = 3,
-                     control = list(adapt_delta = 0.99, max_treedepth = 13))
+                     control = list(adapt_delta = 0.99, max_treedepth = 13),seed =2004351991)
 
 
 
@@ -210,14 +211,35 @@ juv_trap_fit_3 <- stan(file = here::here("src","Stan_demo","juv_trap_NB2.stan"),
                                 "beta_p","sigma_p","p",
                                 "M_hat","M","M_tot","C_hat","inv_sqrt_phi_obs","LL_MR","LL_trap"),
                        chains = 3, iter = 4000, warmup = 500, thin = 1, cores = 3,
-                       control = list(adapt_delta = 0.99, max_treedepth = 13))
-
+                       control = list(adapt_delta = 0.99, max_treedepth = 13),seed =2004351991 )
 
 
 # Print fitted model
 print(juv_trap_fit_3, pars = c("phi_M","sigma_M",
                                "beta_p","sigma_p"
                                ,"M_tot","inv_sqrt_phi_obs"), include =T, probs = c(0.05,0.5,0.95))
+
+
+#Negative Binomial (alternative log(mu) phi paramaterization) observation model
+
+juv_trap_fit_3.1 <- stan(file = here::here("src","Stan_demo","juv_trap_NB2.1.stan"),
+                       data = stan_dat, 
+                       init = stan_init(stan_dat,3), 
+                       pars = c("beta_M","phi_M","sigma_M",
+                                "beta_p","sigma_p","p",
+                                "M_hat","M","M_tot","C_hat","inv_sqrt_phi_obs","LL_MR","LL_trap"),
+                       chains = 3, iter = 4000, warmup = 500, thin = 1, cores = 3,
+                       control = list(adapt_delta = 0.99, max_treedepth = 13),seed =2004351991 )
+
+
+# Print fitted model
+print(juv_trap_fit_3.1, pars = c("phi_M","sigma_M",
+                               "beta_p","sigma_p"
+                               ,"M_tot","inv_sqrt_phi_obs"), include =T, probs = c(0.05,0.5,0.95))
+
+
+
+
 
 .# Check it out in Shinystan
 launch_shinystan(juv_trap_fit_3)
@@ -309,13 +331,18 @@ r_eff <- loo::relative_eff(exp(LL))
 loo3 <- loo::loo.array(LL, r_eff = r_eff)
 print(loo3)
 
+LL <- as.array(juv_trap_fit_3.1, pars = c("LL_MR","LL_trap"))
+r_eff <- loo::relative_eff(exp(LL))
+loo3.1 <- loo::loo.array(LL, r_eff = r_eff)
+print(loo3.1)
 
-loo::loo_compare(loo1,loo2,loo3)
+
+loo::loo_compare(loo1,loo2,loo3,loo3.1)
 
 dev.new(width = 28, height = 14)
-par(mfcol = c(3,3), mar = c(4.5,4.5,1,1), oma = c(0,0,6,0))
+par(mfcol = c(3,4), mar = c(4.5,4.5,1,1), oma = c(0,0,6,0))
 
-for ( i in c("juv_trap_fit","juv_trap_fit_2","juv_trap_fit_3")){
+for ( i in c("juv_trap_fit","juv_trap_fit_2","juv_trap_fit_3","juv_trap_fit_3.1")){
 mod<-get(i)
 
 C_hat <- extract1(mod,"C_hat")
