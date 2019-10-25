@@ -114,4 +114,3 @@ generated quantities {
   }
 }
 
-}

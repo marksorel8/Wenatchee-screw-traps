@@ -10,6 +10,7 @@ library(yarrr)
 library(corrplot)
 library(here)
 
+
 if(file.exists(here("src","Stan_demo","juv_trap_fit.RData"))) 
   load(here("src","Stan_demo","juv_trap_fit.RData"))
 if(file.exists(here("src","Stan_demo","juv_trap_my_fit.RData"))) 
@@ -158,30 +159,73 @@ stan_init <- function(data, chains)
            list(beta_p = array(rnorm(NX_p, c(qlogis(0.2), rep(0, NX_p - 1)), 0.5), dim = NX_p),
                 sigma_p = runif(1,0.1,2),
                 beta_M = array(rnorm(NX_M, c(log(20), rep(0, NX_M - 1)), 0.5), dim = NX_M),
-                phi_M = runif(1,0,0.9),
+                phi_M = runif(1,.3,0.9),
                 sigma_M = runif(1,0.5,2),
-                beta_NB=10)))#array(runif(stan_dat$Use_NB,.001,1))
+                p_NB=.5,
+                inv_sqrt_phi_obs=.25)))#array(runif(stan_dat$Use_NB,.001,1))
        })
 }
 
 # Call Stan to fit model
-juv_trap_fit3 <- stan(file = here::here("src","Stan_demo","juv_trap_NB.stan"),
+
+#Poisson observation model
+juv_trap_fit <- stan(file = here::here("src","Stan_demo","juv_trap.stan"),
+                       data = stan_dat, 
+                       init = stan_init(stan_dat,3), 
+                       pars = c("beta_M","phi_M","sigma_M",
+                                "beta_p","sigma_p","p",
+                                "M_hat","M","M_tot","C_hat","LL_MR","LL_trap"),
+                       chains = 3, iter = 4000, warmup = 500, thin = 1, cores = 3,
+                       control = list(adapt_delta = 0.99, max_treedepth = 13))
+
+
+print(juv_trap_fit, pars = c("phi_M","sigma_M",
+                               "beta_p","sigma_p"
+                               ,"M_tot"), include =T, probs = c(0.05,0.5,0.95))
+
+
+#Negative Binomial (1) observation model
+juv_trap_fit_2 <- stan(file = here::here("src","Stan_demo","juv_trap_NB.stan"),
                      data = stan_dat, 
                      init = stan_init(stan_dat,3), 
                      pars = c("beta_M","phi_M","sigma_M",
                               "beta_p","sigma_p","p",
-                              "M_hat","M","M_tot","C_hat","beta_NB"),
-                     chains = 3, iter = 1500, warmup = 500, thin = 1, cores = 3,
+                              "M_hat","M","M_tot","C_hat","p_NB","LL_MR","LL_trap"),
+                     chains = 3, iter = 4000, warmup = 500, thin = 1, cores = 3,
                      control = list(adapt_delta = 0.99, max_treedepth = 13))
 
 
 
 # Print fitted model
-print(juv_trap_fit3, pars = c("phi_M","sigma_M",
+print(juv_trap_fit_2, pars = c("phi_M","sigma_M",
                              "beta_p","sigma_p"
-                             ,"M_tot","beta_NB"), include =T, probs = c(0.05,0.5,0.95))
+                             ,"M_tot","p_NB"), include =T, probs = c(0.05,0.5,0.95))
 
-# Check it out in Shinystan
+#Negative Binomial (2:alternative mu phi paramaterization) observation model
+
+juv_trap_fit_3 <- stan(file = here::here("src","Stan_demo","juv_trap_NB2.stan"),
+                       data = stan_dat, 
+                       init = stan_init(stan_dat,3), 
+                       pars = c("beta_M","phi_M","sigma_M",
+                                "beta_p","sigma_p","p",
+                                "M_hat","M","M_tot","C_hat","inv_sqrt_phi_obs","LL_MR","LL_trap"),
+                       chains = 3, iter = 4000, warmup = 500, thin = 1, cores = 3,
+                       control = list(adapt_delta = 0.99, max_treedepth = 13))
+
+
+
+# Print fitted model
+print(juv_trap_fit_3, pars = c("phi_M","sigma_M",
+                               "beta_p","sigma_p"
+                               ,"M_tot","inv_sqrt_phi_obs"), include =T, probs = c(0.05,0.5,0.95))
+
+.# Check it out in Shinystan
+launch_shinystan(juv_trap_fit_3)
+
+
+
+
+.# Check it out in Shinystan
 launch_shinystan(juv_trap_fit3)
 
 # Save stanfit
@@ -246,20 +290,46 @@ save(juv_trap_my_fit, file = here("src","Stan_demo","juv_trap_my_fit.RData"))
 
 # Time series of obs and predicted catch, capture probability, 
 # and predicted true outmigrants
-C_hat <- extract1(juv_trap_fit3,"C_hat")
-p <- extract1(juv_trap_fit3,"p")
-M <- extract1(juv_trap_fit3,"M")
-p_fall <- rowSums(M[,1:125])/rowSums(M)
-M_tot <- extract1(juv_trap_fit3,"M_tot")
 
-dev.new(width = 7, height = 14)
-par(mfrow = c(3,1), mar = c(4.5,4.5,1,1), oma = c(0,0,3,0))
+
+LL <- as.array(juv_trap_fit, pars = c("LL_MR","LL_trap"))
+r_eff <- loo::relative_eff(exp(LL))
+loo1 <- loo::loo.array(LL, r_eff = r_eff)
+print(loo1)
+
+
+LL <- as.array(juv_trap_fit_2, pars = c("LL_MR","LL_trap"))
+r_eff <- loo::relative_eff(exp(LL))
+loo2 <- loo::loo.array(LL, r_eff = r_eff)
+print(loo2)
+
+
+LL <- as.array(juv_trap_fit_3, pars = c("LL_MR","LL_trap"))
+r_eff <- loo::relative_eff(exp(LL))
+loo3 <- loo::loo.array(LL, r_eff = r_eff)
+print(loo3)
+
+
+loo::loo_compare(loo1,loo2,loo3)
+
+dev.new(width = 28, height = 14)
+par(mfcol = c(3,3), mar = c(4.5,4.5,1,1), oma = c(0,0,6,0))
+
+for ( i in c("juv_trap_fit","juv_trap_fit_2","juv_trap_fit_3")){
+mod<-get(i)
+
+C_hat <- extract1(mod,"C_hat")
+p <- extract1(mod,"p")
+M <- extract1(mod,"M")
+p_fall <- rowSums(M[,1:125])/rowSums(M)
+M_tot <- extract1(mod,"M_tot")
 
 with(stan_dat, {
   c1 <- transparent("blue", 0.7)
   plot(trap_day, colMeans(C_hat), type = "l", lwd = 2, col = "blue",
        ylim = c(0, max(C, colQuantiles(C_hat, probs = 0.975))),
        xlab = "Day", ylab = "Catch", las = 1, cex.lab = 1.5, cex.axis = 1.2)
+  mtext("NB2",3,3,F,cex=1.2)
   polygon(c(trap_day, rev(trap_day)),
           c(colQuantiles(C_hat, probs = 0.025), rev(colQuantiles(C_hat, probs = 0.975))),
           col = c1, border = NA)
@@ -291,7 +361,7 @@ with(stan_dat, {
          bty = "n")
 })
 
-
+}
 #---------------------------
 # Multi-year
 #---------------------------
