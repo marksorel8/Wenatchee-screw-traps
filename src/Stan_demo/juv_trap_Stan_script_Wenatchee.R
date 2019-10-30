@@ -170,18 +170,18 @@ stan_init <- function(data, chains)
 
 #Poisson observation model
 juv_trap_fit <- stan(file = here::here("src","Stan_demo","juv_trap.stan"),
-                       data = stan_dat, 
-                       init = stan_init(stan_dat,3), 
-                       pars = c("beta_M","phi_M","sigma_M",
-                                "beta_p","sigma_p","p",
-                                "M_hat","M","M_tot","C_hat","LL_MR","LL_trap"),
-                       chains = 3, iter = 4000, warmup = 500, thin = 1, cores = 3,
-                       control = list(adapt_delta = 0.99, max_treedepth = 13),seed =2004351991)
+                     data = stan_dat, 
+                     init = stan_init(stan_dat,3), 
+                     pars = c("beta_M","phi_M","sigma_M",
+                              "beta_p","sigma_p","p",
+                              "M_hat","M","M_tot","C_hat","LL_MR","LL_trap"),
+                     chains = 3, iter = 4000, warmup = 500, thin = 1, cores = 3,
+                     control = list(adapt_delta = 0.99, max_treedepth = 13),
+                     seed = 2004351991)
 
 
-print(juv_trap_fit, pars = c("phi_M","sigma_M",
-                               "beta_p","sigma_p"
-                               ,"M_tot"), include =T, probs = c(0.05,0.5,0.95))
+print(juv_trap_fit, pars = c("phi_M","sigma_M","beta_p","sigma_p","M_tot"), 
+      probs = c(0.05,0.5,0.95))
 
 
 #Negative Binomial (1) observation model
@@ -191,16 +191,17 @@ juv_trap_fit_2 <- stan(file = here::here("src","Stan_demo","juv_trap_NB.stan"),
                      init = stan_init(stan_dat,3), 
                      pars = c("beta_M","phi_M","sigma_M",
                               "beta_p","sigma_p","p",
-                              "M_hat","M","M_tot","C_hat","p_NB","LL_MR","LL_trap"),
+                              "M_hat","M","M_tot","C_hat",
+                              "p_NB","beta_NB","LL_MR","LL_trap"),
                      chains = 3, iter = 4000, warmup = 500, thin = 1, cores = 3,
-                     control = list(adapt_delta = 0.99, max_treedepth = 13),seed =2004351991)
+                     control = list(adapt_delta = 0.99, max_treedepth = 13), 
+                     seed = 200435199)
 
 
 
 # Print fitted model
-print(juv_trap_fit_2, pars = c("phi_M","sigma_M",
-                             "beta_p","sigma_p"
-                             ,"M_tot","p_NB"), include =T, probs = c(0.05,0.5,0.95))
+print(juv_trap_fit_2, pars = c("M_hat","M","p","C_hat","LL_MR","LL_trap"), 
+      include = FALSE, probs = c(0.05,0.5,0.95))
 
 #Negative Binomial (2:alternative mu phi paramaterization) observation model
 
@@ -215,9 +216,8 @@ juv_trap_fit_3 <- stan(file = here::here("src","Stan_demo","juv_trap_NB2.stan"),
 
 
 # Print fitted model
-print(juv_trap_fit_3, pars = c("phi_M","sigma_M",
-                               "beta_p","sigma_p"
-                               ,"M_tot","inv_sqrt_phi_obs"), include =T, probs = c(0.05,0.5,0.95))
+print(juv_trap_fit_3, pars = c("phi_M","sigma_M","beta_p","sigma_p","M_tot","inv_sqrt_phi_obs"), 
+      probs = c(0.05,0.5,0.95))
 
 
 #Negative Binomial (alternative log(mu) phi paramaterization) observation model
@@ -229,13 +229,13 @@ juv_trap_fit_3.1 <- stan(file = here::here("src","Stan_demo","juv_trap_NB2.1.sta
                                 "beta_p","sigma_p","p",
                                 "M_hat","M","M_tot","C_hat","inv_sqrt_phi_obs","LL_MR","LL_trap"),
                        chains = 3, iter = 4000, warmup = 500, thin = 1, cores = 3,
-                       control = list(adapt_delta = 0.99, max_treedepth = 13),seed =2004351991 )
+                       control = list(adapt_delta = 0.99, max_treedepth = 13),
+                       seed = 2004351991 )
 
 
 # Print fitted model
-print(juv_trap_fit_3.1, pars = c("phi_M","sigma_M",
-                               "beta_p","sigma_p"
-                               ,"M_tot","inv_sqrt_phi_obs"), include =T, probs = c(0.05,0.5,0.95))
+print(juv_trap_fit_3.1, pars = c("phi_M","sigma_M","beta_p","sigma_p","M_tot","inv_sqrt_phi_obs"), 
+      probs = c(0.05,0.5,0.95))
 
 
 
