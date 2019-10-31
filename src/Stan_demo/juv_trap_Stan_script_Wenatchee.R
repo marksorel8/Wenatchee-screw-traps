@@ -211,7 +211,6 @@ print(juv_trap_fit_2, pars = c("phi_M","sigma_M",
                              ,"M_tot","p_NB"), include =T, probs = c(0.05,0.5,0.95))
 
 #Negative Binomial (2:alternative mu phi paramaterization) observation model
-set.seed( 10403)
 
 juv_trap_fit_3 <- stan(file = here::here("src","Stan_demo","juv_trap_NB2.stan"),
                        data = stan_dat, 
