@@ -185,7 +185,7 @@ print(juv_trap_fit, pars = c("phi_M","sigma_M","beta_p","sigma_p","M_tot"),
 
 
 #Negative Binomial (1) observation model
-
+set.seed(1234)
 juv_trap_fit_2 <- stan(file = here::here("src","Stan_demo","juv_trap_NB.stan"),
                      data = stan_dat, 
                      init = stan_init(stan_dat,3), 
@@ -194,8 +194,8 @@ juv_trap_fit_2 <- stan(file = here::here("src","Stan_demo","juv_trap_NB.stan"),
                               "M_hat","M","M_tot","C_hat",
                               "p_NB","beta_NB","LL_MR","LL_trap"),
                      chains = 3, iter = 4000, warmup = 500, thin = 1, cores = 3,
-                     control = list(adapt_delta = 0.99, max_treedepth = 13), 
-                     seed = 200435199)
+                     control = list(adapt_delta = 0.99, max_treedepth = 13),
+                     seed = 2004351991)
 
 
 
