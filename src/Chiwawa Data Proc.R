@@ -12,37 +12,49 @@ pkgTest <- function(x)
 }#end of function
 
 #start function to process efficiency trial data
-Chiw_effic_dat_proc<-function(drop_unk_lifestage=FALSE){
+Chiw_effic_dat_proc<-function(){
   
   #read data
   pkgTest("here")
   library(here)
-  ChiwEfficTrials<-read.csv(here("data","Chiwawa","Chiw_Efficiency_Trials.csv"))
+  ChiwEfficTrials<-read.csv(here("data","Chiwawa","Chiwawa_efficiency_trials_2.csv"))
   
   # change column names
-  colnames(ChiwEfficTrials)<-c("modYear","lifeStage","Date","position","rel","recap","effic","disch.cfs")
-  dim(ChiwEfficTrials)
+  colnames(ChiwEfficTrials)<-c("modYear","lifeStage","Date","position","rel","recap","effic","disch.cfs","notes")
+dim(ChiwEfficTrials)
   
-  #reorider the rows so that the ones with actual dates come first, that way when we remove duplicates we dont remove the ones with full dates
-  ChiwEfficTrials<-ChiwEfficTrials[order(nchar(as.character(ChiwEfficTrials$Date)),decreasing = T),]
+#drop some rows that have comments suggesting that the data is not valid
+  ChiwEfficTrials<-ChiwEfficTrials[!(ChiwEfficTrials$notes %in% c("Cant find any trial similar to flow, sample size in 2007?","Cant find anything close to these groups","crossed out on datasheet","Nothing close in records","YCW from Lake Trap trial","Only used YCW. From Lake Trap trial, not sure why it was used in Chiwawa Model - JW")),]
+  
+  
+  #format dates
+  ChiwEfficTrials$Date<-as.character(ChiwEfficTrials$Date)
+  
+  ChiwEfficTrials$Date<-as.Date(ChiwEfficTrials$Date,format = ifelse(grepl("-",ChiwEfficTrials$Date),"%d-%b-%y","%m/%d/%Y"))
+  
+    #reorider the rows so that the ones with actual dates and knowcome first, that way when we remove duplicates we dont remove the ones with full dates
+  ChiwEfficTrials<-ChiwEfficTrials[order(nchar(as.character(ChiwEfficTrials$lifeStage)),decreasing = F),]
+  
   
   #drop duplicate rows
-  ChiwEffic<-ChiwEfficTrials[!duplicated(paste(ChiwEfficTrials$rel,ChiwEfficTrials$recap,ChiwEfficTrials$disch.cfs,ChiwEfficTrials$position)),]
+  ChiwEffic<-ChiwEfficTrials[!duplicated(ChiwEfficTrials$Date),]
+  
+  ChiwEffic[ChiwEffic$notes %in% c("YCW only","Only used YCW"),"lifeStage"]<-"YCW"
+  
+  ChiwEffic[ChiwEffic$notes %in% c("SBC only","Most likely SBC based on date"),"lifeStage"]<-"SBC"
   
   
-  
-  if(drop_unk_lifestage==TRUE){
-  #drop efficiency trials for both lifestages combined
-  
-  ChiwEffic<-droplevels(subset(ChiwEffic,lifeStage!="YCW & SBC"))
-  }
-
   #make a new "position" column where "low flow" is changed to "upper", because only a few data points for "low flow"
   ChiwEffic$position2<-ChiwEffic$position
 
   ChiwEffic$position2[ChiwEffic$position=="Low Flow"]<-"Upper"
 
   ChiwEffic<-droplevels(ChiwEffic)
+  
+  #add day, week, and year
+  ChiwEffic$day<-as.numeric(format(ChiwEffic$Date,form="%j"))
+  ChiwEffic$week<-ceiling(ChiwEffic$day/7)
+  ChiwEffic$year<-as.numeric(format(ChiwEffic$Date,form="%Y"))
   
   #meand and standard deviation of discharge
   disMean<-attributes(scale(ChiwEffic$disch.cfs))$`scaled:center`

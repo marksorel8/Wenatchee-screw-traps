@@ -35,9 +35,13 @@ extract1 <- function(object, par)
 
 source(here("src","Load Screw Trap Data.R"))
 
+if(file.exists(here("src","Stan_demo","Wen_dat.RData"))){
+  load(here("src","Stan_demo","Wen_dat.RData"))
+}else{
 screw_trap_dat<-load_dat()
 screw_trap_dat$chiw$chiw_catch<-droplevels(screw_trap_dat$chiw$chiw_catch[!is.na(screw_trap_dat$chiw$chiw_catch$allSubs),])
-
+save(screw_trap_dat,file=here("src","Stan_demo","Wen_dat.RData"))
+}
 
 
 min_DOY<-min(as.numeric(screw_trap_dat$chiw$chiw_catch$DOY))
@@ -56,11 +60,7 @@ trap_catch_all$DOY<-as.integer(trap_catch_all$DOY)
 
 
 #Mark Recapture data
-screw_trap_dat$chiw$chiw_effic$Date2<-as.Date(c(as.Date(screw_trap_dat$chiw$chiw_effic$Date[1:88],format="%d-%b-%y"),as.Date(screw_trap_dat$chiw$chiw_effic$Date[89:143],format="%m/%d/%y"),rep(NA, times=length(144:329))))
-screw_trap_dat$chiw$chiw_effic$year<-as.integer(format(screw_trap_dat$chiw$chiw_effic$Date2,"%Y"))#add year
-screw_trap_dat$chiw$chiw_effic$week<-ceiling((as.numeric(format(screw_trap_dat$chiw$chiw_effic$Date2,"%j"))-min_DOY+1)/7)#add week
-
-
+screw_trap_dat$chiw$chiw_effic$week<-ceiling((as.numeric(format(screw_trap_dat$chiw$chiw_effic$Date,"%j"))-min_DOY+1)/7)#add week
 
 
 rel<-reshape::melt( tapply(screw_trap_dat$chiw$chiw_effic$rel, screw_trap_dat$chiw$chiw_effic[,c("year","week")], sum))
@@ -70,13 +70,17 @@ MR_all <-cbind(rel[,1:3],rec[,3])[!is.na(rec[,3]),]
 colnames(MR_all)[3:4]<-c("mark","recap")
 
 # Download USGS daily mean discharge data
+if(file.exists(here("src","Stan_demo","chiw_flow_all.csv"))){
+  flow_all<-read.csv(here("src","Stan_demo","chiw_flow_all.csv"))
+  flow_all$date<-as.Date(flow_all$date)
+}else{
 Chiwawa<-"12456500"
 flow_all <- renameNWISColumns(readNWISdv(siteNumbers = Chiwawa, parameterCd = "00060", statCd = "00003",
                                          startDate = paste(min(trap_catch_all$year) , "01", "01", sep = "-"),
                                          endDate = paste(max(trap_catch_all$year), "12", "31", sep = "-")))
 names(flow_all)[3:4] <- c("date","flow")
-write.csv(flow_all, here("src","Stan_demo","flow_all.csv"), row.names = FALSE)
-
+write.csv(flow_all, here("src","Stan_demo","chiw_flow_all.csv"), row.names = FALSE)
+}
 
 # Align flow data to trapping dates and merge with trap and MR data
 dates <- data.frame(year = rep(unique(trap_catch_all$year), 
@@ -178,6 +182,10 @@ juv_trap_fit <- stan(file = here::here("src","Stan_demo","juv_trap.stan"),
                        chains = 3, iter = 4000, warmup = 500, thin = 1, cores = 3,
                        control = list(adapt_delta = 0.99, max_treedepth = 13),seed =2004351991)
 
+save(juv_trap_fit,file=here("Src","Stan_demo","juv_trap_fit_Chiw_13_pois.Rdata"))
+
+
+
 
 print(juv_trap_fit, pars = c("phi_M","sigma_M",
                                "beta_p","sigma_p"
@@ -203,6 +211,7 @@ print(juv_trap_fit_2, pars = c("phi_M","sigma_M",
                              ,"M_tot","p_NB"), include =T, probs = c(0.05,0.5,0.95))
 
 #Negative Binomial (2:alternative mu phi paramaterization) observation model
+set.seed( 10403)
 
 juv_trap_fit_3 <- stan(file = here::here("src","Stan_demo","juv_trap_NB2.stan"),
                        data = stan_dat, 
@@ -314,10 +323,40 @@ save(juv_trap_my_fit, file = here("src","Stan_demo","juv_trap_my_fit.RData"))
 # and predicted true outmigrants
 
 
+
+
+
 LL <- as.array(juv_trap_fit, pars = c("LL_MR","LL_trap"))
 r_eff <- loo::relative_eff(exp(LL))
 loo1 <- loo::loo.array(LL, r_eff = r_eff)
 print(loo1)
+
+
+LL <- as.array(juv_trap_fit, pars = c("LL_MR"))
+tmp_lp<-as.matrix(rbind(LL[,1,],LL[,2,],LL[,3,]))
+  ## base plot
+  tidy_lp <- tidyr::gather(data.frame(tmp_lp), key = time, value = lp)
+pp <- ggplot(tidy_lp, aes(x=time, y=lp)) +
+  labs(title = "", x = "Data element", y = "Pointwise likelihood") + 
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank())
+## violin plot
+p1 <- pp + geom_violin()+ggtitle("mark-recapture data")
+p1
+
+LL <- as.array(juv_trap_fit, pars = c("LL_trap"))
+tmp_lp<-as.matrix(rbind(LL[,1,],LL[,2,],LL[,3,]))[,101:150]
+tidy_lp <- tidyr::gather(data.frame(tmp_lp), key = time, value = lp)
+pp <- ggplot(tidy_lp, aes(x=time, y=lp)) +
+  labs(title = "", x = "Data element", y = "Pointwise likelihood") + 
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank())
+
+p2 <- pp + geom_violin()+ggtitle("Trap count [101:150]")
+p2
+
+
+
 
 
 LL <- as.array(juv_trap_fit_2, pars = c("LL_MR","LL_trap"))
