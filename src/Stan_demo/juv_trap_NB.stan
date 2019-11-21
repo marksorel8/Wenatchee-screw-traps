@@ -78,6 +78,7 @@ model {
   // phi_M ~ uniform(-1,1) implicit
   sigma_M ~ normal(0,10);       // implicitly truncated to [0,Inf)
   log_M_hat_z ~ normal(0,1);    // implies log(M_hat[t]) ~ AR1(mu_M, phi_M, sigma_M)
+  p_NB ~ beta (2,2);
 
   //----------------
   // Likelihood
