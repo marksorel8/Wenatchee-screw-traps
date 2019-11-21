@@ -88,7 +88,6 @@ model {
   recap ~ binomial(mark, p[MR_week]); 
   
   // Trap catch observations
-
    C ~ neg_binomial(C_hat*beta_NB,beta_NB);  //negative binomial observation model
 }
 
@@ -100,9 +99,8 @@ generated quantities {
   vector[N_trap] LL_trap; // pointwise log-likelood values for trap catch data
 
  for(t in 1:max_day){
-
+   print("M_hat[", t, "] = ", M_hat[t], "   beta_NB = ", beta_NB);
    M[t] = neg_binomial_rng(M_hat[t]*beta_NB,beta_NB);
-
  }
 
   M_tot = sum(M);
