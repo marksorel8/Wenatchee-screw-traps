@@ -539,8 +539,16 @@ pNI<-pNOB/(pNOB+test$pHOS)
 plot(pNI)
 mean(pNI)
 
-prop_ages<-matrix(rep(c(rep(c(.125,.725,.15),times=3),
-           c(.06,.65,.29)),times=23),nrow=23,byrow = T)
+
+prop_ages_init<-c(.125,.725,.15,.06,.65,.29)
+
+alr_prop_ages_init<-log(c(prop_ages_init[1:2]/prop_ages_init[3],prop_ages_init[4:5]/prop_ages_init[6]))
+
+
+alr_prop_ages_init_mat<-matrix(alr_prop_ages_init,nrow=23,ncol=4,byrow = T)
+  
+  #matrix(rep(c(rep(c(.125,.725,.15),times=3),
+   #        c(.06,.65,.29)),times=23),nrow=23,byrow = T)
 dim(prop_ages)
 
 SR_dat<-list(log_R_obs=log(all_boots_trans),                 # Observed recruits (posterior from juvenile modle)
@@ -549,12 +557,13 @@ SR_dat<-list(log_R_obs=log(all_boots_trans),                 # Observed recruits
              wild_S_obs=as.numeric(wild_spawners),  
              hatch_S_obs = as.numeric(hatch_spawners),  
              brood_rem = wild_brood_rmoveal,
-             prop_age= prop_ages,
              hatch_carcs=hatch_carcs,
              total_carcs=total_carcs,
              LH_DAYS=c(scale(c(105,195,290,470))),
              # Observed spawners (from redd counts)
-             Model=c(1,1,1,2))
+             Model=c(1,1,1,2),
+             JLH_A=c(0,0,0,1) # juvenile life history ages at emigration.
+             )
 
 
 
@@ -573,15 +582,19 @@ SR_pars<-list(log_R_hat=matrix(10,nrow=23,ncol=4),      # latent true number of 
               log_d=c(1,1.8,1.4),
               
               log_proc_sigma=rep(0,4),  # process error standard deviation
-              proc_er_corr=rep(.2,6),
+              logit_proc_er_corr=rep(.2,6),
               
               log_W_ret_init=c(-1,3.7,4.1,4,4.5),
               logit_pHOS=qlogis(phos-.02),
               logit_surv=matrix(qlogis(.002),nrow=4,ncol=23),
               logit_Phi=.7,
               log_surv_var=rep(-2,4),
-              surv_cor=rep(.9,6),
-              surv_coefs=c(-5,.2)
+              logit_surv_cor=rep(.9,6),
+              surv_coefs=c(-5,.2),
+              alr_p_hyper_mu=alr_prop_ages_init,
+              log_alr_p_hyper_sigma=log((alr_prop_ages_init/5)^2),
+              logit_alr_p_hyper_cor=c(-1,-1,-1,1,-1,-1,-1,1,-1,-1,-1,-1,1,-1,-1),
+              alr_p_age=alr_prop_ages_init_mat 
               )
 
 
@@ -599,6 +612,8 @@ SR_fit<-nlminb(SR_4$par,SR_4$fn,SR_4$gr,
 SR$fn()
 SR$gr()
 test<-SR_4$report()
+test$p_hyper_mu
+
 test$Recruit_obs_like
 test$Spawner_obs_like
 test$state_Like
@@ -677,10 +692,10 @@ abline(0,1)
 
 
 test$S_obs_cv
-test$
 
 
 surv_out<-data.frame(1995:2017,t(plogis(test$logit_surv)))
+
 colnames(surv_out)<-c("year","fry","summer","fall","smolts")
 surv_out<-gather(surv_out,"lifestage","survival",2:5)
 
