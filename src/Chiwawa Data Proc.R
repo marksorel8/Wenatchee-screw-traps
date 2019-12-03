@@ -1,7 +1,3 @@
-
-Chiw_dat_Proc<-function(){
-  
-  
 pkgTest <- function(x)
 {
   if (!require(x,character.only = TRUE))
@@ -11,9 +7,9 @@ pkgTest <- function(x)
   }
 }#end of function
 
-#start function to process efficiency trial data
-Chiw_effic_dat_proc<-function(){
-  
+Chiw_dat_Proc<-function(){
+# process efficiency trial data
+
   #read data
   pkgTest("here")
   library(here)
@@ -32,7 +28,7 @@ dim(ChiwEfficTrials)
   
   ChiwEfficTrials$Date<-as.Date(ChiwEfficTrials$Date,format = ifelse(grepl("-",ChiwEfficTrials$Date),"%d-%b-%y","%m/%d/%Y"))
   
-    #reorider the rows so that the ones with actual dates and knowcome first, that way when we remove duplicates we dont remove the ones with full dates
+    #reorder the rows so that the ones with actual dates and knowcome first, that way when we remove duplicates we dont remove the ones with full dates
   ChiwEfficTrials<-ChiwEfficTrials[order(nchar(as.character(ChiwEfficTrials$lifeStage)),decreasing = F),]
   
   
@@ -48,7 +44,7 @@ dim(ChiwEfficTrials)
   ChiwEffic$position2<-ChiwEffic$position
 
   ChiwEffic$position2[ChiwEffic$position=="Low Flow"]<-"Upper"
-
+  
   ChiwEffic<-droplevels(ChiwEffic)
   
   #add day, week, and year
@@ -61,16 +57,9 @@ dim(ChiwEfficTrials)
   
   disScale<-attributes(scale(ChiwEffic$disch.cfs))$`scaled:scale`
   
-  return(list(ChiwEffic=ChiwEffic,scaleDis=c(disMean,disScale)))
-  
-}#end function
 
 
-
-#start function to process dialy catch and operations data
-Chiw_catch_dat_Proc<-function(disch_Scale){
-  pkgTest("here")
-  library(here)
+# process dialy catch and operations data
   #read data on trap operations
   trapOps<-read.csv(here("data","Chiwawa","Chiw.trap.ops.csv"))
   #format "endDate" to date 
@@ -93,9 +82,7 @@ Chiw_catch_dat_Proc<-function(disch_Scale){
   #change "NA" in position columns to "unknown"
   trapRunDays$Position[which(is.na(trapRunDays$Position))]<-"Unknown"
   trapRunDays$Position2[which(is.na(trapRunDays$Position2))]<-"Unknown"
-  
-  trapRunDays<-droplevels(trapRunDays)
-  
+
   
   #fill in the few missing discharges with data obtained with dataRetrieval package
   
@@ -106,7 +93,7 @@ Chiw_catch_dat_Proc<-function(disch_Scale){
   #fill in missing discharges with downloaded data
   trapRunDays$dis<-trapRunDays$Mean.discharge..CFS.
   trapRunDays$dis[is.na(trapRunDays$Mean.discharge..CFS.)]<-
-    chiwDis$X_00060_00003[match(trapRunDays$EndDate[is.na(trapRunDays$Mean.discharge..CFS.)],chiwDis$date)]
+    chiwDis$X_00060_00003[match(trapRunDays$EndDate[is.na(trapRunDays$Mean.discharge..CFS.)],chiwDis$date-1)]
   
 ################################################  
   ##load daily catch data by "lifestage
@@ -173,8 +160,17 @@ Chiw_catch_dat_Proc<-function(disch_Scale){
   trapRunDays$yrlngCatch<-ChiwYrlngCntLn$count[match(trapRunDays$EndDate,ChiwYrlngCntLn$date)]
 
   
-  #add a column of scaled discharge (scaling based on the mean and sd in the efficiency trial data)
-  trapRunDays$scaleDis<-(trapRunDays$dis- disch_Scale[1])/disch_Scale[2]
+  
+  #*********   Guess at missing trap positions   **********
+  #*********   should be estimated in model in future   ***
+  tapply(ChiwEffic$disch.cfs,ChiwEffic$position2,summary)
+  trapRunDays$Position2[trapRunDays$Position2==""& trapRunDays$dis<=475]<-"Upper"
+  trapRunDays$Position2[trapRunDays$Position2==""]<-"Lower"
+  trapRunDays$Position2<-factor(trapRunDays$Position2,levels=c("Lower","Upper"))
+  
+  trapRunDays<-droplevels(trapRunDays)
+  
+  
   
   #add year columns
   trapRunDays$year<-format(trapRunDays$EndDate,form="%Y")
@@ -183,19 +179,24 @@ Chiw_catch_dat_Proc<-function(disch_Scale){
   trapRunDays$DOY<-format(format(trapRunDays$EndDate,form="%j"))
   
   
-  return(trapRunDays)
+  #data for design matrix for efficiency model
+  N_catch_obs<-nrow(trapRunDays)
   
-}#end of function
-
-
-
-
-  Chiw_Effic<-Chiw_effic_dat_proc()
-  Chiw_Catch_Ops<-Chiw_catch_dat_Proc(disch_Scale=Chiw_Effic$scaleDis)
+  catch_ops_effic<-merge(trapRunDays,ChiwEffic ,by.x=c("EndDate"),by.y = c("Date"),all=TRUE,sort=FALSE,suffixes = c("",".y"))
   
-  return(list(chiw_effic=Chiw_Effic$ChiwEffic,
-              chiw_catch=Chiw_Catch_Ops))
   
-}#end of function
+  #add rows for efficiency trial dates with no catch data ( not sure how this is possible because it seems like you would need catch for , but it is) or for efficiency trials from a different lifestage.
+  
+  catch_ops_effic[(N_catch_obs+1):nrow(catch_ops_effic),"Position2" ]<-catch_ops_effic[(N_catch_obs+1):nrow(catch_ops_effic),"position2" ]#position2
+  catch_ops_effic[(N_catch_obs+1):nrow(catch_ops_effic),"dis" ]<-catch_ops_effic[(N_catch_obs+1):nrow(catch_ops_effic),"disch.cfs" ]#dis
+  catch_ops_effic[(N_catch_obs+1):nrow(catch_ops_effic),"year" ]<-catch_ops_effic[(N_catch_obs+1):nrow(catch_ops_effic),"year.y" ]#year
+  catch_ops_effic[(N_catch_obs+1):nrow(catch_ops_effic),"DOY" ]<-catch_ops_effic[(N_catch_obs+1):nrow(catch_ops_effic),"day" ]#DOY
+  
+  #scale discharge
+  catch_ops_effic$log_scale_Dis<-scale(log(catch_ops_effic$dis))
+  
+  return(catch_ops_effic)
+
+  }#end of function
 
 

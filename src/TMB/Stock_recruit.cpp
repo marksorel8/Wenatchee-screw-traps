@@ -6,14 +6,14 @@ Type objective_function<Type>::operator() ()
   
   DATA_MATRIX(R_obs);                  // Observed recruits (posterior from juvenile modle)
   DATA_VECTOR(S_obs);                  // Observed spawners (from redd counts)
-  DATA_SCALAR(S_obs_sd_hyper_mu);      // Hyper-mean for spawner observation error
-  DATA_SCALAR(S_obs_sd_hyper_sd);     // Hyper-variance for spawner observation error
+  DATA_SCALAR(S_obs_cv_hyper_mu);      // Hyper-mean for spawner observation error
+  DATA_SCALAR(S_obs_cv_hyper_sd);     // Hyper-variance for spawner observation error
   DATA_INTEGER(Model);
   
   
-  PARAMETER(log_S_obs_sd);             //log spawner observation SD
-  Type S_obs_sd = exp(log_S_obs_sd);        
-  REPORT(S_obs_sd);
+  PARAMETER(log_S_obs_cv);             //log spawner observation SD
+  Type S_obs_cv = exp(log_S_obs_cv);        
+  REPORT(S_obs_cv);
   PARAMETER_VECTOR(log_R_hat);    // latent true number of juveniles
   vector<Type> R_hat = exp(log_R_hat);
   REPORT(R_hat);
@@ -52,23 +52,36 @@ Type objective_function<Type>::operator() ()
    R_pred= (R_max*pow(S_hat,alpha)); //power function
    REPORT(R_pred);
  }
+ 
+ if(Model==4){
+   R_pred= R_max*(1-exp(-(pow(S_hat/alpha,d)))); //weibull CDF
+   REPORT(R_pred);
+ }
+ 
+ 
+ if(Model==5){
+   R_pred= S_hat*(alpha); //weibull CDF
+   REPORT(R_pred);
+ }
 
   Type state_Like=sum(dnorm(log(R_hat),
                              log(R_pred),
                              proc_sigma,
                              true));         //process likelihood
 
-
-  Type Prior_like_S_obs_var = dnorm (S_obs_sd*S_obs_sd, 
-                                    S_obs_sd_hyper_mu,
-                                    S_obs_sd_hyper_sd,
+  vector<Type> resids = log(R_hat)-log(R_pred);
+  REPORT(resids);
+   
+  Type Prior_like_S_obs_var = dnorm (S_obs_cv, 
+                                    S_obs_cv_hyper_mu,
+                                    S_obs_cv_hyper_sd,
                                     true);
   
   
-  Type Spawner_obs_like= sum(dnorm(log(S_obs),
-                                   log(S_hat),
-                                   S_obs_sd,
-                                   true));    //observation likelihood (spawners)
+   Type Spawner_obs_like= sum(dnorm(log(S_obs),
+                                     log(S_hat),
+                                      S_obs_cv,
+                                      true));    //observation likelihood (spawners)
 
   Type Recruit_obs_like= 0;                   //Initialize observatin likelihood (recruits)
 

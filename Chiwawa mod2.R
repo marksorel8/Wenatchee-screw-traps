@@ -503,10 +503,25 @@ trans_mod_par_func(Chiw_smolt_SR[[1]]$SR_Rep)
 
 all_boots_trans<-matrix(unlist(list((chiw_subs[[1]][[1]]),(chiw_subs[[1]][[2]]),(chiw_subs[[1]][[3]]),(chiw_yrlngs[[1]][[1]]))),nrow=2000)
 
+
+apply(log(all_boots_trans),2,function(x){qqnorm(x);qqline(x,col="red")})
+
+apply(all_boots_trans,2,function(x){
+  thing<-hist(x,breaks=30);par(new=T);plot(seq(thing$breaks[1],max(thing$breaks),100), dnorm(log(seq(thing$breaks[1],max(thing$breaks),100)),mean(log(x)),sd(log(x))),axes=TRUE,type="l",col="red",xlim=range(thing$breaks))
+})
+
+
+save(all_boots_trans,file=here("all_boots_trans_12-1-19.Rdata"))
+
+
 dim(all_boots_trans)
 colMeans(log(all_boots_trans))
+apply(log(all_boots_trans),2,sd)
+exp(SR_4$env$last.par.best)
+
 library(TMB)
 library(here)
+library(tidyverse)
 setwd(here("src","TMB"))
 compile("LCM_lite4.cpp")
 dyn.load(dynlib("LCM_lite4"))
@@ -518,10 +533,17 @@ wild_spawners<-Chiw_redds[7:29,2]
 hatch_spawners<-Chiw_redds[7:29,3]
 phos<-Chiw_redds[7:29,4]
 
+#hatchery broodstock removals
 hatch_BS<-read.csv(here("data","Chiwawa","hatch_broodstock.csv"))
 
 head(hatch_BS)
 
+wild_brood_rmoveal<-hatch_BS[7:29,2]
+
+pNOB<-hatch_BS[7:29,2]/rowSums(hatch_BS[7:29,c(2,4)]) 
+pNOB[is.na(pNOB)]<-1
+
+#carcass origins
 carc_origins<-read.csv(here("data","Chiwawa","carc_phos.csv"))
 
 head(carc_origins)
@@ -529,29 +551,38 @@ head(carc_origins)
 hatch_carcs<-carc_origins[3:25,3]
 total_carcs<-rowSums(carc_origins[3:25,2:3])
 
-wild_brood_rmoveal<-hatch_BS[7:29,2]
-
-pNOB<-hatch_BS[7:29,2]/rowSums(hatch_BS[7:29,c(2,4)]) 
-pNOB[is.na(pNOB)]<-1
-
-
 pNI<-pNOB/(pNOB+test$pHOS) 
 plot(pNI)
 mean(pNI)
 
 
+#PIT tag age at return
+PIT_adult_age<-read.csv(here("data","Chiwawa","LH_age_BY"))
+
+PIT_age_LHs<-as.numeric(factor(PIT_adult_age$life_stage_guess))-1
+PIT_age_BYs<- PIT_adult_age$brood_year-1995
+PIT_ages<-as.matrix(PIT_adult_age[,3:5] )
+
+
+
+#carcass (wild only) age at return
+Carc_adult_age<-read.csv(here("data","Chiwawa","carcass ages.csv"))%>%mutate("cnt3"=(X3*n),"cnt4"=(X4*n),"cnt5"=(X5*n))%>%
+  slice(2:24)%>%
+  select(starts_with("cnt"))%>%
+  mutate_each(round)%>%
+  as.matrix()
+
+
+#prop_age inits
 prop_ages_init<-c(.125,.725,.15,.06,.65,.29)
 
 alr_prop_ages_init<-log(c(prop_ages_init[1:2]/prop_ages_init[3],prop_ages_init[4:5]/prop_ages_init[6]))
 
-
 alr_prop_ages_init_mat<-matrix(alr_prop_ages_init,nrow=23,ncol=4,byrow = T)
   
-  #matrix(rep(c(rep(c(.125,.725,.15),times=3),
-   #        c(.06,.65,.29)),times=23),nrow=23,byrow = T)
-dim(prop_ages)
 
-SR_dat<-list(log_R_obs=log(all_boots_trans),                 # Observed recruits (posterior from juvenile modle)
+##data
+SR_dat<-list(log_R_obs=log(all_boots_trans)[1:1000,],                 # Observed recruits (posterior from juvenile modle)
              brood_year=c(rep(1:22,times=3),0:21),
              LH=rep(0:3,each=22),
              wild_S_obs=as.numeric(wild_spawners),  
@@ -562,7 +593,11 @@ SR_dat<-list(log_R_obs=log(all_boots_trans),                 # Observed recruits
              LH_DAYS=c(scale(c(105,195,290,470))),
              # Observed spawners (from redd counts)
              Model=c(1,1,1,2),
-             JLH_A=c(0,0,0,1) # juvenile life history ages at emigration.
+             JLH_A=c(0,0,0,1), # juvenile life history ages at emigration.
+             PIT_age_BYs=PIT_age_BYs,
+             PIT_age_LHs=PIT_age_LHs,
+             PIT_ages=PIT_ages,
+             Carc_adult_age=Carc_adult_age
              )
 
 
@@ -575,57 +610,85 @@ matrix(apply(log(all_boots_trans),2,sd),nrow=22)
 
 
 SR_pars<-list(log_R_hat=matrix(10,nrow=23,ncol=4),      # latent true number of juveniles
-              log_R_obs_sd=matrix(.4,nrow=23,ncol=4),  # juvenile observation error
-              log_S_obs_cv=log(0.05),                         # Spawner observation error
+              log_R_obs_sd=matrix(-1.4,nrow=23,ncol=4),  # juvenile observation error
+              log_S_obs_cv=log(0.07),                         # Spawner observation error
               log_alpha=log(c(700,700,400,60)), #rep(log(60),4),         # intrinsic productivity
               log_R_max=rep(log(50000),4),          # Asymptotic maximum recruitment
               log_d=c(1,1.8,1.4),
               
               log_proc_sigma=rep(0,4),  # process error standard deviation
-              logit_proc_er_corr=rep(.2,6),
+              logit_proc_er_corr=qlogis((rep(.1,6)/2)+.5),
               
               log_W_ret_init=c(-1,3.7,4.1,4,4.5),
               logit_pHOS=qlogis(phos-.02),
               logit_surv=matrix(qlogis(.002),nrow=4,ncol=23),
               logit_Phi=.7,
               log_surv_var=rep(-2,4),
-              logit_surv_cor=rep(.9,6),
-              surv_coefs=c(-5,.2),
+              logit_surv_cor=qlogis((rep(.995,6)/2)+.5),
+              surv_alpha=-5,
+              surv_beta=.2,
               alr_p_hyper_mu=alr_prop_ages_init,
               log_alr_p_hyper_sigma=log((alr_prop_ages_init/5)^2),
-              logit_alr_p_hyper_cor=c(-1,-1,-1,1,-1,-1,-1,1,-1,-1,-1,-1,1,-1,-1),
-              alr_p_age=alr_prop_ages_init_mat 
+              logit_alr_p_hyper_cor=qlogis(c(-1,1,-1,-1,1,-1)/4+.5),
+              alr_p_age=alr_prop_ages_init_mat,
+              pen_com_surv_log_sigma=exp(1)
               )
 
 
 #browser()
 
 map<-list(log_S_obs_cv=factor(NA))
-map<-list()
-SR_4<-MakeADFun(SR_dat,SR_pars,random = c("log_R_hat","log_W_ret_init","logit_surv","logit_pHOS"),DLL="LCM_lite4",silent = T,map=map)
+map<-list(alr_p_age=factor(rep(NA,length(alr_prop_ages_init_mat))))
+log_R_obs_sd_map<-1:(23*4)
+log_R_obs_sd_map[c(1,24,47,92)]<-NA
+map<-list(log_R_obs_sd=factor(log_R_obs_sd_map))
+,log_S_obs_cv=factor(NA))
+SR_4<-MakeADFun(SR_dat,SR_pars,random = c("log_R_hat","log_W_ret_init","logit_pHOS","logit_surv","surv_beta","alr_p_age"),DLL="LCM_lite4",silent = T,map=map)
 
 
 
 SR_fit<-nlminb(SR_4$par,SR_4$fn,SR_4$gr, 
                control=list(rel.tol=1e-12,eval.max=1000000,
                             iter.max=10000))#,lower=lower,upper=upper)
-SR$fn()
-SR$gr()
+
+
+SR_fit<-nlminb(SR_4$env$last.par.best[-SR_4$env$random],SR_4$fn,SR_4$gr, 
+               control=list(rel.tol=1e-12,eval.max=1000000,
+                            iter.max=10000))
+
+
+sd_SR<-sdreport(SR_4) 
+
+SR_4$fn()
+SR_4$gr()
+test2<-test
+test3<-test
 test<-SR_4$report()
 test$p_hyper_mu
 
 test$Recruit_obs_like
 test$Spawner_obs_like
 test$state_Like
+test$carcass_age_like
+test$PIT_age_like
+test$like_surv
+test$like_rand_age
+test$phos_like
 test$obj_fun
 test$alpha
 test$wild_S_hat
 test$hatch_S_hat
 test$wild_return
 test$pHOS
-
+test$alr_p_hyper_mu
+hist(test$logit_surv_inov)
 test$R_max
 test$proc_sigma
+test$proc_er_corr
+test$alr_p_hyper_cor
+test$alr_p_hyper_mu
+test$a
+alr_prop_ages_init
 hist(plogis(test$logit_surv))
 test$S_hat
 plot()
@@ -634,8 +697,6 @@ test$pHOS
 test$R_max
 
 library(ggplot2)
-library(tidyr)
-library(dplyr)
 
 sr_out<-data.frame(test$S_hat,exp(test$log_R_hat))
 colnames(sr_out)<-c("Spawners","fry","summer","fall","smolts")
@@ -661,6 +722,7 @@ mtext("Juveniles",2,0.5,outer=T,xpd=NA)
 
 par(mfrow=c(1,1))
 plot(1995:2017,test$pHOS,pch=19,type="o")
+points(1995:2017,phos,col="blue",type="l")
 mtext("pHOS",2,0.5,outer=T,xpd=NA)
 
 plot(hatch_carcs/total_carcs,test$pHOS,main="pHOS")
@@ -668,9 +730,15 @@ mtext("pHOS_Obs",1,0.5,outer=T,xpd=NA)
 mtext("pHOS_pred",2,0.5,outer=T,xpd=NA)
 abline(0,1,col="blue")
 
-plot(colMeans(log(all_boots_trans)),(c(test$log_R_hat[-c(1,24,47,92)])),main="Juveniles")
+plot(exp(colMeans(log(all_boots_trans))),exp(c(test$log_R_hat[-c(1,24,47,92)])),main="Juveniles")
 mtext("log(J_Obs)",1,0.5,outer=T,xpd=NA)
 mtext("log(J_pred)",2,0.5,outer=T,xpd=NA)
+abline(0,1,col="blue")
+
+
+plot(apply(log(all_boots_trans),2,sd),exp(c(test$log_R_obs_sd[-c(1,24,47,92)])),main="Juveniles")
+mtext("log(J_Obs)_SD",1,0.5,outer=T,xpd=NA)
+mtext("log(J_pred)_SD",2,0.5,outer=T,xpd=NA)
 abline(0,1,col="blue")
 
 plot(log(spawners),log(test$S_hat),main="spawners")
@@ -681,18 +749,19 @@ abline(0,1,col="blue")
 test$S_obs_cv
 
 
-
-plot
-
-
 abline(0,1)
-plot(test$S_hat,spawners)
+plot(spawners,test$S_hat,xlab="spawners",ylab="s_hat")
 abline(0,1)
 
 
 
 test$S_obs_cv
 
+
+colMeans(test$prop_age)
+
+colSums(PIT_ages[1:11,])/sum(PIT_ages[1:11,])
+colSums(PIT_ages[12:23,])/sum(PIT_ages[1:23,])
 
 surv_out<-data.frame(1995:2017,t(plogis(test$logit_surv)))
 
@@ -703,8 +772,11 @@ surv_out<-gather(surv_out,"lifestage","survival",2:5)
 ggplot(data=surv_out,aes(year,survival,col=lifestage))+geom_line(size=1.5)+theme(axis.text=element_text(size=12), axis.title=element_text(size=14,face="bold"))
 
 
-plot(1995:2017,test$S_hat,type="l",ylim=c(0,2000))
+plot(1995:2017,test$S_hat,type="l",ylim=c(0,3000))
 points(1995:2017,spawners,col="blue",type="l")
 mtext("log(S_Obs)",1,0.5,outer=T,xpd=NA)
 mtext("Spawners",2,0.5,outer=T,xpd=NA)
-legend(x="topleft",legend=c("model","observed"),col=c("black","blue"),lty=1)
+legend(x="topleft",legend=c("model","observed"),col=c("black","blue"),lty=1
+       
+       )
+

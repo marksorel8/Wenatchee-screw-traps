@@ -1,4 +1,8 @@
 Chiw_discharge_func<-function(){
+  
+  
+  
+  
   pkgTest("dataRetrieval")
   require("dataRetrieval")
   pkgTest("here")
@@ -52,7 +56,7 @@ Nason_White_Discharge_Func<-function(){
       Nas<-rbind(Nas,test)
     }
     
-               
+    
     Nas<-unique(Nas)
     return(Nas)
   }
@@ -66,6 +70,6 @@ Nason_White_Discharge_Func<-function(){
   
   White<-loadDis(loc=here("data","Nason and White","White Discharge"),breakYr = 13)
   
-return(list(Nason_Dis=Nas2,White_Dis=White))
+  return(list(Nason_Dis=Nas2,White_Dis=White))
   
 }
