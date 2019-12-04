@@ -91,11 +91,11 @@ Type objective_function<Type>::operator() ()
   vector<Type> alr_p_hyper_sigma=exp(log_alr_p_hyper_sigma);
   REPORT(alr_p_hyper_sigma);
   PARAMETER_VECTOR(logit_alr_p_hyper_cor);   //correlation of alr ages
-
   
   PARAMETER_MATRIX(alr_p_age);         //alr(age proportions)annual & juvenile life history age specific
   matrix<Type> prop_age = alr_to_simplex(alr_p_age);
   REPORT(prop_age);
+  REPORT(alr_p_age);
   
   PARAMETER_MATRIX(logit_surv);       
   REPORT(logit_surv);
@@ -250,22 +250,22 @@ Type objective_function<Type>::operator() ()
  
  UNSTRUCTURED_CORR_t<Type> rand_age_nll(logit_alr_p_hyper_cor);
  
- vector<Type> alp_p_age_error(4); //declare annual errors of alr age proportions
+ vector<Type> alr_p_age_error(4); //declare annual errors of alr age proportions
 
   for (int I=0; I<Nyears; I++){
    
-   alp_p_age_error =
+   alr_p_age_error =
      vector<Type>(alr_p_age.row(I))-
      alr_p_hyper_mu;
    
    like_rand_age += VECSCALE(rand_age_nll,alr_p_hyper_sigma)
-                    (alp_p_age_error);
+                    (alr_p_age_error);
  }
 
   matrix<Type> alr_p_hyper_cor= 
     rand_age_nll.cov();
   REPORT(alr_p_hyper_cor);
-REPORT(alp_p_age_error);
+REPORT(alr_p_age_error);
 
  //------------------------------------------
  //pHOS

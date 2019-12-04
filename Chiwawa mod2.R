@@ -632,8 +632,8 @@ SR_pars<-list(log_R_hat=matrix(10,nrow=23,ncol=4),      # latent true number of 
               surv_alpha=-5,
               surv_beta=.2,
               alr_p_hyper_mu=alr_prop_ages_init,
-              log_alr_p_hyper_sigma=log(abs(alr_prop_ages_init/4)),
-              logit_alr_p_hyper_cor=c(-1,.1,-.1,-.1,.1,-1)*.4,#qlogis(c(-1,1,-1,-1,1,-1)/4+.5),
+              log_alr_p_hyper_sigma=log(c(.1,.6,.9,.8)),#log((alr_prop_ages_init/2)^2),
+              logit_alr_p_hyper_cor=c(-1,.3,-.3,-.3,.3,-1)*.3,#qlogis(c(-1,1,-1,-1,1,-1)/4+.5),
               alr_p_age=alr_prop_ages_init_mat,
               pen_com_surv_log_sigma=exp(1)
               )
