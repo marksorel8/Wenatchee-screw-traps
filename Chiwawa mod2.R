@@ -556,6 +556,10 @@ plot(pNI)
 mean(pNI)
 
 
+#Survival data
+surv_dat<-read.csv(here("data","Chiwawa","surv_dat.csv"))
+
+
 #PIT tag age at return
 PIT_adult_age<-read.csv(here("data","Chiwawa","LH_age_BY"))
 
@@ -572,7 +576,6 @@ Carc_adult_age<-read.csv(here("data","Chiwawa","carcass ages.csv"))%>%mutate("cn
   mutate_each(round)%>%
   as.matrix()
 
-
 #prop_age inits
 prop_ages_init<-c(.125,.725,.15,.06,.65,.29)
 
@@ -582,7 +585,7 @@ alr_prop_ages_init_mat<-matrix(alr_prop_ages_init,nrow=23,ncol=4,byrow = T)
   
 
 ##data
-SR_dat<-list(log_R_obs=log(all_boots_trans)[1:1000,],                 # Observed recruits (posterior from juvenile modle)
+SR_dat<-list(log_R_obs=log(all_boots_trans)[1:500,],                 # Observed recruits (posterior from juvenile modle)
              brood_year=c(rep(1:22,times=3),0:21),
              LH=rep(0:3,each=22),
              wild_S_obs=as.numeric(wild_spawners),  
@@ -598,6 +601,7 @@ SR_dat<-list(log_R_obs=log(all_boots_trans)[1:1000,],                 # Observed
              PIT_age_LHs=PIT_age_LHs,
              PIT_ages=PIT_ages,
              Carc_adult_age=Carc_adult_age
+             #surv_dat=surv_dat
              )
 
 
@@ -616,20 +620,20 @@ SR_pars<-list(log_R_hat=matrix(10,nrow=23,ncol=4),      # latent true number of 
               log_R_max=rep(log(50000),4),          # Asymptotic maximum recruitment
               log_d=c(1,1.8,1.4),
               
-              log_proc_sigma=rep(0,4),  # process error standard deviation
+              log_proc_sigma=rep(-.5,4),  # process error standard deviation
               logit_proc_er_corr=qlogis((rep(.1,6)/2)+.5),
               
               log_W_ret_init=c(-1,3.7,4.1,4,4.5),
               logit_pHOS=qlogis(phos-.02),
               logit_surv=matrix(qlogis(.002),nrow=4,ncol=23),
-              logit_Phi=.7,
+              logit_Phi=.8,
               log_surv_var=rep(-2,4),
-              logit_surv_cor=qlogis((rep(.995,6)/2)+.5),
+              logit_surv_cor=rep(.98,6),#qlogis((rep(.990,6)/2)+.5),
               surv_alpha=-5,
               surv_beta=.2,
               alr_p_hyper_mu=alr_prop_ages_init,
-              log_alr_p_hyper_sigma=log((alr_prop_ages_init/5)^2),
-              logit_alr_p_hyper_cor=qlogis(c(-1,1,-1,-1,1,-1)/4+.5),
+              log_alr_p_hyper_sigma=log(abs(alr_prop_ages_init/4)),
+              logit_alr_p_hyper_cor=c(-1,.1,-.1,-.1,.1,-1)*.4,#qlogis(c(-1,1,-1,-1,1,-1)/4+.5),
               alr_p_age=alr_prop_ages_init_mat,
               pen_com_surv_log_sigma=exp(1)
               )
@@ -642,6 +646,7 @@ map<-list(alr_p_age=factor(rep(NA,length(alr_prop_ages_init_mat))))
 log_R_obs_sd_map<-1:(23*4)
 log_R_obs_sd_map[c(1,24,47,92)]<-NA
 map<-list(log_R_obs_sd=factor(log_R_obs_sd_map))
+,log_surv_var=factor(rep(NA,4)))
 ,log_S_obs_cv=factor(NA))
 SR_4<-MakeADFun(SR_dat,SR_pars,random = c("log_R_hat","log_W_ret_init","logit_pHOS","logit_surv","surv_beta","alr_p_age"),DLL="LCM_lite4",silent = T,map=map)
 
@@ -665,7 +670,7 @@ test2<-test
 test3<-test
 test<-SR_4$report()
 test$p_hyper_mu
-
+test$
 test$Recruit_obs_like
 test$Spawner_obs_like
 test$state_Like
@@ -681,12 +686,12 @@ test$hatch_S_hat
 test$wild_return
 test$pHOS
 test$alr_p_hyper_mu
-hist(test$logit_surv_inov)
+hist(test$logit_surv)
 test$R_max
 test$proc_sigma
-test$proc_er_corr
+test$corr_rec_er_mat
 test$alr_p_hyper_cor
-test$alr_p_hyper_mu
+test$p_cor_mat
 test$a
 alr_prop_ages_init
 hist(plogis(test$logit_surv))

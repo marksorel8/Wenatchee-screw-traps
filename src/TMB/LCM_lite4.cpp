@@ -80,9 +80,7 @@ Type objective_function<Type>::operator() ()
   REPORT(proc_sigma);
   
   PARAMETER_VECTOR(logit_proc_er_corr);//adult-juvenile transition process error correlations
-  vector<Type> proc_er_corr =
-    (invlogit(logit_proc_er_corr)-0.5)*2;
-  REPORT(proc_er_corr)  
+  
   
   PARAMETER_VECTOR(logit_pHOS);
   vector<Type> pHOS = invlogit(logit_pHOS);
@@ -93,9 +91,7 @@ Type objective_function<Type>::operator() ()
   vector<Type> alr_p_hyper_sigma=exp(log_alr_p_hyper_sigma);
   REPORT(alr_p_hyper_sigma);
   PARAMETER_VECTOR(logit_alr_p_hyper_cor);   //correlation of alr ages
-  vector<Type> alr_p_hyper_cor= 
-    (invlogit(logit_alr_p_hyper_cor)-.5)*2;
-  REPORT(alr_p_hyper_cor);
+
   
   PARAMETER_MATRIX(alr_p_age);         //alr(age proportions)annual & juvenile life history age specific
   matrix<Type> prop_age = alr_to_simplex(alr_p_age);
@@ -189,8 +185,13 @@ Type objective_function<Type>::operator() ()
  REPORT(surv_var);
  
  PARAMETER_VECTOR(logit_surv_cor); //logit(correlation/2+.5) transform to bound (-1,1)
- vector<Type> surv_cor= (invlogit(logit_surv_cor)-0.5)*2;
- REPORT(surv_cor);
+ //vector<Type> unconstrained_params(logit_surv_cor);  // Dummy parameterization of correlation matrix
+ matrix<Type> Sigma = UNSTRUCTURED_CORR(logit_surv_cor).cov();
+ 
+ 
+ 
+ //vector<Type> surv_cor= (invlogit(logit_surv_cor)-0.5)*2;
+ ///REPORT(surv_cor);
  
  PARAMETER(surv_alpha); //intercept 
  PARAMETER(surv_beta); //and coefficient for hyper-mean survival
@@ -203,7 +204,8 @@ Type objective_function<Type>::operator() ()
  array<Type> logit_surv_demean(logit_surv.rows(), //demeaned survival
                              logit_surv.cols());
  
-
+ // array<Type> surv_var_ar(logit_surv.rows(), //demeaned survival
+ //                          logit_surv.cols());
  
  
  for(int Ilh=0;Ilh<4; Ilh++){
@@ -214,16 +216,21 @@ Type objective_function<Type>::operator() ()
    for (int Iyear=0; Iyear<Nyears;Iyear++){
    logit_surv_demean(Ilh,Iyear) = logit_surv(Ilh,Iyear)-
                                            mean_logit_surv_LH(Ilh); //calculate demeaned survival
+     //surv_var_ar(Ilh,Iyear) =surv_var(Ilh);
    }
  }
  REPORT(mean_logit_surv_LH);
  REPORT(logit_surv_demean);
  
+
  //MAR1 likelihood
- Type like_surv = AR1(Phi, 
-                      VECSCALE(UNSTRUCTURED_CORR(surv_cor),surv_var)) 
+ Type like_surv = AR1(Phi, VECSCALE(UNSTRUCTURED_CORR(logit_surv_cor),
+                                    surv_var))
+                              
    (logit_surv_demean); // nll 
  
+ 
+ REPORT(Sigma);   
  //penalized complexity priors
  PARAMETER(pen_com_surv_log_sigma);
  REPORT(pen_com_surv_log_sigma);
@@ -240,7 +247,8 @@ Type objective_function<Type>::operator() ()
  Type like_rand_age =0;   //initialize likelihood of random alr(p_age) vectors
  
  //MVN distribution with unstructured VCV matrix
- UNSTRUCTURED_CORR_t<Type> rand_age_nll(alr_p_hyper_cor);
+ 
+ UNSTRUCTURED_CORR_t<Type> rand_age_nll(logit_alr_p_hyper_cor);
  
  vector<Type> alp_p_age_error(4); //declare annual errors of alr age proportions
 
@@ -254,6 +262,9 @@ Type objective_function<Type>::operator() ()
                     (alp_p_age_error);
  }
 
+  matrix<Type> alr_p_hyper_cor= 
+    rand_age_nll.cov();
+  REPORT(alr_p_hyper_cor);
 REPORT(alp_p_age_error);
 
  //------------------------------------------
@@ -269,7 +280,7 @@ REPORT(alp_p_age_error);
  //juvenile "recruitment" MVN process error likelihood 
  Type state_Like=0;
  
-   UNSTRUCTURED_CORR_t<Type> mvn(proc_er_corr);
+   UNSTRUCTURED_CORR_t<Type> mvn(logit_proc_er_corr);
 
     for(int I=0;I<Nyears; I++ ){
       state_Like+= VECSCALE(mvn,proc_sigma)
@@ -293,7 +304,9 @@ REPORT(alp_p_age_error);
                                    exp(log_R_obs_sd(brood_year(I),LH(I))),true).sum(); //Observatin likelihood (recruits)
   }
   
-  
+  matrix<Type> proc_er_corr =mvn.cov();
+  REPORT(proc_er_corr)  
+    
   //age composition data likelihood
   
   //PIT age at return
