@@ -47,6 +47,7 @@ Type objective_function<Type>::operator() ()
   DATA_IVECTOR(PIT_age_LHs);
   DATA_MATRIX(PIT_ages);
   DATA_MATRIX(Carc_adult_age);
+  DATA_MATRIX(surv_dat);
 
   
   //---------------------------------------------------------------------
@@ -97,12 +98,44 @@ Type objective_function<Type>::operator() ()
   REPORT(prop_age);
   REPORT(alr_p_age);
   
-  PARAMETER_MATRIX(logit_surv);       
+  PARAMETER_VECTOR(logit_surv);       
   REPORT(logit_surv);
+  
+  
+  PARAMETER(surv_alpha); //intercept 
+  PARAMETER(surv_beta); //and coefficient for hyper-mean survival
+  DATA_VECTOR(LH_DAYS); //average day counted for each juvenile LH, covariate for survival hyper mean linear model
+  REPORT(surv_alpha);
+  REPORT(surv_beta);
+  
   //---------------------------------------------------------------------
   // Variables
  int Nyears =wild_S_obs.size();
- 
+ vector<Type>  mean_logit_surv_LH(4); //hyper mean logit survival
+  
+  for(int Ilh=0;Ilh<4; Ilh++){
+    mean_logit_surv_LH(Ilh)= surv_alpha+ 
+      LH_DAYS(Ilh)*
+      surv_beta;
+  }
+  
+  matrix<Type> logit_surv_lh_yr(4,logit_surv.size());
+  
+  // array<Type> surv_var_ar(logit_surv.rows(), //demeaned survival
+  //                          logit_surv.cols());
+  
+  
+  for(int Ilh=0;Ilh<4; Ilh++){
+    for (int Iyear=0; Iyear<Nyears-3;Iyear++){
+      logit_surv_lh_yr(Ilh,Iyear) = logit_surv(Iyear)+
+        mean_logit_surv_LH(Ilh); //calculate demeaned survival
+      //surv_var_ar(Ilh,Iyear) =surv_var(Ilh);
+    }
+  }
+  REPORT(mean_logit_surv_LH);
+  REPORT(logit_surv_lh_yr);
+  
+  
  vector<Type> wild_return(Nyears); //total wild returns in brood year
  vector<Type> S_hat(Nyears);      //total spawners in brood year
  vector<Type> hatch_S_hat(Nyears);// wild spawners
@@ -119,21 +152,31 @@ Type objective_function<Type>::operator() ()
  //---------------------------------------------------------------------
  // population model
  
- for (int Iyear=0; Iyear<Nyears;Iyear++){//brood year loop
+ //calculate adult survivals from eachjuvenile life history 
+ for (int Iyear=0; Iyear<(Nyears-3);Iyear++){//brood year loop
  
+     
      for(int Ilh=0;Ilh<4; Ilh++){ //juvenile life history loop  
       ad_LH(Iyear,Ilh)= exp(log_R_hat(Iyear,Ilh))*
-                            invlogit(logit_surv(Ilh,Iyear)); //wild adult returns by LH
+                            invlogit(logit_surv_lh_yr(Ilh,Iyear)); //wild adult returns by LH
     
     for (int Iage=0;Iage<3; Iage++ ){//adult return age loop
       ad_LH_age(Iyear,(Ilh*3)+Iage) = prop_age(Iyear,(JLH_A(Ilh)*3)+Iage)  * 
                                                ad_LH(Iyear,Ilh); //wild adult returns by LH & age
-      if(Iyear>=5){
-         w_ad_age(Iyear,Iage) +=ad_LH_age(Iyear-Iage-3,(Ilh*3)+Iage);
+      
+   
+      if(Iyear>=2){
+         w_ad_age(Iyear+3,Iage) +=ad_LH_age(Iyear-Iage,(Ilh*3)+Iage);
        } 
       }
      }
-    
+ }
+ 
+
+//calculate total annual spawners (wild and hatchery) 
+
+
+for (int Iyear=0; Iyear<Nyears;Iyear++){//brood year loop
    if(Iyear<5){
      wild_return(Iyear) = W_ret_init(Iyear);
    }else{
@@ -146,9 +189,10 @@ Type objective_function<Type>::operator() ()
      (1-pHOS(Iyear));
   
   S_hat(Iyear) =  wild_S_hat(Iyear)+hatch_S_hat(Iyear); //estimate total spawners
-   
 
-  //predict juveniles from transiton models. 
+
+  //predict juveniles from transition models. 
+  
  for(int Ilh=0;Ilh<4; Ilh++){ //juvenile life history loop
  if(Model(Ilh)==1){
    R_pred(Iyear,Ilh)= R_max(Ilh)*(1-exp(-(pow(S_hat(Iyear)/alpha(Ilh),d(Ilh))))); //weibull CDF
@@ -180,93 +224,93 @@ Type objective_function<Type>::operator() ()
  Type Phi = invlogit(logit_Phi);
  REPORT(Phi);
  
- PARAMETER_VECTOR(log_surv_var); // variances (unique for LHs)
- vector<Type> surv_var = exp(log_surv_var);
+ PARAMETER(log_surv_var); // variances (unique for LHs)
+ Type surv_var = exp(log_surv_var);
  REPORT(surv_var);
  
- PARAMETER_VECTOR(logit_surv_cor); //logit(correlation/2+.5) transform to bound (-1,1)
+ //PARAMETER_VECTOR(logit_surv_cor); //logit(correlation/2+.5) transform to bound (-1,1)
+ //vector<Type> surv_cor =invlogit(logit_surv_cor)*2 -1;
  //vector<Type> unconstrained_params(logit_surv_cor);  // Dummy parameterization of correlation matrix
- matrix<Type> Sigma = UNSTRUCTURED_CORR(logit_surv_cor).cov();
- 
+ //matrix<Type> Sigma = UNSTRUCTURED_CORR(logit_surv_cor).cov();
+ // matrix<Type> Sigma (4,4);
+ //  int cnter=0;
+ //  for(int I=0;I<4;I++){
+ //   Sigma(I,I)=1;
+ //   if(I>0){
+ //   for(int J=0;J<I;++J){
+ //    Sigma(I,J)=surv_cor(cnter);
+ //     Sigma(J,I)=Sigma(I,J);
+ //     cnter++;
+ //   }}
+ // }
  
  
  //vector<Type> surv_cor= (invlogit(logit_surv_cor)-0.5)*2;
  ///REPORT(surv_cor);
- 
- PARAMETER(surv_alpha); //intercept 
- PARAMETER(surv_beta); //and coefficient for hyper-mean survival
- DATA_VECTOR(LH_DAYS); //average day counted for each juvenile LH, covariate for survival hyper mean linear model
- REPORT(surv_alpha);
- REPORT(surv_beta);
- 
- vector<Type>  mean_logit_surv_LH(4); //hyper mean logit survival
- 
- array<Type> logit_surv_demean(logit_surv.rows(), //demeaned survival
-                             logit_surv.cols());
- 
- // array<Type> surv_var_ar(logit_surv.rows(), //demeaned survival
- //                          logit_surv.cols());
- 
- 
- for(int Ilh=0;Ilh<4; Ilh++){
-   mean_logit_surv_LH(Ilh)= surv_alpha+ 
-                            LH_DAYS(Ilh)*
-                            surv_beta; //calculate hyper mean survival
-   
-   for (int Iyear=0; Iyear<Nyears;Iyear++){
-   logit_surv_demean(Ilh,Iyear) = logit_surv(Ilh,Iyear)-
-                                           mean_logit_surv_LH(Ilh); //calculate demeaned survival
-     //surv_var_ar(Ilh,Iyear) =surv_var(Ilh);
-   }
- }
- REPORT(mean_logit_surv_LH);
- REPORT(logit_surv_demean);
- 
+ Type like_surv = SCALE(AR1(Phi),surv_var)(logit_surv);
 
  //MAR1 likelihood
- Type like_surv = AR1(Phi, VECSCALE(UNSTRUCTURED_CORR(logit_surv_cor),
-                                    surv_var))
-                              
-   (logit_surv_demean); // nll 
+ // MVNORM_t<Type> surv_MVNORM(Sigma);
+ // Type like_surv = AR1(Phi, VECSCALE(surv_MVNORM,surv_var))
+ //   (logit_surv_demean); // nll 
  
  
- REPORT(Sigma);   
+ //REPORT(Sigma);   
  //penalized complexity priors
- PARAMETER(pen_com_surv_log_sigma);
- REPORT(pen_com_surv_log_sigma);
+ // PARAMETER(pen_com_surv_log_sigma);
+ // REPORT(pen_com_surv_log_sigma);
+ // 
+ //   like_surv -= dnorm(surv_beta,Type(0),
+ //                    exp(pen_com_surv_log_sigma),true);
+ //   like_surv -= dexp(exp(pen_com_surv_log_sigma),Type(1),true);               
+ // 
  
-   like_surv -= dnorm(surv_beta,Type(0),
-                    exp(pen_com_surv_log_sigma),true);
-   like_surv -= dexp(exp(pen_com_surv_log_sigma),Type(1),true);               
-
+ ///Data likelihood
+ // DATA_IVECTOR(surv_yr)
+ // for (int I = 0; I<surv_dat.rows();I++){
+ //   Type logit_surv_i = Type(surv_alpha)+ 
+ //     Type(Type(surv_dat(I,1))*
+ //     Type(surv_beta))+Type(logit_surv(surv_yr(I)));
+ //   like_surv -= dbinom_robust(surv_dat(I,0),Type(1),logit_surv_i,true);
+ // }
+ 
+ 
  
  //-----------------------------------------------------
  
  
  // age at return likelihood
  Type like_rand_age =0;   //initialize likelihood of random alr(p_age) vectors
- 
+ vector <Type> alr_p_age_error(4);
  //MVN distribution with unstructured VCV matrix
- 
- UNSTRUCTURED_CORR_t<Type> rand_age_nll(logit_alr_p_hyper_cor);
- 
- vector<Type> alr_p_age_error(4); //declare annual errors of alr age proportions
+UNSTRUCTURED_CORR_t<Type> rand_age_nll(logit_alr_p_hyper_cor);
 
-  for (int I=0; I<Nyears; I++){
-   
-   alr_p_age_error =
-     vector<Type>(alr_p_age.row(I))-
-     alr_p_hyper_mu;
-   
-   like_rand_age += VECSCALE(rand_age_nll,alr_p_hyper_sigma)
+   //for ( int Iage = 0; Iage<2;Iage++){
+ //vector<Type> alr_p_age_error(4); //declare annual errors of alr age proportions
+ // matrix<Type> cov(2,2);
+ // cov(0,0)= alr_p_hyper_sigma(Iage*2);  //cov param
+ // cov(1,1)= alr_p_hyper_sigma(Iage*2+1);
+ // cov(0,1)=invlogit(logit_alr_p_hyper_cor(Iage))*2-1;
+  
+  for (int I= 0; I< (Nyears-3); I++){
+    alr_p_age_error =
+      vector<Type>( vector<Type>(alr_p_age.row(I))-
+     vector<Type>(alr_p_hyper_mu));
+
+    //MVNORM_t<Type> rand_age_nll(cov);
+
+   like_rand_age += //rand_age_nll(alr_p_age_error);
+     VECSCALE(rand_age_nll,
+                              vector<Type>(alr_p_hyper_sigma*alr_p_hyper_sigma))
                     (alr_p_age_error);
  }
 
-  matrix<Type> alr_p_hyper_cor= 
-    rand_age_nll.cov();
-  REPORT(alr_p_hyper_cor);
-REPORT(alr_p_age_error);
-
+ //}
+ 
+matrix<Type> alr_cov =rand_age_nll.cov();
+REPORT(alr_cov)
+ 
+  
  //------------------------------------------
  //pHOS
  Type phos_like =0;
@@ -283,7 +327,8 @@ REPORT(alr_p_age_error);
    UNSTRUCTURED_CORR_t<Type> mvn(logit_proc_er_corr);
 
     for(int I=0;I<Nyears; I++ ){
-      state_Like+= VECSCALE(mvn,proc_sigma)
+      state_Like+= VECSCALE(mvn,
+                            vector<Type>(proc_sigma*proc_sigma))
       (vector<Type>( vector <Type> (log_R_hat.row(I))- 
         log(vector<Type>(R_pred.row(I)))));
     }
@@ -297,7 +342,7 @@ REPORT(alr_p_age_error);
                                       true));    //observation likelihood (spawners)
 
   
-  Type Recruit_obs_like= 0;                   //Initialize observatin likelihood (recruits)
+  Type Recruit_obs_like= 0;                   //Initialize observation likelihood (recruits)
   for (int I=0; I< log_R_obs.cols() ;I++){
     Recruit_obs_like+= dnorm((vector<Type>(log_R_obs.col(I))),
                                    log_R_hat(brood_year(I),LH(I)),
