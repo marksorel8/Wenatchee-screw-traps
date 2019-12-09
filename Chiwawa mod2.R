@@ -567,7 +567,10 @@ PIT_adult_age<-read.csv(here("data","Chiwawa","LH_age_BY"))
 PIT_age_LHs<-as.numeric(factor(PIT_adult_age$life_stage_guess))-1
 PIT_age_BYs<- PIT_adult_age$brood_year-1995
 PIT_ages<-as.matrix(PIT_adult_age[,3:5] )
-
+pit_props<-PIT_ages/matrix(rowSums(PIT_ages),nrow(PIT_ages),ncol(PIT_ages))
+plot(pit_props[,1],type="o",ylim=c(0,1))
+points(pit_props[,2],type="o",col="blue")
+points(pit_props[,3],type="o",col="red")
 
 
 #carcass (wild only) age at return
@@ -576,6 +579,10 @@ Carc_adult_age<-read.csv(here("data","Chiwawa","carcass ages.csv"))%>%mutate("cn
   select(starts_with("cnt"))%>%
   mutate_each(round)%>%
   as.matrix()
+car_age_props<-Carc_adult_age/matrix(rowSums(Carc_adult_age),nrow=nrow(Carc_adult_age),ncol=ncol(Carc_adult_age))
+plot(car_age_props[,1],type="o",ylim=c(0,1))
+points(car_age_props[,2],type="o",col="blue")
+points(car_age_props[,3],type="o",col="red")
 
 
 alr_Carc_adult_age<-cbind(log((Carc_adult_age[,1]+.01/rowSums(Carc_adult_age)+.01)/
@@ -615,21 +622,21 @@ SR_dat<-list(log_R_obs=log(all_boots_trans)[1:500,],                 # Observed 
 
 
 
-matrix(apply(log(all_boots_trans),2,mean),nrow=22)
+#matrix(apply(log(all_boots_trans),2,mean),nrow=22)
 
-matrix(apply(log(all_boots_trans),2,sd),nrow=22)
+#matrix(apply(log(all_boots_trans),2,sd),nrow=22)
 
 
 
 SR_pars<-list(log_R_hat=matrix(10,nrow=23,ncol=4),      # latent true number of juveniles
               log_R_obs_sd=matrix(-1.4,nrow=23,ncol=4),  # juvenile observation error
-              log_S_obs_cv=log(0.07),                         # Spawner observation error
+              log_S_obs_cv=log(0.03),                         # Spawner observation error
               log_alpha=log(c(700,700,400,60)), #rep(log(60),4),         # intrinsic productivity
               log_R_max=rep(log(50000),4),          # Asymptotic maximum recruitment
               log_d=c(1,1.8,1.4),
               
               log_proc_sigma=rep(-.5,4)/2,  # process error standard deviation
-              logit_proc_er_corr=c(.75,.086,.5,.0033,.6,.1),#qlogis((rep(.1,6)/2)+.5),
+              logit_proc_er_corr=rnorm(6,0,.03),#,c(.75,.086,.5,.0033,.6,.1),#qlogis((rep(.1,6)/2)+.5),
               
               log_W_ret_init=c(-1,3.7,4.1,4,4.5),
               logit_pHOS=qlogis(phos-.02),
@@ -641,7 +648,7 @@ SR_pars<-list(log_R_hat=matrix(10,nrow=23,ncol=4),      # latent true number of 
               surv_beta=.13,
               alr_p_hyper_mu=alr_prop_ages_init,
               log_alr_p_hyper_sigma=log(rep(5,4)),
-              logit_alr_p_hyper_cor=c(.2,-.1,.3,-.18,.5,.5),#qlogis(c(-1,1,-1,-1,1,-1)/4+.5),
+              logit_alr_p_hyper_cor=rnorm(6,0,.03),#c(.7,-.2,.4,-.18,.8,.8),#qlogis(c(-1,1,-1,-1,1,-1)/4+.5),
               alr_p_age=alr_prop_ages_init_mat[1:20,]
               #pen_com_surv_log_sigma=exp(1)
               )
@@ -658,8 +665,13 @@ map<-list(log_R_obs_sd=factor(log_R_obs_sd_map))
 ,log_surv_var=factor(rep(NA,4)))
 ,log_S_obs_cv=factor(NA))
 
-SR_5<-MakeADFun(SR_dat,SR_pars,random = c("log_R_hat","log_W_ret_init","logit_pHOS","logit_surv","alr_p_age","logit_proc_er_corr"),DLL="LCM_lite4",silent = T,map=map)
+SR_5<-MakeADFun(SR_dat,SR_pars,random = c("log_R_hat","log_W_ret_init","logit_surv","alr_p_age","logit_pHOS"  ),DLL="LCM_lite4",silent = T,map=map)
 
+,"logit_alr_p_hyper_cor"
+,"logit_proc_er_corr"
+
+
+,"log_S_obs_cv"
 
 ,
 
@@ -667,19 +679,19 @@ SR_5<-MakeADFun(SR_dat,SR_pars,random = c("log_R_hat","log_W_ret_init","logit_pH
 
 
 SR_fit<-nlminb(SR_5$par,SR_5$fn,SR_5$gr, 
-               control=list(rel.tol=1e-12,eval.max=1000000,
+               control=list(rel.tol=1e-5,eval.max=1000000,
                             iter.max=10000))#,lower=lower,upper=upper)
 
-
+SR_5$fn()
 SR_fit<-nlminb(SR_5$env$last.par.best[-SR_5$env$random],SR_5$fn,SR_5$gr, 
                control=list(rel.tol=1e-12,eval.max=1000000,
                             iter.max=10000))
 
-
+SR_5$fn()
 sd_SR<-sdreport(SR_5) 
 
 SR_5$fn()
-SR_5$gr()
+range(SR_5$gr())
 test2<-test
 test3<-test
 test<-SR_5$report()
@@ -714,6 +726,17 @@ test$pHOS
 test$R_max
 
 library(ggplot2)
+
+p_age<-test$prop_age
+
+plot(p_age[,1],ylim=c(0,1),type="o",col="blue")
+points(p_age[,2],type="o",col="red")
+points(p_age[,3],type="o")
+rowSums(p_age[,1:3])
+plot(p_age[,4],ylim=c(0,1),type="o",col="blue")
+points(p_age[,5],type="o",col="red")
+points(p_age[,6],type="o")
+rowSums(p_age[,4:6])
 
 sr_out<-data.frame(test$S_hat,exp(test$log_R_hat))
 colnames(sr_out)<-c("Spawners","fry","summer","fall","smolts")

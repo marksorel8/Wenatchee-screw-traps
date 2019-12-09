@@ -332,15 +332,19 @@ REPORT(alr_cov)
       (vector<Type>( vector <Type> (log_R_hat.row(I))- 
         log(vector<Type>(R_pred.row(I)))));
     }
-  
+    
+  matrix<Type> proc_er_corr =mvn.cov();
+  REPORT(proc_er_corr)  
  // matrix<Type> resids = log(R_hat)-log(R_pred);
   //REPORT(resids);
   
-   Type Spawner_obs_like= sum(dnorm(log(S_obs),
-                                     log(S_hat),
+   Type Spawner_obs_like= sum(dnorm(log(vector<Type>(S_obs)),//.segment(5,(Nyears-5)))),
+                                     log(vector<Type>(S_hat)),//.segment(5,(Nyears-5)))),
                                       S_obs_cv,
                                       true));    //observation likelihood (spawners)
 
+  //prior of S_obs_CV from Murdoch et al 2019
+  Spawner_obs_like+=dnorm(S_obs_cv,Type(0.055),Type(0.02),true);
   
   Type Recruit_obs_like= 0;                   //Initialize observation likelihood (recruits)
   for (int I=0; I< log_R_obs.cols() ;I++){
@@ -348,9 +352,7 @@ REPORT(alr_cov)
                                    log_R_hat(brood_year(I),LH(I)),
                                    exp(log_R_obs_sd(brood_year(I),LH(I))),true).sum(); //Observatin likelihood (recruits)
   }
-  
-  matrix<Type> proc_er_corr =mvn.cov();
-  REPORT(proc_er_corr)  
+
     
   //age composition data likelihood
   
