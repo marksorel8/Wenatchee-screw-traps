@@ -48,7 +48,7 @@ Type objective_function<Type>::operator() ()
   DATA_MATRIX(PIT_ages);
   DATA_MATRIX(Carc_adult_age);
   DATA_MATRIX(surv_dat);
-
+  DATA_INTEGER(Nproj);
   
   //---------------------------------------------------------------------
   // Parameters
@@ -58,7 +58,7 @@ Type objective_function<Type>::operator() ()
   
   PARAMETER_MATRIX(log_R_hat);         // latent true number of juveniles
   PARAMETER_MATRIX(log_R_obs_sd);      // annual observation error of juveniles
-
+ 
   PARAMETER_VECTOR(log_W_ret_init);    // latent true number of spawners in years 1-5
   vector<Type> W_ret_init = exp(log_W_ret_init);
   REPORT(W_ret_init);
@@ -101,12 +101,26 @@ Type objective_function<Type>::operator() ()
   PARAMETER_VECTOR(logit_surv);       
   REPORT(logit_surv);
   
+
   
   PARAMETER(surv_alpha); //intercept 
   PARAMETER(surv_beta); //and coefficient for hyper-mean survival
   DATA_VECTOR(LH_DAYS); //average day counted for each juvenile LH, covariate for survival hyper mean linear model
   REPORT(surv_alpha);
   REPORT(surv_beta);
+  
+    //survival from emigration to adults
+  PARAMETER(logit_Phi); //logit survival autocorrelation (same for all LHs)
+  Type Phi = invlogit(logit_Phi);
+  REPORT(Phi);
+  
+  PARAMETER(log_surv_var); // variances (unique for LHs)
+  Type surv_var = exp(log_surv_var);
+  REPORT(surv_var);
+  
+  
+  
+ 
   
   //---------------------------------------------------------------------
   // Variables
@@ -136,17 +150,17 @@ Type objective_function<Type>::operator() ()
   REPORT(logit_surv_lh_yr);
   
   
- vector<Type> wild_return(Nyears); //total wild returns in brood year
- vector<Type> S_hat(Nyears);      //total spawners in brood year
- vector<Type> hatch_S_hat(Nyears);// wild spawners
- vector<Type> wild_S_hat(Nyears);// hatchery spawners
+ vector<Type> wild_return(Nyears+Nproj); //total wild returns in brood year
+ vector<Type> S_hat(Nyears+Nproj);      //total spawners in brood year
+ vector<Type> hatch_S_hat(Nyears+Nproj);// wild spawners
+ vector<Type> wild_S_hat(Nyears+Nproj);// hatchery spawners
  
- matrix<Type> ad_LH(Nyears,4); //wild adult returns by LH & BY
- matrix<Type> ad_LH_age(Nyears,4*3); //wild adult returns by age, LH & BY
+ matrix<Type> ad_LH(Nyears+Nproj,4); //wild adult returns by LH & BY
+ matrix<Type> ad_LH_age(Nyears+Nproj,4*3); //wild adult returns by age, LH & BY
 
- matrix<Type> R_pred(Nyears,4); //predicted juvenile emigrants by BY
+ matrix<Type> R_pred(Nyears+Nproj,4); //predicted juvenile emigrants by BY
  
- matrix<Type> w_ad_age(Nyears,3);
+ matrix<Type> w_ad_age(Nyears+Nproj,3);
  w_ad_age.fill(0);
  
  //---------------------------------------------------------------------
@@ -204,12 +218,7 @@ for (int Iyear=0; Iyear<Nyears;Iyear++){//brood year loop
     }
    }//LH loop
   }//year loop
- REPORT(wild_return);
- REPORT(hatch_S_hat);
- REPORT(wild_S_hat);
- REPORT(w_ad_age);
- REPORT(ad_LH_age);
- REPORT(ad_LH);
+ 
  
  //                End of population model
  //------------------------------------------------------------------------------------
@@ -219,14 +228,7 @@ for (int Iyear=0; Iyear<Nyears;Iyear++){//brood year loop
  // Load namespace which contains the multivariate distributions
  using namespace density;
  
- //survival from emigration to adults
- PARAMETER(logit_Phi); //logit survival autocorrelation (same for all LHs)
- Type Phi = invlogit(logit_Phi);
- REPORT(Phi);
  
- PARAMETER(log_surv_var); // variances (unique for LHs)
- Type surv_var = exp(log_surv_var);
- REPORT(surv_var);
  
  //PARAMETER_VECTOR(logit_surv_cor); //logit(correlation/2+.5) transform to bound (-1,1)
  //vector<Type> surv_cor =invlogit(logit_surv_cor)*2 -1;
@@ -268,7 +270,7 @@ for (int Iyear=0; Iyear<Nyears;Iyear++){//brood year loop
  ///Data likelihood
  // DATA_IVECTOR(surv_yr)
  // for (int I = 0; I<surv_dat.rows();I++){
- //   Type logit_surv_i = Type(surv_alpha)+ 
+ //   Type logit_surv_i = Type(surv_alpha)+
  //     Type(Type(surv_dat(I,1))*
  //     Type(surv_beta))+Type(logit_surv(surv_yr(I)));
  //   like_surv -= dbinom_robust(surv_dat(I,0),Type(1),logit_surv_i,true);
@@ -308,7 +310,7 @@ UNSTRUCTURED_CORR_t<Type> rand_age_nll(logit_alr_p_hyper_cor);
  //}
  
 matrix<Type> alr_cov =rand_age_nll.cov();
-REPORT(alr_cov)
+REPORT(alr_cov);
  
   
  //------------------------------------------
@@ -339,7 +341,7 @@ REPORT(alr_cov)
   //REPORT(resids);
   
    Type Spawner_obs_like= sum(dnorm(log(vector<Type>(S_obs)),//.segment(5,(Nyears-5)))),
-                                     log(vector<Type>(S_hat)),//.segment(5,(Nyears-5)))),
+                                     log(vector<Type>(S_hat.segment(0,S_obs.size()))),//.segment(5,(Nyears-5)))),
                                       S_obs_cv,
                                       true));    //observation likelihood (spawners)
 
@@ -383,7 +385,130 @@ REPORT(alr_cov)
    Type obj_fun = -state_Like-like_surv-like_rand_age
     +phos_like  +Spawner_obs_like+ Recruit_obs_like+
       PIT_age_like+carcass_age_like;
-  REPORT(phos_like);
+
+  
+
+
+  
+  SIMULATE{
+    vector<Type> surv_proj(Nproj);
+    //survival year effects
+    surv_proj(0)=logit_surv(Nyears-4)*Phi + sqrt(1-pow(Phi,2))*rnorm(Type(0),Type(surv_var));
+    for ( int  I=1; I<Nproj; I++)
+      surv_proj(I)=surv_proj(I-1)*Phi + sqrt(1-pow(Phi,2))*rnorm(Type(0),Type(surv_var));
+    
+    REPORT(surv_proj);
+    
+    
+    //age proportions
+    matrix <Type> alr_age_proj(Nproj,4);//matrix to hold props
+    
+    MVNORM_t<Type> rand_age_mvn(alr_cov);//mvn disctribution to simmulate from
+      for ( int  I=0; I<Nproj; I++)
+        alr_age_proj.row(I)=rand_age_mvn.simulate()+alr_p_hyper_mu;
+      matrix<Type> prop_age_proj = alr_to_simplex(alr_age_proj);
+    REPORT(prop_age_proj);
+    
+  
+  
+  //spawner->juvenile process error
+  matrix <Type> juv_proc_er_proj(Nproj,4);//matrix to hold props
+  
+  MVNORM_t<Type> juv_proc_er_mvn(mvn);//mvn disctribution to simmulate from
+  for ( int  I=0; I<Nproj; I++)
+    juv_proc_er_proj.row(I)=juv_proc_er_mvn.simulate();
+   REPORT(juv_proc_er_proj);
+  
+  //vector to hold projection pHOS
+  vector<Type> pHOS_proj(Nproj);
+  pHOS_proj.fill(0);
+  //vector to hold projection brood_rem
+  vector<Type> brood_rem_proj(Nproj);
+  brood_rem_proj.fill(0);
+  //calculate adult contributions from Brood years 2015-2017 with juveniles from fitted model in those years and projected survival and age comp
+  //then calculate spawners in brood year 2018-2020
+  // is it ok to use fitted value for smolts from 2017 brood even though no data?
+  for(int Iyear=(Nyears-3); Iyear < int( Nyears); Iyear++){//brood year loop
+
+    for(int Ilh=0;Ilh<4; Ilh++){ //juvenile life history loop
+
+      ad_LH(Iyear,Ilh)= exp(log_R_hat(Iyear,Ilh))*
+        invlogit(surv_proj(Iyear-Nyears+3)+mean_logit_surv_LH(Ilh)); //wild adult returns by LH
+
+      for (int Iage=0;Iage<3; Iage++ ){//adult return age loop
+        ad_LH_age(Iyear,(Ilh*3)+Iage) = prop_age_proj(Iyear-Nyears+3,(JLH_A(Ilh)*3)+Iage)  *
+          ad_LH(Iyear,Ilh); //wild adult returns by LH & age
+
+      }//end of adult return age loop
+    }//end of life history loop
+  
+  //calculate spawners
+  wild_return(Iyear) = w_ad_age.row(Iyear).sum();
+  wild_S_hat(Iyear)=   (wild_return(Iyear) - brood_rem_proj(Iyear-Nyears));//make brood rem
+  hatch_S_hat(Iyear)= wild_S_hat(Iyear)*pHOS_proj(Iyear-Nyears);//make pHOS_proj
+      (1-pHOS(Iyear));
+  S_hat(Iyear) =  wild_S_hat(Iyear)+hatch_S_hat(Iyear);
+  }
+  
+  
+  //loop through years Nyears+1 - Nyears+1+Nproj-3
+  //calc juveniles and spawners
+  
+  //loop through projection years and calculate juveniles then adults for 2018:2042
+  for ( int Iyear = Nyears; Iyear<Nyears+Nproj-3; Iyear++){ //start in brood year 2018
+
+    for(int Ilh=0;Ilh<4; Ilh++){ //juvenile life history loop
+          
+          
+          //predict juveniles
+          if(Model(Ilh)==1){
+            R_pred(Iyear,Ilh)= R_max(Ilh)*(1-exp(-(pow(S_hat(Iyear)/alpha(Ilh),d(Ilh))))); //weibull CDF
+
+          }
+
+          if(Model(Ilh)==2){
+            R_pred(Iyear,Ilh)= (alpha(Ilh)*S_hat(Iyear))/(1+alpha(Ilh)*S_hat(Iyear)/R_max(Ilh)); //beverton-holt model
+          }
+        
+        //add process error
+        log_R_hat(Iyear,Ilh)=R_pred(Iyear,Ilh)+juv_proc_er_proj(Iyear-Nyears,Ilh);
+        
+    
+        ad_LH(Iyear,Ilh)= exp(log_R_hat(Iyear,Ilh))*
+          invlogit(surv_proj(Iyear-Nyears+3)+mean_logit_surv_LH(Ilh)); //wild adult returns by LH
+          
+          for (int Iage=0;Iage<3; Iage++ ){//adult return age loop
+            ad_LH_age(Iyear,(Ilh*3)+Iage) = prop_age_proj(Iyear-Nyears+3,(JLH_A(Ilh)*3)+Iage)  *
+              ad_LH(Iyear,Ilh); //wild adult returns by LH & age
+            
+          }//end of adult return age loop
+        
+        
+        }//end of LH loop
+
+    wild_return(Iyear) = w_ad_age.row(Iyear).sum();
+    wild_S_hat(Iyear)=   (wild_return(Iyear) - brood_rem_proj(Iyear-Nyears));//make brood rem
+    hatch_S_hat(Iyear)= wild_S_hat(Iyear)*pHOS_proj(Iyear-Nyears);//make pHOS_proj
+      (1-pHOS(Iyear));
+    S_hat(Iyear) =  wild_S_hat(Iyear)+hatch_S_hat(Iyear);
+    
+  }
+  
+  for ( int Iyear = Nyears+Nproj-3; Iyear<Nyears+Nproj; Iyear++){ //start in brood year 2018
+    wild_return(Iyear) = w_ad_age.row(Iyear).sum();
+    wild_S_hat(Iyear)=   (wild_return(Iyear) - brood_rem_proj(Iyear-Nyears));//make brood rem
+    hatch_S_hat(Iyear)= wild_S_hat(Iyear)*pHOS_proj(Iyear-Nyears);//make pHOS_proj
+      (1-pHOS(Iyear));
+    S_hat(Iyear) =  wild_S_hat(Iyear)+hatch_S_hat(Iyear);
+    
+  }
+  
+  
+  
+  }
+  
+  
+    REPORT(phos_like);
   REPORT(PIT_age_like);
   REPORT(carcass_age_like);
   REPORT(R_pred);
@@ -396,6 +521,14 @@ REPORT(alr_cov)
   REPORT(S_hat);
   REPORT(like_surv);
   REPORT(like_rand_age);
+  REPORT(wild_return);
+  REPORT(hatch_S_hat);
+  REPORT(wild_S_hat);
+  REPORT(w_ad_age);
+  REPORT(ad_LH_age);
+  REPORT(ad_LH);
+  
+  
   return(-obj_fun);
 }
 

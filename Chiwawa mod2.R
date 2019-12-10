@@ -559,7 +559,7 @@ mean(pNI)
 
 #Survival data
 surv_dat<-read.csv(here("data","Chiwawa","surv_dat.csv"))
-surv_dat2<-surv_dat %>% mutate(Length.mm=(Length.mm-mean(Length.mm))/sd(Length.mm)) %>% mutate(surv_TUM=as.numeric(surv_TUM))
+surv_dat2<-surv_dat %>% mutate(Length.mm=(Length.mm-mean(Length.mm))/sd(Length.mm)) %>% mutate(surv_TUM=as.numeric(surv_TUM)) %>% subset(brood_year_guess<=2014)%>%droplevels()
 
 #PIT tag age at return
 PIT_adult_age<-read.csv(here("data","Chiwawa","LH_age_BY"))
@@ -591,12 +591,18 @@ alr_Carc_adult_age<-cbind(log((Carc_adult_age[,1]+.01/rowSums(Carc_adult_age)+.0
                          (Carc_adult_age[,3]+.01/rowSums(Carc_adult_age)+.01)))
 apply(alr_Carc_adult_age[-1,],2,sd)
 
+plot(alr_Carc_adult_age[,1],type="o")#,ylim=c(0,1))
+points(alr_Carc_adult_age[,2],type="o",col="blue")
+points(car_age_props[,3],type="o",col="red")
+
+
 #prop_age inits
 prop_ages_init<-c(.125,.725,.15,.06,.65,.29)
 
 alr_prop_ages_init<-log(c(prop_ages_init[1:2]/prop_ages_init[3],prop_ages_init[4:5]/prop_ages_init[6]))
 
 alr_prop_ages_init_mat<-matrix(alr_prop_ages_init,nrow=23,ncol=4,byrow = T)
+
 
 ##data
 SR_dat<-list(log_R_obs=log(all_boots_trans)[1:500,],                 # Observed recruits (posterior from juvenile modle)
@@ -616,7 +622,8 @@ SR_dat<-list(log_R_obs=log(all_boots_trans)[1:500,],                 # Observed 
              PIT_ages=PIT_ages,
              Carc_adult_age=Carc_adult_age,
              surv_dat=as.matrix(surv_dat2[,1:2]),
-             surv_yr=(surv_dat$brood_year_guess-1995)
+             surv_yr=(surv_dat2$brood_year_guess-1995),
+             Nproj=25
              )
 
 
@@ -665,7 +672,10 @@ map<-list(log_R_obs_sd=factor(log_R_obs_sd_map))
 ,log_surv_var=factor(rep(NA,4)))
 ,log_S_obs_cv=factor(NA))
 
-SR_5<-MakeADFun(SR_dat,SR_pars,random = c("log_R_hat","log_W_ret_init","logit_surv","alr_p_age","logit_pHOS"  ),DLL="LCM_lite4",silent = T,map=map)
+SR_5<-MakeADFun(SR_dat,SR_pars,random = c("log_R_hat","log_W_ret_init","logit_surv","alr_p_age","logit_pHOS"),DLL="LCM_lite4",silent = T,map=map)
+
+
+
 
 ,"logit_alr_p_hyper_cor"
 ,"logit_proc_er_corr"
@@ -689,6 +699,13 @@ SR_fit<-nlminb(SR_5$env$last.par.best[-SR_5$env$random],SR_5$fn,SR_5$gr,
 
 SR_5$fn()
 sd_SR<-sdreport(SR_5) 
+
+
+sim<-SR_5$simulate()
+plot(sim$surv_proj,type="o")
+sim$prop_age_proj
+sim$juv_proc_er_proj
+sim$w_ad_age
 
 SR_5$fn()
 range(SR_5$gr())
@@ -752,6 +769,7 @@ par(mfrow=c(2,2),mar=c(2,2,2,2),oma=c(2,2,0,0))
 for ( i in 1:3){
 plot(test$S_hat,exp(test$log_R_hat[,i]),main=LH_lab[i],xlab="",ylab="",ylim=c(0,200000),pch=19)
 points(test$S_hat[ord], test$R_pred[,i][ord],col="blue",type="l",lwd=2)
+
 }
 
 plot(test$S_hat,exp(test$log_R_hat[,4]),main="smolt",xlab="",ylab="",ylim=c(0,200000),pch=19)
@@ -812,7 +830,7 @@ surv_out<-gather(surv_out,"lifestage","survival",2:5)
 ggplot(data=surv_out,aes(year,survival,col=lifestage))+geom_line(size=1.5)+theme(axis.text=element_text(size=12), axis.title=element_text(size=14,face="bold"))
 
 
-plot(1995:2017,test$S_hat,type="l",ylim=c(0,3000))
+plot(1995:(2017+25),test$S_hat,type="l",ylim=c(0,3000))
 points(1995:2017,spawners,col="blue",type="l")
 mtext("log(S_Obs)",1,0.5,outer=T,xpd=NA)
 mtext("Spawners",2,0.5,outer=T,xpd=NA)
