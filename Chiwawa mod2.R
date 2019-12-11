@@ -593,7 +593,7 @@ apply(alr_Carc_adult_age[-1,],2,sd)
 
 plot(alr_Carc_adult_age[,1],type="o")#,ylim=c(0,1))
 points(alr_Carc_adult_age[,2],type="o",col="blue")
-points(car_age_props[,3],type="o",col="red")
+
 
 
 #prop_age inits
@@ -605,7 +605,7 @@ alr_prop_ages_init_mat<-matrix(alr_prop_ages_init,nrow=23,ncol=4,byrow = T)
 
 
 ##data
-SR_dat<-list(log_R_obs=log(all_boots_trans)[1:500,],                 # Observed recruits (posterior from juvenile modle)
+SR_dat<-list(log_R_obs=log(all_boots_trans)[1:100,],                 # Observed recruits (posterior from juvenile modle)
              brood_year=c(rep(1:22,times=3),0:21),
              LH=rep(0:3,each=22),
              wild_S_obs=as.numeric(wild_spawners),  
@@ -623,7 +623,12 @@ SR_dat<-list(log_R_obs=log(all_boots_trans)[1:500,],                 # Observed 
              Carc_adult_age=Carc_adult_age,
              surv_dat=as.matrix(surv_dat2[,1:2]),
              surv_yr=(surv_dat2$brood_year_guess-1995),
-             Nproj=25
+             Nproj=25,
+             rem_rate=0.33,
+             NORcutoff =500,
+             Hmax=200,
+             rule=0
+             
              )
 
 
@@ -654,9 +659,10 @@ SR_pars<-list(log_R_hat=matrix(10,nrow=23,ncol=4),      # latent true number of 
               surv_alpha=-6,
               surv_beta=.13,
               alr_p_hyper_mu=alr_prop_ages_init,
-              log_alr_p_hyper_sigma=log(rep(5,4)),
+              log_alr_p_hyper_sigma=log(rep(.5,4)),
               logit_alr_p_hyper_cor=rnorm(6,0,.03),#c(.7,-.2,.4,-.18,.8,.8),#qlogis(c(-1,1,-1,-1,1,-1)/4+.5),
-              alr_p_age=alr_prop_ages_init_mat[1:20,]
+              alr_p_age=alr_prop_ages_init_mat[1:20,],
+              logit_Phi_alr=qlogis(.4)
               #pen_com_surv_log_sigma=exp(1)
               )
 
@@ -667,25 +673,25 @@ map<-list(log_S_obs_cv=factor(NA))
 map<-list(alr_p_age=factor(rep(NA,length(alr_prop_ages_init_mat))))
 log_R_obs_sd_map<-1:(23*4)
 log_R_obs_sd_map[c(1,24,47,92)]<-NA
-map<-list(log_R_obs_sd=factor(log_R_obs_sd_map))
+map<-list(log_R_obs_sd=factor(log_R_obs_sd_map),surv_beta=factor(NA))
 
 ,log_surv_var=factor(rep(NA,4)))
 ,log_S_obs_cv=factor(NA))
 
-SR_5<-MakeADFun(SR_dat,SR_pars,random = c("log_R_hat","log_W_ret_init","logit_surv","alr_p_age","logit_pHOS"),DLL="LCM_lite4",silent = T,map=map)
+SR_6<-MakeADFun(SR_dat,SR_pars,random = c("log_R_hat","log_W_ret_init","logit_surv","alr_p_age"),DLL="LCM_lite4",silent = T,map=map)
 
+
+,"logit_pHOS"
 
 
 
 ,"logit_alr_p_hyper_cor"
 ,"logit_proc_er_corr"
 
-
 ,"log_S_obs_cv"
+,"logit_surv_cor"
 
-,
 
-"logit_surv_cor"
 
 
 SR_fit<-nlminb(SR_5$par,SR_5$fn,SR_5$gr, 
@@ -694,15 +700,187 @@ SR_fit<-nlminb(SR_5$par,SR_5$fn,SR_5$gr,
 
 SR_5$fn()
 SR_fit<-nlminb(SR_5$env$last.par.best[-SR_5$env$random],SR_5$fn,SR_5$gr, 
-               control=list(rel.tol=1e-12,eval.max=1000000,
+               control=list(rel.tol=1e-7,eval.max=1000000,
                             iter.max=10000))
 
 SR_5$fn()
 sd_SR<-sdreport(SR_5) 
 
+#mle and standard errors of s_hats
+sd_SR_sum_s_hat_hist<-summary(sd_SR)[(nrow(summary(sd_SR))-(22+23)):(nrow(summary(sd_SR))-23),]
+#mle and standard errors of wild_s_hats
+wild_sd_SR_sum_s_hat_hist<-summary(sd_SR)[(nrow(summary(sd_SR))-22):nrow(summary(sd_SR)),]
 
-sim<-SR_5$simulate()
+#replace SD of first value with S_obs_CV because its wonky
+wild_sd_SR_sum_s_hat_hist[1,2]<- exp(SR_fit$par["log_S_obs_cv"])
+
+
+#simulate
+set.seed(0114) 
+sim_rep<-replicate(1000,{
+ 
+  sim<-SR_6$simulate(SR_5$env$last.par)
+  matrix(c(sim$wild_S_hat,
+        sim$hatch_S_hat,
+        sim$S_hat,
+        sim$wild_return,
+        rep(0,23),sim$brood_rem_proj),nrow=(23+25))
+})
+
+sim_rep_proj<-sim_rep[24:(23+25),4,]
+
+f4<-rep(1/4,4)
+QET<-apply(sim_rep_proj,2,function(x){
+  x_lag <- stats::filter(x, f4, sides=1)
+  min(x_lag,na.rm = T)<50
+})
+
+pQET<-sum(QET)/length(QET)
+
+pQET
+
+geo_mean<-mean(exp(apply(log(sim_rep_proj),2,mean)))
+
+geo_mean
+
+
+pHOS_mat<-sim_rep[24:(23+25),2,]/sim_rep[24:(23+25),3,]
+pHOS_mean<-mean(apply(pHOS_mat,2,mean))
+pHOS_mean
+pNOB_mat<-sim_rep[24:(23+25),5,]/74
+pNOB_mean<-mean(apply(pNOB_mat,2,mean))
+pNOB_mean
+PNI_mat<-pNOB_mat/(pNOB_mat+pHOS_mat)
+pNI_mean<-mean(apply(PNI_mat,2,mean))
+pNI_mean
+
+plot(c(sim_rep[24:(23+25),4,]),c(PNI_mat),xlim=c(0,400))
+segments(0,0,176,0)
+segments(176,0,176,.4)
+segments(176,.4,207,.5)
+segments(208,.5,277,.67)
+segments(277,.67,372,.8)
+segments(372,.8,1000,1)
+
+no_hatch<-c(pQET,geo_mean,pHOS_mean,pNOB_mean,pNI_mean)
+statusQuo<-c(pQET,geo_mean,pHOS_mean,pNOB_mean,pNI_mean)
+dec_tab<-cbind(no_hatch,statusQuo)
+
+spawners
+wild_spawners
+plot(wild_spawners)
+points(test$wild_S_hat[1:23],col="red")
+plot(hatch_spawners)
+points(test$hatch_S_hat[1:23],col="red")
+s_hat_proj<-sim_rep[24:(23+25),3,]
+wild_s_hat_proj<-sim_rep[24:(23+25),1,]
+
+
+plot_all<-function(sim_out,sd_out,sp_dat){
+
+s_hat_proj_quant<-apply(sim_out,1,
+                        quantile,c(.025,.25,.5,.75,.975))
+
+s_hat_hist_quant<-exp(matrix(sd_out[,1],nrow=5,ncol=23,byrow = T)+((matrix(sd_out[,2],nrow=5,ncol=23,byrow = T))*qnorm(c(.025,.25,.5,.75,.975))))
+
+
+s_hat_all<-cbind(s_hat_hist_quant,s_hat_proj_quant)
+
+years<-1995:(2017+25)
+plot(0,type="n",ylim=range(s_hat_all),xlim=range(years))
+
+polygon(c(years,rev(years)),c(s_hat_all[1,],rev(s_hat_all[5,])),border=F,col="lightgrey")
+
+polygon(c(years,rev(years)),c(s_hat_all[2,],rev(s_hat_all[4,])),border=F,col="darkgrey")
+
+points(years,s_hat_all[3,],type="l")
+
+points(years[1:23],sp_dat)
+
+}
+
+plot_all(wild_s_hat_proj,wild_sd_SR_sum_s_hat_hist,wild_spawners)
+
+
+plot_all(s_hat_proj,sd_SR_sum_s_hat_hist,spawners)
+
+exp(sd_SR_sum_s_hat_hist[,1]+1.96*sd_SR_sum_s_hat_hist[,2])
+
+
+
+wild_s_hat_proj<-sim_rep[24:(23+25),1,]
+wild_s_hat_proj_quant<-apply(sim_rep_sub,1,
+                        quantile,c(.025,.25,.5,.75,.975))
+
+
+
+
+plot(exp(sd_SR_sum_s_hat_hist[,1]+1.96*sd_SR_sum_s_hat_hist[,2]),type="l")
+points(exp(sd_SR_sum_s_hat_hist[,1]-1.96*sd_SR_sum_s_hat_hist[,2]),type="l")
+points(exp(sd_SR_sum_s_hat_hist[,1]),type="l")
+points(spawners[],col="blue",pch=19)
+
+
+
+plot(exp(wild_sd_SR_sum_s_hat_hist[,1]+1.96*wild_sd_SR_sum_s_hat_hist[,2]),type="l",ylim=c(0,1000))
+points(exp(wild_sd_SR_sum_s_hat_hist[,1]-1.96*wild_sd_SR_sum_s_hat_hist[,2]),type="l")
+points(exp(wild_sd_SR_sum_s_hat_hist[,1]),type="l")
+points(wild_spawners[],col="blue",pch=19)
+
+
+
+lower_s_hat<-apply(sim_rep_sub,1,quantile,.025)
+
+mid_s_hat<-apply(sim_rep_sub,1,quantile,.5)
+
+
+test$S_hat[1:23]
+test$S_obs_cv
+test$pHOS
+
+
+plot(0,type="n",ylim=c(0,max))
+
+
+
+sim_rep_sub<-sim_rep[,5,]
+
+
+upper_s_hat<-apply(sim_rep_sub,1,quantile,.975)
+
+lower_s_hat<-apply(sim_rep_sub,1,quantile,.025)
+
+mid_s_hat<-apply(sim_rep_sub,1,quantile,.5)
+
+plot(0,type = "n",ylim=range(c(upper_s_hat,lower_s_hat)),xlim=c(0,48))
+
+
+points(upper_s_hat,type="l")
+points(lower_s_hat,type="l")
+points(mid_s_hat,type="l")
+
+
+
+
+
+
+
+
+
+plot(sim$S_hat,type="o")
+plot(sim$wild_S_hat,type="o")
 plot(sim$surv_proj,type="o")
+plot(sim$S_hat,type="o")
+plot(sim$wild_S_hat,type="o")
+
+
+
+
+
+
+
+
+abline(v=23)
 sim$prop_age_proj
 sim$juv_proc_er_proj
 sim$w_ad_age
@@ -830,7 +1008,7 @@ surv_out<-gather(surv_out,"lifestage","survival",2:5)
 ggplot(data=surv_out,aes(year,survival,col=lifestage))+geom_line(size=1.5)+theme(axis.text=element_text(size=12), axis.title=element_text(size=14,face="bold"))
 
 
-plot(1995:(2017+25),test$S_hat,type="l",ylim=c(0,3000))
+plot(1995:(2017+25),sim$S_hat,type="l",ylim=c(0,3000))
 points(1995:2017,spawners,col="blue",type="l")
 mtext("log(S_Obs)",1,0.5,outer=T,xpd=NA)
 mtext("Spawners",2,0.5,outer=T,xpd=NA)
