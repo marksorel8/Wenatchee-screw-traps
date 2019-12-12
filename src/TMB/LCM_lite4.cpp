@@ -111,7 +111,7 @@ Type objective_function<Type>::operator() ()
   
     //survival from emigration to adults
   PARAMETER(logit_Phi); //logit survival autocorrelation (same for all LHs)
-  Type Phi = invlogit(logit_Phi);
+  Type Phi = invlogit(logit_Phi)*2-1;
   REPORT(Phi);
   
   PARAMETER(log_surv_var); // variances (unique for LHs)

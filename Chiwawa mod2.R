@@ -720,9 +720,9 @@ wild_sd_SR_sum_s_hat_hist[1,2]<- exp(SR_fit$par["log_S_obs_cv"])
 #simulate
 result<-function(){
 
-  par(mfcol=c(3,3),mar=c(2,2,2,2),oma=c(2,3.5,0,0))
+  par(mfcol=c(3,3),mar=c(3,2,2,2),oma=c(2,3.5,2,0))
   #  scenario<-"no hatchery"
-  no_hatch<-sim_func(SR_5,"no hatchery",TRUE,2.5)
+  no_hatch<-sim_func(SR_5,"No hatchery",TRUE,2.5)
   
 SR_dat$rule<-1
 SR_dat$Hmax<-200
@@ -731,7 +731,7 @@ SR_dat$rem_rate<-.33
 SR_6<-MakeADFun(SR_dat,SR_pars,random = c("log_R_hat","log_W_ret_init","logit_surv","alr_p_age"),DLL="LCM_lite4",silent = T,map=map)
 
 #scenario<-"Hmax=200, NORcut=500"
-rule1<-sim_func(SR_6, "Hmax=200, NORcut=500",FALSE)
+rule1<-sim_func(SR_6, "Hmax=200, NORcut=500\npREM=0.33",FALSE,2.5)
 
 # SR_dat$rule<-1
 # SR_dat$Hmax<-300
@@ -744,10 +744,10 @@ rule1<-sim_func(SR_6, "Hmax=200, NORcut=500",FALSE)
 SR_dat$rule<-1
 SR_dat$Hmax<-300
 SR_dat$NORcutoff<-300
-SR_dat$rem_rate<-.4
+SR_dat$rem_rate<-.33
 SR_7<-MakeADFun(SR_dat,SR_pars,random = c("log_R_hat","log_W_ret_init","logit_surv","alr_p_age"),DLL="LCM_lite4",silent = T,map=map)
 
-rule3<-sim_func(SR_7, "Hmax=600, NORcut=300",FALSE)
+rule3<-sim_func(SR_7, "Hmax=600, NORcut=300\npREM=0.4",FALSE,2.5)
 
 cbind(no_hatch,rule1,rule3)
 
@@ -793,11 +793,12 @@ PNI_mat<-pNOB_mat/(pNOB_mat+pHOS_mat)
 pNI_mean<-mean(apply(PNI_mat,2,mean))
 pNI_mean
  if(mod$env$data$rule){
-plot(c(sim_rep[24:(23+25),4,]),c(PNI_mat),xlim=c(0,400),ylab="pNI",xlab="Wild Return",main=scenario)}else{
-  plot(0,type="n",xlim=c(0,400),ylim=c(0,1),main=scenario)
+plot(c(sim_rep[24:(23+25),4,]),c(PNI_mat),xlim=c(0,400),ylab="pNI",xlab="Wild Return",main=scenario,cex.main=.9,cex.lab=.8)}else{
+  plot(0,type="n",xlim=c(0,400),ylim=c(0,1),main=scenario,cex.main=.9,cex.lab=.90)
   abline(h=1,lwd=4)
 }
-if(labs)mtext("pNI",2,line)
+if(labs)mtext("pNI",2,line,cex=0.9)
+mtext("Wild return",1,line,cex=0.9)
 segments(0,0,176,0)
 segments(176,0,176,.4)
 segments(176,.4,207,.5)
@@ -825,7 +826,7 @@ plot_all<-function(sim_out,sd_out,sp_dat,origin){
   
   years<-1995:(2017+25)
   plot(0,type="n",ylim=range(s_hat_all),xlim=range(years),xlab="",ylab="")
-  if(labs)mtext(paste(origin,"spawners"),2,line)
+  if(labs)mtext(paste(origin,"Spawners"),2,line,cex=0.9)
   polygon(c(years,rev(years)),c(s_hat_all[1,],rev(s_hat_all[5,])),border=F,col="lightgrey")
   
   polygon(c(years,rev(years)),c(s_hat_all[2,],rev(s_hat_all[4,])),border=F,col="darkgrey")
@@ -836,7 +837,7 @@ plot_all<-function(sim_out,sd_out,sp_dat,origin){
   
 }# end of function
 
-plot_all(wild_s_hat_proj,wild_sd_SR_sum_s_hat_hist,wild_spawners,"wild\n")
+plot_all(wild_s_hat_proj,wild_sd_SR_sum_s_hat_hist,wild_spawners,"Wild\n")
 
 plot_all(s_hat_proj,sd_SR_sum_s_hat_hist,spawners,"")
 
@@ -846,7 +847,7 @@ out
 
 
 
-result()
+.<-result()
 
 
 
@@ -983,9 +984,10 @@ rowSums(p_age[,1:3])
 points(p_age[,4],type="l",lty=2,col="blue")
 points(p_age[,5],type="l",col="red",lty=2)
 points(p_age[,6],type="l",lty=2)
+
 axis(1,at=seq(1,20,5),labels=seq(1995,2010,5))
 
-legend(y=1.75,x=1,col=rep(c("blue","black","red"),each=2),legend=c("1-3","2-3","1-4","2-4","1-5","3-5"),xpd=NA,ncol=3,lty=rep(1:2,each=3))
+legend(y=1.45,x=1,col=rep(c("blue","red","black"),each=2),legend=c("1-3","2-3","1-4","2-4","1-5","1-5"),xpd=NA,ncol=3,lty=rep(1:2,3))
 rowSums(p_age[,4:6])
 
 sr_out<-data.frame(test$S_hat[1:23],exp(test$log_R_hat))
