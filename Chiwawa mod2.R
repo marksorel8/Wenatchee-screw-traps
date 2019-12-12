@@ -642,7 +642,7 @@ SR_dat<-list(log_R_obs=log(all_boots_trans)[1:100,],                 # Observed 
 
 SR_pars<-list(log_R_hat=matrix(10,nrow=23,ncol=4),      # latent true number of juveniles
               log_R_obs_sd=matrix(-1.4,nrow=23,ncol=4),  # juvenile observation error
-              log_S_obs_cv=log(0.03),                         # Spawner observation error
+              log_S_obs_cv=log(0.05),                         # Spawner observation error
               log_alpha=log(c(700,700,400,60)), #rep(log(60),4),         # intrinsic productivity
               log_R_max=rep(log(50000),4),          # Asymptotic maximum recruitment
               log_d=c(1,1.8,1.4),
@@ -656,10 +656,10 @@ SR_pars<-list(log_R_hat=matrix(10,nrow=23,ncol=4),      # latent true number of 
               logit_Phi=.8,
               log_surv_var=-2,
               #logit_surv_cor=qlogis((rep(.98,6))),
-              surv_alpha=-6,
-              surv_beta=.13,
+              surv_alpha=-5,
+              surv_beta=.18,
               alr_p_hyper_mu=alr_prop_ages_init,
-              log_alr_p_hyper_sigma=log(rep(.5,4)),
+              log_alr_p_hyper_sigma=log(rep(.6,4)),
               logit_alr_p_hyper_cor=rnorm(6,0,.03),#c(.7,-.2,.4,-.18,.8,.8),#qlogis(c(-1,1,-1,-1,1,-1)/4+.5),
               alr_p_age=alr_prop_ages_init_mat[1:20,],
               logit_Phi_alr=qlogis(.4)
@@ -678,7 +678,9 @@ map<-list(log_R_obs_sd=factor(log_R_obs_sd_map),surv_beta=factor(NA))
 ,log_surv_var=factor(rep(NA,4)))
 ,log_S_obs_cv=factor(NA))
 
-SR_6<-MakeADFun(SR_dat,SR_pars,random = c("log_R_hat","log_W_ret_init","logit_surv","alr_p_age"),DLL="LCM_lite4",silent = T,map=map)
+
+
+SR_5<-MakeADFun(SR_dat,SR_pars,random = c("log_R_hat","log_W_ret_init","logit_surv","alr_p_age"),DLL="LCM_lite4",silent = T,map=map)
 
 
 ,"logit_pHOS"
@@ -695,12 +697,12 @@ SR_6<-MakeADFun(SR_dat,SR_pars,random = c("log_R_hat","log_W_ret_init","logit_su
 
 
 SR_fit<-nlminb(SR_5$par,SR_5$fn,SR_5$gr, 
-               control=list(rel.tol=1e-5,eval.max=1000000,
+               control=list(rel.tol=1e-6,eval.max=1000000,
                             iter.max=10000))#,lower=lower,upper=upper)
 
 SR_5$fn()
 SR_fit<-nlminb(SR_5$env$last.par.best[-SR_5$env$random],SR_5$fn,SR_5$gr, 
-               control=list(rel.tol=1e-7,eval.max=1000000,
+               control=list(rel.tol=1e-12,eval.max=1000000,
                             iter.max=10000))
 
 SR_5$fn()
@@ -711,15 +713,52 @@ sd_SR_sum_s_hat_hist<-summary(sd_SR)[(nrow(summary(sd_SR))-(22+23)):(nrow(summar
 #mle and standard errors of wild_s_hats
 wild_sd_SR_sum_s_hat_hist<-summary(sd_SR)[(nrow(summary(sd_SR))-22):nrow(summary(sd_SR)),]
 
-#replace SD of first value with S_obs_CV because its wonky
+#replace SD of first value with S_obs_CV because its wonky, likely because value is essentially 0. 
 wild_sd_SR_sum_s_hat_hist[1,2]<- exp(SR_fit$par["log_S_obs_cv"])
 
 
 #simulate
+result<-function(){
+
+  par(mfcol=c(3,3),mar=c(2,2,2,2),oma=c(2,3.5,0,0))
+  #  scenario<-"no hatchery"
+  no_hatch<-sim_func(SR_5,"no hatchery",TRUE,2.5)
+  
+SR_dat$rule<-1
+SR_dat$Hmax<-200
+SR_dat$NORcutoff<-500
+SR_dat$rem_rate<-.33
+SR_6<-MakeADFun(SR_dat,SR_pars,random = c("log_R_hat","log_W_ret_init","logit_surv","alr_p_age"),DLL="LCM_lite4",silent = T,map=map)
+
+#scenario<-"Hmax=200, NORcut=500"
+rule1<-sim_func(SR_6, "Hmax=200, NORcut=500",FALSE)
+
+# SR_dat$rule<-1
+# SR_dat$Hmax<-300
+# SR_dat$NORcutoff<-300
+# SR_dat$rem_rate<-.33
+# SR_7<-MakeADFun(SR_dat,SR_pars,random = c("log_R_hat","log_W_ret_init","logit_surv","alr_p_age"),DLL="LCM_lite4",silent = T,map=map)
+
+#rule2<-sim_func(SR_7, "Hmax=300, NORcut=300")
+
+SR_dat$rule<-1
+SR_dat$Hmax<-300
+SR_dat$NORcutoff<-300
+SR_dat$rem_rate<-.4
+SR_7<-MakeADFun(SR_dat,SR_pars,random = c("log_R_hat","log_W_ret_init","logit_surv","alr_p_age"),DLL="LCM_lite4",silent = T,map=map)
+
+rule3<-sim_func(SR_7, "Hmax=600, NORcut=300",FALSE)
+
+cbind(no_hatch,rule1,rule3)
+
+}
+
+sim_func<-function(mod,scenario,labs,line){
+
 set.seed(0114) 
 sim_rep<-replicate(1000,{
  
-  sim<-SR_6$simulate(SR_5$env$last.par)
+  sim<-mod$simulate(SR_5$env$last.par)
   matrix(c(sim$wild_S_hat,
         sim$hatch_S_hat,
         sim$S_hat,
@@ -753,8 +792,12 @@ pNOB_mean
 PNI_mat<-pNOB_mat/(pNOB_mat+pHOS_mat)
 pNI_mean<-mean(apply(PNI_mat,2,mean))
 pNI_mean
-
-plot(c(sim_rep[24:(23+25),4,]),c(PNI_mat),xlim=c(0,400))
+ if(mod$env$data$rule){
+plot(c(sim_rep[24:(23+25),4,]),c(PNI_mat),xlim=c(0,400),ylab="pNI",xlab="Wild Return",main=scenario)}else{
+  plot(0,type="n",xlim=c(0,400),ylim=c(0,1),main=scenario)
+  abline(h=1,lwd=4)
+}
+if(labs)mtext("pNI",2,line)
 segments(0,0,176,0)
 segments(176,0,176,.4)
 segments(176,.4,207,.5)
@@ -762,42 +805,50 @@ segments(208,.5,277,.67)
 segments(277,.67,372,.8)
 segments(372,.8,1000,1)
 
-no_hatch<-c(pQET,geo_mean,pHOS_mean,pNOB_mean,pNI_mean)
-statusQuo<-c(pQET,geo_mean,pHOS_mean,pNOB_mean,pNI_mean)
-dec_tab<-cbind(no_hatch,statusQuo)
+out<-c(pQET,geo_mean,pHOS_mean,pNOB_mean,pNI_mean)
+#statusQuo<-c(pQET,geo_mean,pHOS_mean,pNOB_mean,pNI_mean)
+#dec_tab<-cbind(no_hatch,statusQuo)
 
-spawners
-wild_spawners
-plot(wild_spawners)
-points(test$wild_S_hat[1:23],col="red")
-plot(hatch_spawners)
-points(test$hatch_S_hat[1:23],col="red")
+
 s_hat_proj<-sim_rep[24:(23+25),3,]
 wild_s_hat_proj<-sim_rep[24:(23+25),1,]
 
+plot_all<-function(sim_out,sd_out,sp_dat,origin){
+  
+  s_hat_proj_quant<-apply(sim_out,1,
+                          quantile,c(.025,.25,.5,.75,.975))
+  
+  s_hat_hist_quant<-exp(matrix(sd_out[,1],nrow=5,ncol=23,byrow = T)+((matrix(sd_out[,2],nrow=5,ncol=23,byrow = T))*qnorm(c(.025,.25,.5,.75,.975))))
+  
+  
+  s_hat_all<-cbind(s_hat_hist_quant,s_hat_proj_quant)
+  
+  years<-1995:(2017+25)
+  plot(0,type="n",ylim=range(s_hat_all),xlim=range(years),xlab="",ylab="")
+  if(labs)mtext(paste(origin,"spawners"),2,line)
+  polygon(c(years,rev(years)),c(s_hat_all[1,],rev(s_hat_all[5,])),border=F,col="lightgrey")
+  
+  polygon(c(years,rev(years)),c(s_hat_all[2,],rev(s_hat_all[4,])),border=F,col="darkgrey")
+  
+  points(years,s_hat_all[3,],type="l")
+  
+  points(years[1:23],sp_dat)
+  
+}# end of function
 
-plot_all<-function(sim_out,sd_out,sp_dat){
+plot_all(wild_s_hat_proj,wild_sd_SR_sum_s_hat_hist,wild_spawners,"wild\n")
 
-s_hat_proj_quant<-apply(sim_out,1,
-                        quantile,c(.025,.25,.5,.75,.975))
-
-s_hat_hist_quant<-exp(matrix(sd_out[,1],nrow=5,ncol=23,byrow = T)+((matrix(sd_out[,2],nrow=5,ncol=23,byrow = T))*qnorm(c(.025,.25,.5,.75,.975))))
+plot_all(s_hat_proj,sd_SR_sum_s_hat_hist,spawners,"")
 
 
-s_hat_all<-cbind(s_hat_hist_quant,s_hat_proj_quant)
-
-years<-1995:(2017+25)
-plot(0,type="n",ylim=range(s_hat_all),xlim=range(years))
-
-polygon(c(years,rev(years)),c(s_hat_all[1,],rev(s_hat_all[5,])),border=F,col="lightgrey")
-
-polygon(c(years,rev(years)),c(s_hat_all[2,],rev(s_hat_all[4,])),border=F,col="darkgrey")
-
-points(years,s_hat_all[3,],type="l")
-
-points(years[1:23],sp_dat)
-
+out
 }
+
+
+
+result()
+
+
 
 plot_all(wild_s_hat_proj,wild_sd_SR_sum_s_hat_hist,wild_spawners)
 
@@ -924,16 +975,20 @@ library(ggplot2)
 
 p_age<-test$prop_age
 
-plot(p_age[,1],ylim=c(0,1),type="o",col="blue")
-points(p_age[,2],type="o",col="red")
-points(p_age[,3],type="o")
+plot(p_age[,1],ylim=c(0,1),type="l",col="blue",pch=19,xaxt="n",xlab="",ylab=expression(p))
+points(p_age[,2],type="l",col="red")
+points(p_age[,3],type="l")
 rowSums(p_age[,1:3])
-plot(p_age[,4],ylim=c(0,1),type="o",col="blue")
-points(p_age[,5],type="o",col="red")
-points(p_age[,6],type="o")
+#plot(p_age[,4],ylim=c(0,1),type="o",col="blue")
+points(p_age[,4],type="l",lty=2,col="blue")
+points(p_age[,5],type="l",col="red",lty=2)
+points(p_age[,6],type="l",lty=2)
+axis(1,at=seq(1,20,5),labels=seq(1995,2010,5))
+
+legend(y=1.75,x=1,col=rep(c("blue","black","red"),each=2),legend=c("1-3","2-3","1-4","2-4","1-5","3-5"),xpd=NA,ncol=3,lty=rep(1:2,each=3))
 rowSums(p_age[,4:6])
 
-sr_out<-data.frame(test$S_hat,exp(test$log_R_hat))
+sr_out<-data.frame(test$S_hat[1:23],exp(test$log_R_hat))
 colnames(sr_out)<-c("Spawners","fry","summer","fall","smolts")
 
 sr_out<-gather(sr_out,"lifestage","Juveniles",2:5)
@@ -942,15 +997,32 @@ ggplot(sr_out,aes(Spawners,Juveniles))+geom_point()+facet_wrap(~lifestage)
 
 LH_lab<-c("fry","summer","fall","smolts")
 
-ord<-order(test$S_hat)
+ord<-order(test$S_hat[1:23])
 par(mfrow=c(2,2),mar=c(2,2,2,2),oma=c(2,2,0,0))
 for ( i in 1:3){
-plot(test$S_hat,exp(test$log_R_hat[,i]),main=LH_lab[i],xlab="",ylab="",ylim=c(0,200000),pch=19)
+plot(test$S_hat[1:23],exp(test$log_R_hat[,i]),main=LH_lab[i],xlab="",ylab="",ylim=c(0,200000),pch=19)
+
+
+polygon(c(test$S_hat[ord],rev(test$S_hat[ord])),
+        c(exp(log(test$R_pred[,i][ord])+1.96*test$proc_sigma[i]),
+          rev(exp(log(test$R_pred[,i][ord])-1.96*test$proc_sigma[i]))),border = F,col="lightgrey")
 points(test$S_hat[ord], test$R_pred[,i][ord],col="blue",type="l",lwd=2)
+
+points(test$S_hat[1:23],exp(test$log_R_hat[,i]),pch=19)
+box()
 
 }
 
-plot(test$S_hat,exp(test$log_R_hat[,4]),main="smolt",xlab="",ylab="",ylim=c(0,200000),pch=19)
+plot(test$S_hat[1:23],exp(test$log_R_hat[,4]),main="smolt",xlab="",ylab="",ylim=c(0,200000),pch=19)
+
+i<-4
+polygon(c(test$S_hat[ord],rev(test$S_hat[ord])),
+        c(exp(log(test$R_pred[,i][ord])+1.96*test$proc_sigma[i]),
+          rev(exp(log(test$R_pred[,i][ord])-1.96*test$proc_sigma[i]))),border = F,col="lightgrey")
+points(test$S_hat[ord], test$R_pred[,i][ord],col="blue",type="l",lwd=2)
+
+points(test$S_hat[1:23],exp(test$log_R_hat[,i]),pch=19)
+
 
 points(test$S_hat[ord], test$R_pred[,4][ord],col="blue",type="l",lwd=2)
 mtext("Spawners",1,0.5,outer=T,xpd=NA)
@@ -1008,11 +1080,12 @@ surv_out<-gather(surv_out,"lifestage","survival",2:5)
 ggplot(data=surv_out,aes(year,survival,col=lifestage))+geom_line(size=1.5)+theme(axis.text=element_text(size=12), axis.title=element_text(size=14,face="bold"))
 
 
-plot(1995:(2017+25),sim$S_hat,type="l",ylim=c(0,3000))
+plot(1995:(2017+25),test$S_hat,type="l",ylim=c(0,3000))
 points(1995:2017,spawners,col="blue",type="l")
 mtext("log(S_Obs)",1,0.5,outer=T,xpd=NA)
 mtext("Spawners",2,0.5,outer=T,xpd=NA)
-legend(x="topleft",legend=c("model","observed"),col=c("black","blue"),lty=1
-       
-       )
+legend(x="topleft",legend=c("model","observed"),col=c("black","blue"),lty=1)
+
+
+
 

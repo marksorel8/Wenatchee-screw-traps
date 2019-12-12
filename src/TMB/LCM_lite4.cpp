@@ -295,7 +295,7 @@ UNSTRUCTURED_CORR_t<Type> rand_age_nll(logit_alr_p_hyper_cor);
  // cov(1,1)= alr_p_hyper_sigma(Iage*2+1);
  // cov(0,1)=invlogit(logit_alr_p_hyper_cor(Iage))*2-1;
   PARAMETER(logit_Phi_alr);
-  Type Phi_alr=invlogit(logit_Phi_alr);
+  Type Phi_alr=invlogit(logit_Phi_alr)*2 - 1;
     
   for (int I= 0; I< (Nyears-3); I++){
     alr_p_age_error.col(I) =
@@ -355,7 +355,7 @@ REPORT(alr_cov);
                                       true));    //observation likelihood (spawners)
 
   //prior of S_obs_CV from Murdoch et al 2019
-  Spawner_obs_like+=dnorm(S_obs_cv,Type(0.055),Type(0.02),true);
+  //Spawner_obs_like+=dnorm(S_obs_cv,Type(0.07),Type(0.03),true);
   
   Type Recruit_obs_like= 0;                   //Initialize observation likelihood (recruits)
   for (int I=0; I< log_R_obs.cols() ;I++){
