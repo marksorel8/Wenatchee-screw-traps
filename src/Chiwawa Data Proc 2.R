@@ -13,15 +13,18 @@ pkgTest <- function(x)
 
 
 Chiw_dat_Proc<-function(){
-
-
   #load  packages
   pkgTest("here")
   pkgTest( "tidyverse" )
   
   #download discharge data from internet
   source(here("src","Discharge data funcs.R"))
-  chiwDis<-Chiw_discharge_func()
+  if(file.exists(here("chiwDis.csv"))){
+    load(here("chiwDis.csv"))}else{
+    chiwDis<-Chiw_discharge_func()
+    save(chiwDis,file=here("chiwDis.csv"))  
+  }
+  
  ################################################################## 
 # process efficiency trial data
   
@@ -38,17 +41,23 @@ Chiw_dat_Proc<-function(){
    #format recapture dates 
 mutate(Date= as.Date(as.character(Date),format = ifelse(grepl("-",as.character(Date)),"%d-%b-%y","%m/%d/%Y"))) %>% 
   
-
+#rename lifestages YCW=yearlings, SBC=subyearling chinook
+    mutate(LifeStage=recode(Lifestage,"YCW only"="YCW","Only used YCW"="YCW","SBC only"="SBC","Most likely SBC based on date"="SBC")) %>% 
+    
+    arrange(LifeStage) %>% #sort so that "YCW" and "SBC" comes before "YCW & SBC" so when duplicates removed, "YCW & SBC" are removed first
   
   #drop duplicate rows
  distinct(Date,.keep_all = TRUE) %>% 
-  
-  #rename lifestages YCW=yearlings, SBC=subyearling chinook
-    mutate(LifeStage=recode(Lifestage,"YCW only"="YCW","Only used YCW"="YCW","SBC only"="SBC","Most likely SBC based on date"="SBC")) %>% 
+    
+    #make columns with releases and recaps for trials that included subyearling or yearlings, with trials that had both included in both columns. 
+    mutate(sub_rel=ifelse(LifeStage%in%c("SBC","YCW & SBC"),rel,NA),
+           sub_recap=ifelse(LifeStage%in%c("SBC","YCW & SBC"),recap,NA),
+           yrlng_rel=ifelse(LifeStage%in%c("YCW","YCW & SBC"),rel,NA),
+           yrlng_recap=ifelse(LifeStage%in%c("YCW","YCW & SBC"),recap,NA)) %>% 
     
   
   #make a new "position" column where "low flow" is changed to "upper", because only a few data points for "low flow"
-  mutate(Position2 = recode(Position,"Low Flow"="Upper")) %>% 
+  mutate(Position2 = as.character(recode(Position,"Low Flow"="Upper"))) %>% 
   
   #add day, week, and year
   mutate(DOY=as.numeric(format(Date,form="%j"))) %>% 
@@ -62,8 +71,8 @@ mutate(Date= as.Date(as.character(Date),format = ifelse(grepl("-",as.character(D
   #read data on trap operations
   trapOps<-read.csv(here("data","Chiwawa","Chiw.trap.ops.csv")) %>% 
   #format "endDate" to date 
-  mutate(endDate=as.Date(EndDate,format="%m/%d/%Y")) %>% 
-    rename(Date=endDate) %>% 
+  mutate(EndDate=as.Date(EndDate,format="%m/%d/%Y")) %>% 
+    rename(Date=EndDate) %>% 
   
   #get rid of days when trap was stopped or partially stopped or not running at all.
   filter(Status!="S" &Status!="P" & Position!="Screw Stopper" & Position!="Partial Trapping"& Position!="Out"& Position!="IN") %>% 
@@ -74,15 +83,12 @@ mutate(Date= as.Date(as.character(Date),format = ifelse(grepl("-",as.character(D
     mutate(Position=recode_factor(Position,"Lower"="Lower","Upper"="Upper","Low Flow"="Low Flow",.default = "Unknown")) %>% 
     
      #make new "posotion" column where "low flow" is  changed to "upper", because only a few data points for "low flow".
-  mutate(Position2 = recode(Position,"Low Flow"="Upper")) %>% 
+  mutate(Position2 = as.character(recode(Position,"Low Flow"="Upper"))) %>% 
     
   #add day, week, and year
   mutate(DOY=as.numeric(format(Date,form="%j"))) %>% 
   mutate(Week=as.numeric(ceiling(DOY/7))) %>% 
-  mutate(Year=as.numeric(format(Date,form="%Y"))) %>% 
-  
-  #fill in the few missing discharges with data obtained with dataRetrieval package
-  mutate(Disch.cfs=coalesce(Mean.discharge..CFS., as.integer(round(chiwDis$X_00060_00003[match(EndDate,chiwDis$date-1)]))))%>% 
+  mutate(Year=as.numeric(format(Date,form="%Y")))  %>% 
                   
   #drop levels
   droplevels()
@@ -136,27 +142,28 @@ mutate(Date= as.Date(as.character(Date),format = ifelse(grepl("-",as.character(D
     full_join((read.csv(here("data","Chiwawa","ChiwSubCatch.csv")) %>% munge_chiw_catch() ),by=c("Year", "Date"),suffix=c(".fry",".parr")) %>% 
       
   #add a column of fry+subyearlings
-      mutate(count.all_subs=count.fry+count.parr) %>% 
+      mutate(count.sub=count.fry+count.parr) %>% 
 
-    #oad subyearlings and join with subyearlings  
+    #load yearlings and join with subyearlings  
     full_join((read.csv(here("data","Chiwawa","ChiwYrlngCnt.csv")) %>% munge_chiw_catch() ),by=c("Year", "Date")) %>% 
-    rename(count.yrlngs=count) %>% 
+    rename(count.yrlng=count) %>% 
     
   #Merge catch data with operations data
-    full_join(trapOps,by=c("Date","Year"))
-  
-  
-  #add the discharge data from the efficiency dataset to the catch-dataset-discharge column, and vice versa
-  
-  #catch_ops_effic$disch.cfs[which(is.na(catch_ops_effic$disch.cfs))]<-catch_ops_effic$dis[which(is.na(catch_ops_effic$disch.cfs))]
+    full_join(trapOps,by=c("Date","Year")) %>% 
     
-  #catch_ops_effic$dis[which(is.na(catch_ops_effic$dis))]<-catch_ops_effic$disch.cfs[which(is.na(catch_ops_effic$dis))]
+    mutate(DOY=as.numeric(format(Date,form="%j"))) %>% 
+    
+    #fill in the few missing discharges with data obtained with dataRetrieval package
+    mutate(Disch.cfs=coalesce(Mean.discharge..CFS., as.integer(round(chiwDis$X_00060_00003[match(Date,chiwDis$date-1)])))) %>% 
+    
+  dplyr::full_join(select(ChiwEfficTrials,sub_rel:yrlng_recap,DOY ,Year)) %>%  #join with efficiency trial data
+    
+  mutate(year_factor=as.numeric(as.factor(Year))) %>% #year as factor
+    select(sub_rel:yrlng_recap,count.sub,count.yrlng,DOY,Year,year_factor,Position2,Disch.cfs) #select certain columns that will be used in modeling
   
-  #combine catch, operations, and efficiency data
- # catch_ops_effic<-dplyr::full_join(trapRunDays_long,ChiwEffic,by=c("EndDate"="Date","lifestage"="lifeStage","Position2","year","DOY"="day"),suffix = c("",".y"))
   
-  
-  return(list(catch_ops=Chiw_Cnt,effic=ChiwEfficTrials, disch=chiwDis))
+
+  return(list(dat=Chiw_Cnt))
 
   }#end of function
 
