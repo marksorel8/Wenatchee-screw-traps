@@ -1,0 +1,334 @@
+---
+title: "Screw trap model"
+author: "mark sorel"
+date: "8/21/2020"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+knitr::opts_chunk$set(tidy = FALSE, highlight = TRUE, comment = NA, 
+                      dev = "png", dev.args = list(type = "cairo-png"), dpi = 200,
+                      out.width = "75%", fig.align = "center")
+```
+
+# Purpose  
+The purpose of this document is to describe the methods I am using to estimate the abundance and timing of juvenile spring Chinook salmon emigrating from the Chiwawa River, Nason Creek, and the White River. 
+
+### Data  
+The emigration of juveniles from natal streams in the Wenatchee River basin has been monitored with downstream-migrant screw traps operated near the mouth of the Chiwawa River since 1997, Nason Creek since 2004, and the White River since 2006 (Johnson et al. 2018). Most juveniles are captured emigrating from their natal stream as subyearling parr in summer or fall, or yearling smolts in spring. 
+
+
+#### Catch data
+One component of the data are the numbers of fish captured on each date that a trap was operating without major disruption. The catch is divided among subyearlings and yearlings based on the length and date of emigration. For details of the age delineation, see `src/juvenile age explore.Rmd`. In addition, the river discharge on each date is used in the model, as a covariate on trap capture efficiency.
+
+
+#### Eficiency trials
+Another component of the data are the numbers of fish marked and released upstream of the trap and the number of those fish that were recaptured. These mark-recapture trails are conducted on several days in each year at each trap to evalute the capture probabilities in the traps.
+
+### Model
+Each stream and age of fish is currently modeled seperately (6 total models). I will describe the model for a single stream by age combination below. 
+
+#### Daily emigrant process model  
+The number of emigrants $\hat{m}[t,y]$ on day $t$ in year $y$ is modeled on the log scale as a function of a yearly average $\mu[y]$, accross-year average daily errors $\delta[t]$, and day- and year-specific errors $\epsilon[t,y]$:
+$$\text{log}(\hat{m}[t,y])=\mu_m[y]+\delta[t]+\epsilon[t,y]$$
+The accross-year average daily errors $\delta[t]$ and the year-specific daily errors $\epsilon[t,y]$ are modeled as stationary 1st order autoregressive processes with autocorrelation coefficients $\phi_{d}$ and $\phi_e$, and marginal variances $\sigma_d^2$ and $\sigma_e^2$, for example:
+
+$$
+\delta[0] \sim N(0, \sigma_d^2) 
+$$
+$$
+\\
+\delta[1]=\phi_d ~\delta[1]+\sqrt{1-\phi_d}~ \gamma[1], \quad \gamma[1] \sim N(0, \sigma_d^2) 
+$$
+$$
+\\
+\delta[t]=\phi_d ~\delta[t-1]+\sqrt{1-\phi_d}~ \gamma[t], \quad \gamma[t] \sim N(0, \sigma_d^2)
+$$
+The year-specific autoregressive processes are assumed to have a common autocorrelation coefficient $\phi_e$ and marginal variance $\sigma_e^2$. 
+
+#### Trap Processs
+The capture probability $p[t,y]$ of a fish emigrating past a trap is modeled on the logit scale as a function of discharge:
+$$\text{logit}(p[t,y])=\nu+\beta*\text{disch}[t,y]$$
+where $\nu$ is an intercept and $\beta$ is a coefficient for the effect of z-scored discharge on logit capture probability.
+
+#### Likelihood
+The number of fish recaptured $rec[t,y]$ out of the number of marked fish released upstream of the trap $rel[t,y]$ is assumed to be binomially distributed:
+$$rec[t,y]\sim \text{Bin}(rel[t,y],~p[t,y])$$
+Thus it is assumed that all released fish pass the trap on the same day of their release, given that the majory of recaptured fish are recovered the morning following their release. Recaptures occuring one or more days after a release are included in the recapture total for that day. This likely causes some bias in the estimates of $p$, but the bias is likely small given that the majority of fish meet the assumption.
+
+
+The expected catch in the trap $\hat{c}[t,y]$ is equal to the product of the number of emigrants and their capture probabilities, 
+$$\hat{c}[t,y]=\hat{m}[t,y]~p[t,y]$$
+The observed catches $c[t,y]$ are assumed to follow a negative binomial distribution with mean $\hat{c}[t,y]$ and variance $\hat{c}[t,y] + \frac{\hat{c}[t,y]^2}{\phi_{nb}}$. Thus, the additional variance of observations above that of a Poisson with mean $\hat{c}[t,y]$ is controlled by the inverse of the paramater $\phi_{nb}$, scaled by the square of the mean. The overdispersion parameter $\phi_{nb}$ is assumed to be the same for all years. 
+
+### Parameter estimation
+The parameters are estimated within a mixed effects model, treating the autocorrelated errors $\delta[t]$ and $\epsilon[t,y]$ as random effects. Paramaters are estimated by maximizing the marginal likelihood calculated by Template Model Builder within R. Empiracal Bayes estimates of the random effects are used to estimate the unobserved numbers of migrants. Standard deviations are estimated useing the delta method.   
+
+```{r packages_and_functions, message=FALSE, warning=FALSE}
+library(TMB)
+library(here)
+library(tidyverse)
+
+
+#------------------------------------------------------------------------------------
+# Function for analysis
+#------------------------------------------------------------------------------------
+
+#functions to read and process data
+source(here("src","Chiwawa Data Proc 2.R")) # Chiwawa 
+source(here("src","Nason White Data Proc 2.R")) # Nason and White
+
+
+
+#function to make data lists for model
+make_screw_trap_model_data<-function(data_in,stream="Chiwawa", lifestage="yrlng",Use_NB=1,subyearlings=0){
+  
+   #subset data to days when there was catch data (including 0 catch)
+  data_in<-filter(data_in,!is.na(data_in[,paste0("count.",lifestage)]))
+  
+  #design matrix for trap efficiency model
+  #if(stream=="Nason")
+  #pdat<-model.matrix(~moved*scale(Disch.cfs) , data=data_in) else
+  pdat<-model.matrix(~scale(Disch.cfs) , data=data_in)
+      
+  #liost of data inputs for model
+  data_list<-list(subyearlings=subyearlings,                                       #flag indicating if model is of subyearlings or yearling migrants
+             rel=c(na.exclude(data_in[,paste0(lifestage,"_rel")])),   # releases in efficiency trils
+             rec=c(na.exclude(data_in[,paste0(lifestage,"_recap")])), # recaps
+             efficIndex=which(!is.na(
+               data_in[,paste0(lifestage,"_rel")])),               # index of vector of trap days that efficiency trials correspond too
+             Catch=data_in[,paste0("count.",lifestage)],           # vector of catch by trap day
+             catch_DOY = data_in$DOY-min(data_in$DOY),             # vector of DOY of trap day
+             first_DOY = min(data_in$DOY),                         # first day of year, for reference
+             seriesFac = data_in$year_factor-1,                    # vector of year index of trap day
+             years=data_in$Year,                                   # years, for reference
+             pDat=pdat,                                            # design matrix for model of efficiency on each trap day
+             N_trap=length(data_in[,paste0("count.",lifestage)]),  # number of trap days
+             N_day=diff(range(data_in$DOY))+1,                     # number of days per year to estimate emigrant abundance
+             Nyears=length(unique(data_in$year_factor)),           # number of years
+             Use_NB=Use_NB)                                        # flag to use negative binomial observation model.
+  
+  return(data_list)
+  }
+
+
+
+# function to make data lists for all model of all streams and ages (subyearling and yearling) 
+make_data_list_func<-function(chiw_data=chiw_data,nas_whi_data=nas_whi_data,Use_NB=1){
+out<-list(6)
+index<-1
+for( i in c("Chiwawa","Nason","White")){
+  for (j in c("sub","yrlng")){
+    
+    if(i=="Chiwawa") data_in<-chiw_data$dat else
+      data_in<-nas_whi_data[[i]]
+    
+    if(j=="yrlng"){data_in<-subset(data_in,DOY<=179) #trim time series for yearlings to spring through early summer
+       }
+   
+    
+  out[[index]] <- make_screw_trap_model_data(data_in=data_in,stream=i, lifestage=j,Use_NB=Use_NB,subyearlings=ifelse(j=="sub",1,0))
+  names(out)[[index]]<-paste(i,j,sep="_")
+  index <- index + 1
+  }
+}
+return(out)
+}
+
+
+
+#function to make inital parameters for a model for a given data set
+make_screw_trap_model_inits<-function(data_in){
+  params<-list(pCoefs=rep(-.5,ncol(data_in$pDat)),
+             mu_M=log(c(tapply(data_in$Catch *3,data_in$seriesFac,mean))),
+             logit_phi_d=qlogis(.9),
+             logit_phi_e=qlogis(.9),
+             ln_tau_d=0,
+             ln_tau_e=0,
+             delta=numeric(data_in$N_day),
+             epsilon=matrix(0,nrow=data_in$N_day,ncol=data_in$Nyears),
+             logit_phi_NB=0)
+
+return(params)
+}
+
+
+
+#function to fit model 
+fit_model<-function(data_in){
+setwd(here("src","TMB"))
+TMB::compile("screw_trap_LP_3.cpp") #compile TMB model
+dyn.load("screw_trap_LP_3") #load TMB model
+params<-make_screw_trap_model_inits(data_in) #initial parameters
+str(params)
+if(data_in$Use_NB) map<-list() else map=list(logit_p_NB=factor(rep(NA,1))) #if using Poisson, dont optimize NB "prob" param 
+mod<-TMB::MakeADFun(data_in,params,random=c("epsilon","delta"),DLL="screw_trap_LP_3",silent=T,map=map)# construct model
+fit3<-TMBhelper::fit_tmb(mod,mod$fn,mod$gr, getsd = TRUE,newtonsteps = 1) #optimize model
+
+#extract log sums of emigrants within life history migration windows, and standard errors
+LH_sums<-LH_sums_sd<-NULL
+try({
+ LH_sums<-matrix(fit3$SD$value[names(fit3$SD$value)=="LH_sums"],ncol=ifelse(data_in$subyearlings,3,1))
+ LH_sums_sd<-matrix(fit3$SD$sd[names(fit3$SD$value)=="LH_sums"],ncol=ifelse(data_in$subyearlings,3,1))
+})
+ 
+return(list(LH_sums=LH_sums,LH_sums_sd=LH_sums_sd,fit3=fit3))
+}
+
+
+
+#function to fit models for all streams and ages
+fit_all<-function(all_data_lists){
+chiw_subs<-fit_model(all_data_lists[[1]])
+chiw_yrlngs<-fit_model(all_data_lists[[2]])
+nason_subs<-fit_model(all_data_lists[[3]])
+nason_yrlngs<-fit_model(data=all_data_lists[[4]])
+white_subs<-fit_model(all_data_lists[[5]])
+white_yrlngs<-fit_model(all_data_lists[[6]])
+
+return(list(chiw_subs=chiw_subs, chiw_yrlngs=chiw_yrlngs,
+            nason_subs=nason_subs, nason_yrlngs=nason_yrlngs,
+            white_subs=white_subs, white_yrlngs=white_yrlngs
+            ))
+}
+
+
+
+#function to plot geometric mean daily emigrant time series for a given natal stream
+plot_average_ts_func<-function(sub_fit,yrlng_fit,data_ins,save_plot=FALSE,river,breaks=NULL){
+log_means<-sub_fit$fit3$SD$value[names(sub_fit$fit3$SD$value)!="LH_sums"]
+log_mean_sds<-sub_fit$fit3$SD$sd[names(sub_fit$fit3$SD$value)!="LH_sums"]
+
+log_means_yrlngs<-yrlng_fit$fit3$SD$value[names(yrlng_fit$fit3$SD$value)!="LH_sums"]
+log_mean_sds_yrlngs<-yrlng_fit$fit3$SD$sd[names(yrlng_fit$fit3$SD$value)!="LH_sums"]
+
+if(save_plot) png(here("results","plots","chiw_daily_ts.png"),units="in",height=3,width=4,res=300)
+par(cex=.8)
+ymax<-max(c(exp(log_means+1.96*log_mean_sds),exp(log_means_yrlngs+1.96*log_mean_sds_yrlngs)))
+{plot(1,type="n",xlim=c(0,500),ylim=c(0,ymax),xlab="",ylab="",xaxt="n",main=river)
+  days<-seq(from=data_ins$first_DOY-50,by=1,length.out=length(log_means))
+polygon(c(days,rev(days)),c(exp(log_means+1.96*log_mean_sds),rev(exp(log_means-1.96*log_mean_sds))),border=F,col="grey")
+
+days_yrlng<-seq(from=data_ins$first_DOY-50,by=1,length.out=length(log_means_yrlngs))
+polygon(c(days_yrlng,rev(days_yrlng))+365,c(exp(log_means_yrlngs+1.96*log_mean_sds_yrlngs),rev(exp(log_means_yrlngs-1.96*log_mean_sds_yrlngs))),border=F,col="grey")
+
+points(days,exp(log_means),type="l")
+points(days_yrlng+365,exp(log_means_yrlngs),type="l")
+
+if(!is.null(breaks)){
+abline(v=c(breaks[1],breaks[2])-50,col="red")
+#abline(v=c(365)-data_ins$first_DOY,col="red")
+text(c(91,182,300,520)-data_ins$first_DOY,y=ymax,pos=1,labels=c("Fry","Summer\nparr","Fall\nParr","Smolts"),cex=.9)
+}
+days<-c(91,182,274,366,(365+91))-50
+labs<-c("Apr","Jul","Oct","Jan","Apr")
+axis(1,at=days,labels=labs)
+mtext("Emigrants/ day",2,3)
+mtext("Average brood year",1,3)
+}
+if(save_plot) dev.off()
+return(list(log_means=log_means,log_means_yrlngs=log_means_yrlngs,log_mean_sds=log_mean_sds,log_mean_sds_yrlngs,log_mean_sds_yrlngs,first_DOY=data_ins$first_DOY,N_day=data_ins$N_day))
+}
+
+
+
+#function to plot geometric mean daily emigrant time series for all streams
+plot_all_geomean_daily_emigrants<-function(all_emigrants_estimates,breaks=NULL){
+ chiwawa<- plot_average_ts_func(all_emigrants_estimates[["chiw_subs"]],all_emigrants_estimates[["chiw_yrlngs"]],all_data_lists[[1]],river="Chiwawa",breaks=breaks)
+ nason<-plot_average_ts_func(all_emigrants_estimates[["nason_subs"]],all_emigrants_estimates[["nason_yrlngs"]],all_data_lists[[3]],river="Nason",breaks=breaks)
+ white<- plot_average_ts_func(all_emigrants_estimates[["white_subs"]],all_emigrants_estimates[["white_yrlngs"]],all_data_lists[[5]],river="White",breaks=breaks)
+
+#create matrix with average daily emigrants for each stream and age
+all_log_means<-matrix(NA,nrow=365,ncol=6)
+for ( i in 1:3){
+  data_in<-get(c("chiwawa","nason","white")[i]) 
+all_log_means[seq(from=data_in$first_DOY,by=1,length.out=length(data_in$log_means)),i]<-data_in$log_means
+all_log_means[seq(from=data_in$first_DOY,by=1,length.out=length(data_in$log_means_yrlngs)),(3+i)]<-data_in$log_means_yrlngs
+}
+
+return(list(chiwawa=chiwawa,nason=nason,white=white,all_log_means=all_log_means))
+ }
+
+```
+
+### Results
+
+```{r run_analysis, message=FALSE, warning=FALSE}
+#process data
+chiw_data<-Chiw_dat_Proc() #chiwawa
+nas_whi_data<-Nason_White_data_Func() #nason and white
+
+#make data lists for all models
+all_data_lists<-make_data_list_func(chiw_data = chiw_data, nas_whi_data = nas_whi_data)
+
+#fit all models
+if(file.exists(here("results",paste0("emigrant_estimates",substr(date(),4,10),substr(date(),20,25),".Rdata")))){ load(file=here("results",paste0("emigrant_estimates",substr(date(),4,10),substr(date(),20,25),".Rdata")))}else{
+ts<-Sys.time() 
+all_emigrants_estimates<-fit_all(all_data_lists=all_data_lists)
+Sys.time()-ts
+
+#save as ".Rdata" objects
+save(all_emigrants_estimates,file=here("results",paste0("emigrant_estimates",substr(date(),4,10),substr(date(),20,25),".Rdata")))
+}
+```
+
+Plots of the geometric mean numbers of daily emigrants across years for each stream.
+```{r, message=FALSE, warning=FALSE}
+#plot geomeans of emigrants for each day of year across years
+geo_means<-plot_all_geomean_daily_emigrants(all_emigrants_estimates)
+```
+
+For a life cycle model, I need some way of modeling the transition from spawners to emigrants. My current thinking is to aggregrate emigrants into discrete groups based on emigration day of year. This could be simpler than modeling the number of *daily* emigrants within the life cycle model, but still accounts for some of the diversity in emigration timing, which I must consider becasue it effects survival between emigration from the natal stream and smolting. 
+
+Based on visual examination of the average time series of dialy emigrants, it appears that they could be divided into three groups of subyearling emigrants and one group of yearlings My approach for dividing the subyearlings into groups was to take the geometric mean accross streams of the geometric means across years of daily emigrants for each stream. I then rounded the average number of dialy emigrants to the nearest fish and fit a mixture distribution of three normals to this "average year". Finally, I found the two days corresponding with the lowest densities of the mixtrure distribution between the modes to use as cutoffs for aggregating emigrants. 
+```{r, message=FALSE, warning=FALSE,echo=T}
+#geometric mean subyearlings across streams
+across_stream_geomean<-data.frame(x=1:365,
+                                  y=exp(rowMeans(geo_means$all_log_means[,1:3],na.rm=T))) %>% 
+  filter(!is.na(y)) # drop days with no observations
+
+#expand to daily observation for each (rounded) fish
+observation_for_each_average_fish<-rep(across_stream_geomean$x,
+                                       times=round(across_stream_geomean$y))
+
+#fit three-normal mixture distribution
+mix_geomean<-mixtools::normalmixEM(observation_for_each_average_fish,
+                                   lambda=c(.2,.4,.5),
+                                   mu=c(100,200,300),)
+
+#calculate density
+mix_geomean_dens<-mix_geomean$lambda[1]* 
+  dnorm(seq(50,350,by=1),mix_geomean$mu[1],mix_geomean$sigma[1])+
+  mix_geomean$lambda[2]*
+  dnorm(seq(50,350,by=1),mix_geomean$mu[2],mix_geomean$sigma[2])+
+  mix_geomean$lambda[3]*
+  dnorm(seq(50,350,by=1),mix_geomean$mu[3],mix_geomean$sigma[3])
+
+#plot
+plot(mix_geomean,2,breaks=100)
+points(seq(50,350,by=1),mix_geomean_dens,type="l",lwd=2)
+breaks<-numeric(2)
+for ( i in 1:2) breaks[i]<-which.min(
+  mix_geomean_dens[((round(mix_geomean$mu[i]):round(mix_geomean$mu[(i+1)]))-49)])+
+  round(mix_geomean$mu[i])
+
+abline(v=breaks,lwd=2)
+
+x<-plot_all_geomean_daily_emigrants(all_emigrants_estimates,breaks=breaks)
+
+```
+
+### Alternative approach
+While the approach outlined above seems straightforward and reasonable, I could explicitly model the mixture within the estimation model for the numbers of daily emigrants. By this I mean I could replace the average-annual errors $\delta[t]$ in the daily emigrant process model described above with a smoothing function that uses 3 normal distributions as the bases. The model would be
+
+$$\hat{m}[t,y]=\mu_m[y] \sum_{j=1}^3\left(\lambda[j]\frac{1}{\sigma_n[j] \sqrt{2 \pi}} e^{-\frac{1}{2}\left(\frac{t-\mu_n[j]}{\sigma_n[j]}\right)^{2}}\right)  e^{\epsilon[t,y]}$$
+where $\lambda[j]$ is the weight for mixture component $j$ and the sum across all 3 $\lambda[j]$ is unity, $\mu_n[j]$ is the mean, and  $\sigma_n[j]$ is the standard deviation. I would integrate the analyses of all three streams if I were to use this approach. I could then generate the cutoff using the same approach of finding the saddle point between the modes. I think that cutoffs are probably preferable to deviding the emigrants on each day according to the mixture because when it comes time to estimate survival rates of each group, it would be easier to be able to just assign a given fish (capture history) to a group.
+
+
+
+
+  
