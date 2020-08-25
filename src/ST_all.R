@@ -28,7 +28,32 @@ Sys.time()-ts
 save(all_emigrants_estimates,file=here("results",paste0("emigrant_estimates",substr(date(),4,10),substr(date(),20,25),".Rdata")))
 
 #plot geomeans of emigrants for each day of year across years
-plot_all_geomean_daily_emigrants(all_emigrants_estimates)
+geo_means<-plot_all_geomean_daily_emigrants(all_emigrants_estimates)
+
+#geometric mean subyearlings across streams
+across_stream_geomean<-data.frame(x=1:365,y=exp(rowMeans(geo_means$all_log_means[,1:3],na.rm=T)))
+
+#expand to daily observation for each (rounded) fish
+observation_for_each_average_fish<-rep(across_stream_geomean$x[which(!is.na(across_stream_geomean$y))],times=round(na.exclude(across_stream_geomean$y)))
+
+#fit three-normal mixture distribution
+mix_geomean<-mixtools::normalmixEM(observation_for_each_fish,lambda=c(.2,.4,.5),mu=c(100,200,300),)
+
+#calculate density
+mix_geomean_dens<-mix_geomean$lambda[1]* dnorm(seq(50,350,by=1),mix_geomean$mu[1],mix_geomean$sigma[1])+
+  mix_geomean$lambda[2]*dnorm(seq(50,350,by=1),mix_geomean$mu[2],mix_geomean$sigma[2])+
+  mix_geomean$lambda[3]*dnorm(seq(50,350,by=1),mix_geomean$mu[3],mix_geomean$sigma[3])
+
+#plot
+plot(mix_geomean,2,breaks=200)
+#hist(observation_for_each_fish,breaks=200,freq=FALSE)
+points(seq(50,350,by=1),mix_geomean_dens,type="l",lwd=2)
+breaks<-numeric(2)
+for ( i in 1:2) breaks[i]<-which.min(mix_geomean_dens[((round(mix_geomean$mu[i]):round(mix_geomean$mu[(i+1)]))-49)])+round(mix_geomean$mu[i])
+abline(v=breaks,lwd=2)
+
+plot_all_geomean_daily_emigrants(all_emigrants_estimates,breaks=breaks)
+
 
 #------------------------------------------------------------------------------------
 # Function for analysis
@@ -88,7 +113,7 @@ for( i in c("Chiwawa","Nason","White")){
    
     
   out[[index]] <- make_screw_trap_model_data(data_in=data_in,stream=i, lifestage=j,Use_NB=Use_NB,subyearlings=ifelse(j=="sub",1,0))
-
+  names(out)[[index]]<-paste(i,j,sep="_")
   index <- index + 1
   }
 }
@@ -155,7 +180,7 @@ return(list(chiw_subs=chiw_subs, chiw_yrlngs=chiw_yrlngs,
 
 
 #function to plot geometric mean daily emigrant time series for a given natal stream
-plot_average_ts_func<-function(sub_fit,yrlng_fit,data_ins,save_plot=FALSE,river){
+plot_average_ts_func<-function(sub_fit,yrlng_fit,data_ins,save_plot=FALSE,river,breaks=NULL){
 log_means<-sub_fit$fit3$SD$value[names(sub_fit$fit3$SD$value)!="LH_sums"]
 log_mean_sds<-sub_fit$fit3$SD$sd[names(sub_fit$fit3$SD$value)!="LH_sums"]
 
@@ -166,32 +191,51 @@ if(save_plot) png(here("results","plots","chiw_daily_ts.png"),units="in",height=
 par(cex=.8)
 ymax<-max(c(exp(log_means+1.96*log_mean_sds),exp(log_means_yrlngs+1.96*log_mean_sds_yrlngs)))
 {plot(1,type="n",xlim=c(0,500),ylim=c(0,ymax),xlab="",ylab="",xaxt="n",main=river)
-polygon(c(1:length(log_means),length(log_means):1),c(exp(log_means+1.96*log_mean_sds),rev(exp(log_means-1.96*log_mean_sds))),border=F,col="grey")
+  days<-seq(from=data_ins$first_DOY-50,by=1,length.out=length(log_means))
+polygon(c(days,rev(days)),c(exp(log_means+1.96*log_mean_sds),rev(exp(log_means-1.96*log_mean_sds))),border=F,col="grey")
 
-polygon(c(1:length(log_means_yrlngs),length(log_means_yrlngs):1)+365,c(exp(log_means_yrlngs+1.96*log_mean_sds_yrlngs),rev(exp(log_means_yrlngs-1.96*log_mean_sds_yrlngs))),border=F,col="grey")
+days_yrlng<-seq(from=data_ins$first_DOY-50,by=1,length.out=length(log_means_yrlngs))
+polygon(c(days_yrlng,rev(days_yrlng))+365,c(exp(log_means_yrlngs+1.96*log_mean_sds_yrlngs),rev(exp(log_means_yrlngs-1.96*log_mean_sds_yrlngs))),border=F,col="grey")
 
-points(exp(log_means),type="l")
-points(1:length(log_means_yrlngs)+365,exp(log_means_yrlngs),type="l")
+points(days,exp(log_means),type="l")
+points(days_yrlng+365,exp(log_means_yrlngs),type="l")
 
-abline(v=c(139,266)-data_ins$first_DOY,col="red")
-abline(v=c(365)-data_ins$first_DOY,col="red")
-days<-c(91,182,274,366,(365+91))-data_ins$first_DOY
+if(!is.null(breaks)){
+abline(v=c(breaks[1],breaks[2])-50,col="red")
+#abline(v=c(365)-data_ins$first_DOY,col="red")
+text(c(91,182,300,520)-data_ins$first_DOY,y=ymax,pos=1,labels=c("Fry","Summer\nparr","Fall\nParr","Smolts"),cex=.9)
+}
+days<-c(91,182,274,366,(365+91))-50
 labs<-c("Apr","Jul","Oct","Jan","Apr")
 axis(1,at=days,labels=labs)
 mtext("Emigrants/ day",2,3)
 mtext("Average brood year",1,3)
-text(c(91,182,300,520)-data_ins$first_DOY,y=ymax,pos=1,labels=c("Fry","Summer\nparr","Fall\nParr","Smolts"),cex=.9)}
+}
 if(save_plot) dev.off()
+return(list(log_means=log_means,log_means_yrlngs=log_means_yrlngs,log_mean_sds=log_mean_sds,log_mean_sds_yrlngs,log_mean_sds_yrlngs,first_DOY=data_ins$first_DOY,N_day=data_ins$N_day))
 }
 
 
 
 #function to plot geometric mean daily emigrant time series for all streams
-plot_all_geomean_daily_emigrants<-function(all_emigrants_estimates){
-  plot_average_ts_func(all_emigrants_estimates[["chiw_subs"]],all_emigrants_estimates[["chiw_yrlngs"]],all_data_lists[[1]],river="Chiwawa")
-  plot_average_ts_func(all_emigrants_estimates[["nason_subs"]],all_emigrants_estimates[["nason_yrlngs"]],all_data_lists[[3]],river="Nason")
-  plot_average_ts_func(all_emigrants_estimates[["white_subs"]],all_emigrants_estimates[["white_yrlngs"]],all_data_lists[[5]],river="White")
+plot_all_geomean_daily_emigrants<-function(all_emigrants_estimates,breaks=NULL){
+ chiwawa<- plot_average_ts_func(all_emigrants_estimates[["chiw_subs"]],all_emigrants_estimates[["chiw_yrlngs"]],all_data_lists[[1]],river="Chiwawa",breaks=breaks)
+ nason<-plot_average_ts_func(all_emigrants_estimates[["nason_subs"]],all_emigrants_estimates[["nason_yrlngs"]],all_data_lists[[3]],river="Nason",breaks=breaks)
+ white<- plot_average_ts_func(all_emigrants_estimates[["white_subs"]],all_emigrants_estimates[["white_yrlngs"]],all_data_lists[[5]],river="White",breaks=breaks)
+
+#create matrix with average daily emigrants for each stream and age
+all_log_means<-matrix(NA,nrow=365,ncol=6)
+for ( i in 1:3){
+  data_in<-get(c("chiwawa","nason","white")[i]) 
+all_log_means[seq(from=data_in$first_DOY,by=1,length.out=length(data_in$log_means)),i]<-data_in$log_means
+all_log_means[seq(from=data_in$first_DOY,by=1,length.out=length(data_in$log_means_yrlngs)),(3+i)]<-data_in$log_means_yrlngs
 }
+
+return(list(chiwawa=chiwawa,nason=nason,white=white,all_log_means=all_log_means))
+ }
+
+
+#function to plot sums and standard errors
 
 
 #end of script

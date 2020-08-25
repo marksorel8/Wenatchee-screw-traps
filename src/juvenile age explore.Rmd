@@ -2,7 +2,9 @@
 title: "Juvenile Chinook age estimation"
 author: "mark sorel"
 date: "8/18/2020"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 The purpose of this document is to explore how to determine the ages of juvenile Chinook captured in screw traps in the  Wenatchee River Basin.
@@ -62,6 +64,14 @@ chiw_biod<-rbind(chiw_fry_biod,chiw_sub_biod,chiw_smolt_biod) %>% rename(Length=
 Histogram of capture day-of-year across all streams
 ```{r , echo=FALSE, warning=FALSE}
 hist(all_bio_data$DOY,breaks=seq(50,365,5),xlab="Day of year",main="All traps")
+
+# test<-mixtools::normalmixEM(
+#     na.exclude(all_bio_data$DOY),
+#     lambda=c(.4,.2,.4),
+#     mu=c(100,200,300),
+#     sigma=c(10,10,10))
+# plot(test,2)
+# summary(test)
 ```
   
 
@@ -157,12 +167,32 @@ Add line to plot of fish captured on or before day
 first_point_y<-((break_ln[2]-break_ln[1])/10*-5)+break_ln[1]
 last_point_y <-((break_ln[n_knots]-break_ln[n_knots-1])/10*4)+break_ln[n_knots]
 
-points(c(50,knots+5,smolt_max_DOY),c(first_point_y,break_ln,last_point_y),type="l",col="red") 
+plot(c(50,knots+5,smolt_max_DOY),c(first_point_y,break_ln,last_point_y),type="l",col="red") 
+
+daily_cutoff<-approx(c(50,knots+5,smolt_max_DOY),c(first_point_y,break_ln,last_point_y),xout = 50:179)
+
+#calculate proportions of each age on each DOY, for approtioning fish with no length mesurements.
+
+daily_proportions<-list(x=daily_cutoff$x,prop=numeric(length(daily_cutoff$x)))
+for ( i in daily_proportions$x){
+  sub_all<-which(all_bio_data$DOY==i)
+    if(length(sub_all)>0){
+      daily_proportions$prop[(i-49)]<-sum(all_bio_data$Length[sub_all]>=daily_cutoff$y[c(i-49)],na.rm=T) /length(sub_all)
+    }
+}
+
+props_lo<-loess(daily_proportions$prop~daily_proportions$x)
+props_lo_pred<-predict(props_lo,data.frame(x=50:179))
+props_lo_pred[props_lo_pred<0]<-0
+daily_proportions$prop_lo_pred<-props_lo_pred
+
+cutoffs_and_props<-list(daily_cutoff,daily_proportions)
+save(cutoffs_and_props,file=here("data","processed","cutoffs_and_props.Rdata"))
 ```
 
 
 
-Now overlay fish known to be subyearling and yearlings based on whether they were detected migrating downstream in the same year they were tagged of the next year.
+Now overlay fish known to be subyearling and yearlings based on whether they were detected at mainstem dams when migrating downstream in the same year they were tagged or the next year.
 
 ```{r , echo=FALSE, warning=FALSE}
  
@@ -187,8 +217,23 @@ points(c(50,knots+5,smolt_max_DOY,smolt_max_DOY),c(first_point_y,break_ln,last_p
 
 Not bad
 
+```{r}
+load(here("data","processed","cutoffs_and_props.Rdata"))
+interrogation<-filter(interrogation,!is.na(Mark.Length.mm)) %>% mutate(pred_Mark_to_mig=ifelse(Mark.Day.Number>179,1,ifelse(Mark.Length.mm>=cutoffs_and_props[[1]]$y[(Mark.Day.Number-49)],0,1)))
+table(interrogation$pred_age)
+
+table(interrogation$pred_Mark_to_mig,interrogation$Mark_to_mig)
+
+18/(18+12821+6678)
+
+thing<-interrogation %>% filter(pred_Mark_to_mig!=Mark_to_mig) %>% select(Tag.Code,Mark.Site.Info.Code,Mark.Date.MMDDYYYY,Mark.Year.YYYY,Mark.Day.Number,Mark.Length.mm,Mark_to_mig,pred_Mark_to_mig,Site.Name,First.Date.MMDDYYYY,First.Year.YYYY,First.Day.Num)
+write.csv(thing,file=here("data","processed","misassigned_fish.csv"))
+```
+
 
 ```{r,eval=F,echo=FALSE}
+#attempting to optimize a piecewise linear function with maximum distance to points. Doesn,t really work
+
 knots<-seq(50,180,by=10)
 n_knots<-length(knots)
 xout<-50:80
@@ -208,8 +253,6 @@ return(-obj)
 }
 
 
-test<-spring_all_bio_data[sample(1:nrow(spring_all_bio_data),10000,FALSE),]
-
 test_optim<-optim(par=runif(n_knots,60,75),foo,lower=rep(43,n_knots),upper=rep(75,n_knots),data_in=spring_all_bio_data,method="L-BFGS-B")
 test_optim
 
@@ -220,7 +263,7 @@ plot(50:180,approx(knots,test_optim$par,xout=50:180)$y)
 
 
 ```{r plot, echo=FALSE, warning=FALSE,eval=FALSE}  
-  #Have to assign lifestages based on length and DOY at capture
+#relic old plotting code for individual screw traps
 
  #Chiwawa
 
@@ -271,9 +314,4 @@ int_chwiawa<-subset(interrogation,Mark.Site.Code.Value=="CHIWAT")
  }
  
   
-```
-
-```{r plot_2, eval=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
-ggplot(data=interrogation,aes(Mark.Day.Number,Mark.Length.mm))+ geom_point(aes(color = factor(Mark_to_mig),alpha=.01))+  geom_abline(slope=.59,intercept=-25,color ="grey") +facet_wrap(~Mark.Site.Info.Code)
-
 ```
