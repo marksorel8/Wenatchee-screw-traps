@@ -7,11 +7,6 @@ pkgTest <- function(x)
   }
 }#end of function
 
-
-
-
-
-
 Chiw_dat_Proc<-function(){
   #load  packages
   pkgTest("here")
@@ -154,7 +149,7 @@ mutate(Date= as.Date(as.character(Date),format = ifelse(grepl("-",as.character(D
     mutate(DOY=as.numeric(format(Date,form="%j"))) %>% 
     
     #fill in the few missing discharges with data obtained with dataRetrieval package
-    mutate(Disch.cfs=coalesce(Mean.discharge..CFS., as.integer(round(chiwDis$X_00060_00003[match(Date,chiwDis$date-1)])))) %>% 
+    mutate(Disch.cfs=coalesce(Mean.discharge..CFS., as.integer(round(chiwDis$flow[match(Date,chiwDis$date-1)])))) %>% 
     
   dplyr::full_join(select(ChiwEfficTrials,sub_rel:yrlng_recap,DOY ,Year)) %>%  #join with efficiency trial data
     
