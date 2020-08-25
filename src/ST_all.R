@@ -132,7 +132,7 @@ make_screw_trap_model_inits<-function(data_in){
              ln_tau_e=0,
              delta=numeric(data_in$N_day),
              epsilon=matrix(0,nrow=data_in$N_day,ncol=data_in$Nyears),
-             logit_phi_NB=0)
+             log_phi_NB=0)
 
 return(params)
 }
