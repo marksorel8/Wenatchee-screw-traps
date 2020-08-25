@@ -42,7 +42,7 @@ $$
 $$
 $$
 \\
-\delta[1]=\phi_d ~\delta[1]+\sqrt{1-\phi_d}~ \gamma[1], \quad \gamma[1] \sim N(0, \sigma_d^2) 
+\delta[1]=\phi_d ~\delta[0]+\sqrt{1-\phi_d}~ \gamma[1], \quad \gamma[1] \sim N(0, \sigma_d^2) 
 $$
 $$
 \\
@@ -151,7 +151,7 @@ make_screw_trap_model_inits<-function(data_in){
              ln_tau_e=0,
              delta=numeric(data_in$N_day),
              epsilon=matrix(0,nrow=data_in$N_day,ncol=data_in$Nyears),
-             logit_phi_NB=0)
+             log_phi_NB=0)
 
 return(params)
 }
@@ -321,13 +321,6 @@ abline(v=breaks,lwd=2)
 x<-plot_all_geomean_daily_emigrants(all_emigrants_estimates,breaks=breaks)
 
 ```
-
-### Alternative approach
-While the approach outlined above seems straightforward and reasonable, I could explicitly model the mixture within the estimation model for the numbers of daily emigrants. By this I mean I could replace the average-annual errors $\delta[t]$ in the daily emigrant process model described above with a smoothing function that uses 3 normal distributions as the bases. The model would be
-
-$$\hat{m}[t,y]=\mu_m[y] \sum_{j=1}^3\left(\lambda[j]\frac{1}{\sigma_n[j] \sqrt{2 \pi}} e^{-\frac{1}{2}\left(\frac{t-\mu_n[j]}{\sigma_n[j]}\right)^{2}}\right)  e^{\epsilon[t,y]}$$
-where $\lambda[j]$ is the weight for mixture component $j$ and the sum across all 3 $\lambda[j]$ is unity, $\mu_n[j]$ is the mean, and  $\sigma_n[j]$ is the standard deviation. I would integrate the analyses of all three streams if I were to use this approach. I could then generate the cutoff using the same approach of finding the saddle point between the modes. I think that cutoffs are probably preferable to deviding the emigrants on each day according to the mixture because when it comes time to estimate survival rates of each group, it would be easier to be able to just assign a given fish (capture history) to a group.
-
 
 
 
