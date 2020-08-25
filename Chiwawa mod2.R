@@ -66,7 +66,7 @@ mod_ins<-function(dat, mod_lifestage, start_day, end_day,  p_mod_formula,use_NB)
   #coefficients for capture efficiency model
   pCoefs <-rnorm(ncol(p_pred_mat))
   #random year effects on efficiency
-  rand_year<-rnorm(Nyears)
+  rand_year<-rnorm(Nyears,0,.1)
   #random day effects on efficiency 
   rand_day<-rnorm(length(seriesFac))
   #log stnadard deviation of random year effects
@@ -163,24 +163,26 @@ bootstrap_migrants<-function(n_Draws=2000,dat,SD_obj,redds,breaks=NA){
 
 ###Function to fit a spawner-emigrant transition model
 
-fit_SR<-function(R_obs,S_obs,pHOS,Model,SD=FALSE,N_years){
+fit_SR<-function(R_obs,R_obs_sd,S_obs,#pHOS,
+                 Model,SD=FALSE,N_years){
   compile("Stock_recruit.cpp")
   dyn.load(dynlib("Stock_recruit"))
   
   
-  SR_dat<-list(R_obs=R_obs,                 # Observed recruits (posterior from juvenile modle)
+  SR_dat<-list(R_obs=R_obs,                 # Observed log recruits (posterior from juvenile modle)
+               R_obs_sd=R_obs_sd,           # Observed log recruitss Stnd. Dev. (posterior from juvenile modle)
                S_obs=S_obs,               # Observed spawners (from redd counts)
-   
-               S_obs_cv_hyper_mu=0.05,           #spawner observation error hyper mean
-               S_obs_cv_hyper_sd=0.01,        #spawner observation error hyper variance
+               S_obs_cv=0.06,
+               #S_obs_cv_hyper_mu=0.06,           #spawner observation error hyper mean
+               #S_obs_cv_hyper_sd=0.02,        #spawner observation error hyper variance
                Model=Model)
   
   
-  mean_R<-colMeans(R_obs)
-  SR_pars<-list(beta=.05,log_R_hat=log(mean_R),      # latent true number of juveniles
-                log_R_obs_sd=log(apply(R_obs,2,sd)),  # juvenile observation error
+
+  SR_pars<-list(log_R_hat=R_obs,      # latent true number of juveniles
+                #log_R_obs_sd=log(apply(R_obs,2,sd)),  # juvenile observation error
                 log_S_hat=log(as.numeric(S_obs)),  # latent true number of spawners
-                log_S_obs_cv=log(0.05),                         # Spawner observation error
+                #log_S_obs_cv=log(0.05),                         # Spawner observation error
                 log_alpha=ifelse(Model==3,1.5,log(60)),         # intrinsic productivity
                 log_R_max=ifelse(Model==3,5,log(60000)),          # Asymptotic maximum recruitment
                 log_proc_sigma=log(.4),  # process error standard deviation
@@ -194,20 +196,18 @@ fit_SR<-function(R_obs,S_obs,pHOS,Model,SD=FALSE,N_years){
       }}
   #browser()
   SR<-MakeADFun(SR_dat,SR_pars,random = c("log_R_hat","log_S_hat"),DLL="Stock_recruit", map = map,silent = T)
-  lower<-c(rep(-20,length(mean_R)),rep(-50,length(mean_R)),rep(-10,length(mean_R)),-50,-10,-50,-50,-50)
-  upper<-c(rep(log(max(as.numeric(S_obs)*10000)),length(mean_R)),
-           rep(500,length(mean_R)),
-           rep(500,length(mean_R)),5
+  lower<-c(rep(-20,length(R_obs)),rep(-10,length(R_obs)),-50,-10,-50,-50,-50)
+  upper<-c(rep(log(max(as.numeric(S_obs)*10000)),length(R_obs)),
+           #rep(500,length(mean_R)),
+           rep(500,length(R_obs)),5
            ,log(2500),
            log(max(as.numeric(S_obs))*5000),
            50,
            50)
+
+  SR_fit<-TMBhelper::fit_tmb(SR,SR$fn,SR$gr, getsd = TRUE,newtonsteps = 1) #optimize model
   
-  SR_fit<-nlminb(SR$par,SR$fn,SR$gr, 
-                 control=list(rel.tol=1e-12,eval.max=1000000,
-                              iter.max=10000))#,lower=lower,upper=upper)
-  
-  Npar<-ifelse(Model==2|Model==4,3,ifelse(Model==5,1,2))
+  Npar<-ifelse(Model==2|Model==4|Model==6,3,ifelse(Model==5,1,2))
   Nsamp<-N_years
   AICc<-SR$fn()*2+2*Npar+(2*Npar*(Npar+1))/(Nsamp-Npar-1)
   
@@ -215,19 +215,12 @@ fit_SR<-function(R_obs,S_obs,pHOS,Model,SD=FALSE,N_years){
   
   
   plot(SR_Rep$S_hat,SR_Rep$R_hat,col="red")
-  points(S_obs,mean_R)
+  points(S_obs,exp(R_obs))
   points(SR_Rep$S_hat,SR_Rep$R_pred,col="blue")
   
-  if(isTRUE(SD)){
-    SR_sd<-sdreport(SR)
-    
-  }
+ 
+  out<-list(AICc=AICc,SR_Rep=SR_Rep,SDREPORT=SR_fit$SD)
   
-  out<-list(AICc=AICc,SR_Rep=SR_Rep)
-  
-  if(isTRUE(SD)){
-    out[[3]]<-SR_sd
-  }
   
   return(out)
   
@@ -237,13 +230,16 @@ fit_SR<-function(R_obs,S_obs,pHOS,Model,SD=FALSE,N_years){
 
 ###Function to compare Spawner-emigrant candidate mdoels
 
-SR_compare<-function(R_dat,S_dat,pHOS,N_years){
+SR_compare<-function(R_dat,R_dat_sd,S_dat,pHOS,N_years){
   out<-list()
-  for ( i in 1:5){
-    out[[i]]<-fit_SR(R_obs=R_dat,S_obs=S_dat,pHOS=pHOS,Model=i,N_years = N_years)
-    print(out[[i]][[1]])
-  }
-  
+  print_out<-numeric(6)
+  names(print_out)<-c("Beverton-Holt","Type III FR","Power Func","Weibull CDF","linear","Hockey-Stick?")
+  for ( i in 1:6){
+    out[[i]]<-fit_SR(R_obs=R_dat,R_obs_sd=R_dat_sd,S_obs=S_dat,#pHOS=pHOS,
+                     Model=i,N_years = N_years)
+    print_out[i]<-as.numeric(out[[i]][[1]])
+    }
+print(print_out)
   return(out)
 }
 
@@ -257,6 +253,7 @@ plot_SR<-function(fit_list,model,main_title,Riv_length,Y_max,y_ax){
   Riv_length<-Riv_length*1000
   plot(s_hats,r_hats/Riv_length,xlim=c(0,max(s_hats)*1.1),ylim=c(0,Y_max/1000),main=main_title,xlab="",ylab="",yaxt="n",font=2,cex=1.2,type="n")#max(r_hats*2)/Riv_length)
   axis(2,labels=y_ax,font=2,cex=1.2)
+
   
   alpha<-fit_list[[model]]$SR_Rep$alpha
   R_max<-fit_list[[model]]$SR_Rep$R_max
@@ -281,11 +278,12 @@ plot_SR<-function(fit_list,model,main_title,Riv_length,Y_max,y_ax){
   points(predS,R_pred/Riv_length,type="l",lwd=2)
   points(s_hats,r_hats/Riv_length,pch=19)
   
-  R_obs_sd<-fit_list[[model]]$SR_Rep$R_obs_sd
-  S_obs_sd<-fit_list[[model]]$SR_Rep$S_obs_sd
-  segments(exp(qnorm(.975,log(s_hats),S_obs_sd)),r_hats/Riv_length,exp(qnorm(.025,log(s_hats),S_obs_sd)),r_hats/Riv_length)
-  segments(s_hats,exp(qnorm(.975,log(r_hats),R_obs_sd))/Riv_length,s_hats,exp(qnorm(.025,log(r_hats),R_obs_sd))/Riv_length)
-  box()
+  r_hats_sd<-fit_list[[model]]$SDREPORT$sd[1:22]
+  s_hats_sd<-fit_list[[model]]$SDREPORT$sd[23:44]
+
+  segments(exp(qnorm(.975,log(s_hats),s_hats_sd)),r_hats/Riv_length,exp(qnorm(.025,log(s_hats),s_hats_sd)),r_hats/Riv_length)
+  segments(s_hats,exp(qnorm(.975,log(r_hats),r_hats_sd))/Riv_length,s_hats,exp(qnorm(.025,log(r_hats),r_hats_sd))/Riv_length)
+   box()
 }
 
 
@@ -329,9 +327,16 @@ chiw_YCW_ins<-mod_ins(chiw_dat,"YCW",range_of_days[1],181,as.formula(~lifestage+
 ### specifiy and optimize models
 #specify
 #subyearlings
-model_ch_subs_NB2<- MakeADFun(chiw_SBC_ins$mod_data, chiw_SBC_ins$mod_pars,  
+
+chiw_YCW_ins$mod_data$use_NB<-1
+chiw_YCW_ins$mod_pars$logit_p_NB
+chiw_YCW_ins$mod_pars$rand_year<-rep(0,times=length(chiw_YCW_ins$mod_pars$rand_year))
+map<-list(logit_p_NB=factor(rep(NA,length(chiw_YCW_ins$mod_pars$logit_p_NB))))
+,rand_year=factor(rep(NA,length(chiw_YCW_ins$mod_pars$rand_year))))
+map<-list()
+model_ch_subs_NB2_real<- MakeADFun(chiw_SBC_ins$mod_data, chiw_SBC_ins$mod_pars,  
                               random=c("log_M_hat_z","rand_year"),
-                              DLL="multi_year_independant_1NB_2_rand_p",silent=T)
+                              DLL="multi_year_independant_1NB_2_rand_p",silent=T,map=map)
 
 #yearlings
 model_ch_yrlngs_NB2<- MakeADFun(chiw_YCW_ins$mod_data, chiw_YCW_ins$mod_pars,  
@@ -347,11 +352,25 @@ model_ch_subs_fit_NB2<- nlminb(model_ch_subs_NB2$par, model_ch_subs_NB2$fn, mode
 
 model_ch_subs_fit_NB2$objective
 model_ch_subs_NB2$fn()
+library(TMBhelper)
+
+model_ch_subs_fit_NB2_map_rand<-TMBhelper::fit_tmb(model_ch_subs_NB2_real,model_ch_subs_NB2_real$fn,model_ch_subs_NB2_real$gr,model_ch_subs_NB2_real$par )
+
+model_ch_subs_fit_NB2
+
+
+length(model_ch_subs_NB2$gr())
+head(model_ch_subs_NB2_map_rand$par[order(abs(model_ch_subs_NB2_map_rand$gr()),decreasing = TRUE )],20)
 
 #quick check on results
 rep_ch_subs_NB2<-model_ch_subs_NB2$report()
 log_m_hat_ch_subsNB2<-rep_ch_subs_NB2$log_M_hat
 plot(rowMeans(exp(log_m_hat_ch_subsNB2)),type="l",ylab="",xlab="",xaxt="n")
+for ( i in 1:ncol(log_m_hat_ch_subsNB2)){
+  plot(exp(log_m_hat_ch_subsNB2[,i]),type = "l")
+}
+
+
 abline(v=87,col="red")
 abline(v=215,col="red")
 days<-c(91,182,274,366,(365+91))-50
@@ -1089,5 +1108,30 @@ mtext("Spawners",2,0.5,outer=T,xpd=NA)
 legend(x="topleft",legend=c("model","observed"),col=c("black","blue"),lty=1)
 
 
+bioD<-read.csv(here("data","chiwawa","Chiwawa_biodata.csv"))
+bioD$DATE<-as.Date(bioDsubs$ï..DATE,format="%d-%b-%y")
+bioD$DOY<-as.numeric(format(bioD$DATE,form="%j"))
+head(bioD$DATE)
+head(bioD$ï..DATE)
+hist(bioD$DOY)
+
+bioDsubs<-droplevels(subset(bioD,SPECIES=="SBC"&FORK..mm.<=250))
+
+hist(bioDsubs$DOY,breaks=365)
+abline(v=214+53)
+abline(v=87+53)
+bioDsubs$stage_new<-ifelse(bioDsubs$DOY<=(87+53),"fry",ifelse(bioDsubs$DOY<=(214+53),"summer","fall"))
 
 
+
+flSubs<-tapply(bioDsubs$FORK..mm., list(bioDsubs$Brood.Year,bioDsubs$stage_new), mean,na.rm=T)
+reddSubs<-rowSums(Chiw_redds[7:22,2:3])
+plot (reddSubs,flSubs[,1],ylim=range(flSubs,na.rm=T))
+points (reddSubs,flSubs[,3],col="blue")
+points (reddSubs,flSubs[,2],col="green")
+
+points(as.numeric(chiw_bio$DOY)[chiw_bio$STAGE=="F"|chiw_bio$STAGE=="f"],chiw_bio$FORK..mm.[chiw_bio$STAGE=="F"|chiw_bio$STAGE=="f"],col=rgb(.5,.1,.1,.1),cex=.5,pch=20)
+#yearlings
+points(as.numeric(chiw_bio$DOY)[chiw_bio$SPECIES=="YCW"],chiw_bio$FORK..mm.[chiw_bio$SPECIES=="YCW"],col=rgb(.1,.1,.5,.1),cex=.5,pch=20)
+#subyearlings
+points(as.numeric(chiw_bio$DOY)[chiw_bio$SPECIES=="SBC"&(chiw_bio$STAGE!="F"&chiw_bio$STAGE!="f")],chiw_bio$FORK..mm.[chiw_bio$SPECIES=="SBC"&(chiw_bio$STAGE!="F"&chiw_bio$STAGE!="f")],col=rgb(.1,.5,.1,.1),cex=.5,pch=20)
