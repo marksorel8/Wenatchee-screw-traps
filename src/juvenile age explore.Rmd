@@ -3,8 +3,8 @@ title: "Juvenile Chinook age estimation"
 author: "mark sorel"
 date: "8/18/2020"
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
 
 The purpose of this document is to explore how to determine the ages of juvenile Chinook captured in screw traps in the  Wenatchee River Basin.
@@ -112,7 +112,7 @@ Fish captured on or before day
 ```{r , echo=FALSE, warning=FALSE}
  spring_all_bio_data<-subset(all_bio_data,DOY<=smolt_max_DOY & !is.na(Length)) %>% select(Length,DOY) # subsetting to spring
 
- plot(spring_all_bio_data$DOY,spring_all_bio_data$Length,ylab="Length (mm)",xlab="Day of year",col=rgb(.5,.5,.5,.5),pch=19,cex=.4)                     #plotting
+ #plot(spring_all_bio_data$DOY,spring_all_bio_data$Length,ylab="Length (mm)",xlab="Day of year",col=rgb(.5,.5,.5,.5),pch=19,cex=.4)                     #plotting
 ```
 
 
@@ -121,12 +121,12 @@ To create a line to separate subyearlings and yearlings:
 2) find the length corresponding to the minimum density between the two modes of the mixture distribution,
 and 3) connect the points.
 
-```{r ,echo=F, eval=TRUE, message=FALSE, warning=FALSE}
+```{r eval=TRUE, message=FALSE, warning=FALSE,echo=F,out.width="40%",fig.show="hold"}
 
 knots<-seq(50,179,by=10)              #starting days for 10-day intervals
 n_knots<-length(knots)                #number of 10-day intervals
 break_ln<-numeric(length(n_knots))    #vector to hold break points for each interval
-  
+
 
 for ( i in 1:n_knots){                #loop through intervals 
   x<-subset(all_bio_data,DOY>=knots[i]
@@ -136,11 +136,11 @@ for ( i in 1:n_knots){                #loop through intervals
      breaks=seq(0,200,2),freq = FALSE,main=paste0("Days ",knots[i],"-",knots[i]+9))#plot histogram
  
   
-   mixd<-mixtools::normalmixEM(
+   invisible(capture.output( mixd<-mixtools::normalmixEM(
     na.exclude(log(x$Length)),
     lambda=.5,
     mu=c(3.5,4.5),
-    sigma=c(1,1))                    #fit mixture distribution of 2 normals
+    sigma=c(1,1))))                    #fit mixture distribution of 2 normals
    
    
   
@@ -232,10 +232,10 @@ tab<- table(interrogation$pred_Mark_to_mig,interrogation$Mark_to_mig)
 
 thing<-interrogation %>% filter(pred_Mark_to_mig!=Mark_to_mig) %>% select(Tag.Code,Mark.Site.Info.Code,Mark.Date.MMDDYYYY,Mark.Year.YYYY,Mark.Day.Number,Mark.Length.mm,Mark_to_mig,pred_Mark_to_mig,Site.Name,First.Date.MMDDYYYY,First.Year.YYYY,First.Day.Num)
 write.csv(thing,file=here("data","processed","misassigned_fish.csv"))
+
 ```
 
 The assignment of "known age" fish n=(`r sum(tab)`) is correct in `r round((tab[1,1]+tab[2,2])*100/sum(tab),2)`% of cases 
-
 
 ```{r,eval=F,echo=FALSE}
 #attempting to optimize a piecewise linear function with maximum distance to points. Doesn,t really work
