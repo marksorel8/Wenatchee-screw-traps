@@ -31,32 +31,32 @@ Type objective_function<Type>::operator() ()
 //Parameters
 
    
-    PARAMETER_VECTOR(mu_M);       // intercept of log-mean daily outmigrants
-    PARAMETER(logit_phi_d);       // logit AR(1) coefficient for across-year errors in log-mean daily emigrants 
-    PARAMETER(logit_phi_e);       // logit AR(1) coefficient for year-specific erros in log-mean daily outmigrants
-    PARAMETER(ln_tau_d);          // log AR(1) process error precission for across year erros in log-mean daily emigrants
-    PARAMETER(ln_tau_e);          // log AR(1) process error precission for year-specific errors in log-mean daily emmigrants 
-    PARAMETER_VECTOR(pCoefs);     // coefficients in trap capture efficiency model
-    PARAMETER(log_phi_NB);        // log -transformed overdispersion paramater for negative binomial 
+    PARAMETER_VECTOR(mu_M);   // intercept of log-mean daily outmigrants
+    PARAMETER(logit_phi_d);   // logit AR(1) coefficient for across-year errors in log-mean daily emigrants 
+    PARAMETER(logit_phi_e);   // logit AR(1) coefficient for year-specific erros in log-mean daily outmigrants
+    PARAMETER(ln_tau_d);      // log AR(1) process error precission for across year erros in log-mean daily emigrants
+    PARAMETER(ln_tau_e);      // log AR(1) process error precission for year-specific errors in log-mean daily emmigrants 
+    PARAMETER_VECTOR(pCoefs); // coefficients in trap capture efficiency model
+    PARAMETER(log_phi_NB);    // log -transformed overdispersion paramater for negative binomial 
 
   
 //Random Effects   
-    PARAMETER_VECTOR(delta);             // accross-year errors of log-means of daily emigrants 
-    PARAMETER_MATRIX(epsilon);           // year-specific errors of log-means of daily emigrants
+    PARAMETER_VECTOR(delta);   // accross-year errors of log-means of daily emigrants 
+    PARAMETER_MATRIX(epsilon); // year-specific errors of log-means of daily emigrants
      
      
     
 //objective function
-using namespace density;                // load "package" with AR1 distribtion
+using namespace density;       // load "package" with AR1 distribtion
 vector<Type> jnll_comp(3);              // declare vector of 3 likelihood componenets
 jnll_comp.setZero();                    // set likelihood componenets to zero
 
 //Variables
-Type phi_d=invlogit(logit_phi_d);         // transform correlation coefficient for across-year daily outmigrant errors to "0-1" space. I don't thing a negative correlation would ever be the case here, and must be >1 to be stationar
-Type phi_e=invlogit(logit_phi_e);         // transform  correlation coefficient for yearly daily outmigrant errors to "0-1" space. I don't thing a negative correlation would ever be the case here, and must be >1 to be stationary
-Type sigma_d = 1/exp(ln_tau_d);           // transorm log precision to standard deviation 
-Type sigma_e = 1/exp(ln_tau_e);           // transorm log precision to standard deviation 
-Type phi_NB=exp(log_phi_NB);           // transform negative binomial "prob" paramater to 0-1 space. 
+Type phi_d=invlogit(logit_phi_d);// transform correlation coefficient for across-year daily outmigrant errors to "0-1" space. I don't thing a negative correlation would ever be the case here, and must be >1 to be stationar
+Type phi_e=invlogit(logit_phi_e);// transform  correlation coefficient for yearly daily outmigrant errors to "0-1" space. I don't thing a negative correlation would ever be the case here, and must be >1 to be stationary
+Type sigma_d = 1/exp(ln_tau_d);  // transorm log precision to standard deviation 
+Type sigma_e = 1/exp(ln_tau_e);  // transorm log precision to standard deviation 
+Type phi_NB=exp(log_phi_NB);     // transform negative binomial "phi" paramater 
 
 //-----------------------------------------------------------------
 //-----------------------------------------------------------------
