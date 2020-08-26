@@ -37,7 +37,7 @@ across_stream_geomean<-data.frame(x=1:365,y=exp(rowMeans(geo_means$all_log_means
 observation_for_each_average_fish<-rep(across_stream_geomean$x[which(!is.na(across_stream_geomean$y))],times=round(na.exclude(across_stream_geomean$y)))
 
 #fit three-normal mixture distribution
-mix_geomean<-mixtools::normalmixEM(observation_for_each_fish,lambda=c(.2,.4,.5),mu=c(100,200,300),)
+mix_geomean<-mixtools::normalmixEM(observation_for_each_average_fish,lambda=c(.2,.4,.5),mu=c(100,200,300),)
 
 #calculate density
 mix_geomean_dens<-mix_geomean$lambda[1]* dnorm(seq(50,350,by=1),mix_geomean$mu[1],mix_geomean$sigma[1])+
@@ -45,14 +45,14 @@ mix_geomean_dens<-mix_geomean$lambda[1]* dnorm(seq(50,350,by=1),mix_geomean$mu[1
   mix_geomean$lambda[3]*dnorm(seq(50,350,by=1),mix_geomean$mu[3],mix_geomean$sigma[3])
 
 #plot
-plot(mix_geomean,2,breaks=200)
+plot(mix_geomean,2,breaks=100)
 #hist(observation_for_each_fish,breaks=200,freq=FALSE)
 points(seq(50,350,by=1),mix_geomean_dens,type="l",lwd=2)
 breaks<-numeric(2)
-for ( i in 1:2) breaks[i]<-which.min(mix_geomean_dens[((round(mix_geomean$mu[i]):round(mix_geomean$mu[(i+1)]))-49)])+round(mix_geomean$mu[i])
+for ( i in 1:2) breaks[i]<-which.min(mix_geomean_dens[((round(sort(mix_geomean$mu)[i]):round(sort(mix_geomean$mu)[(i+1)]))-49)])+round(sort(mix_geomean$mu)[i])
 abline(v=breaks,lwd=2)
 
-plot_all_geomean_daily_emigrants(all_emigrants_estimates,breaks=breaks)
+x<-plot_all_geomean_daily_emigrants(all_emigrants_estimates,breaks=breaks)
 
 
 #------------------------------------------------------------------------------------
@@ -66,7 +66,7 @@ source(here("src","Nason White Data Proc 2.R")) # Nason and White
 
 
 #function to make data lists for model
-make_screw_trap_model_data<-function(data_in,stream="Chiwawa", lifestage="yrlng",Use_NB=1,subyearlings=0){
+make_screw_trap_model_data<-function(data_in,stream="Chiwawa", lifestage="yrlng",Use_NB=1,subyearlings=0,breaks=c(139,261)){
   
    #subset data to days when there was catch data (including 0 catch)
   data_in<-filter(data_in,!is.na(data_in[,paste0("count.",lifestage)]))
@@ -91,7 +91,8 @@ make_screw_trap_model_data<-function(data_in,stream="Chiwawa", lifestage="yrlng"
              N_trap=length(data_in[,paste0("count.",lifestage)]),  # number of trap days
              N_day=diff(range(data_in$DOY))+1,                     # number of days per year to estimate emigrant abundance
              Nyears=length(unique(data_in$year_factor)),           # number of years
-             Use_NB=Use_NB)                                        # flag to use negative binomial observation model.
+             Use_NB=Use_NB,
+             breaks=breaks)# flag to use negative binomial observation model.
   
   return(data_list)
   }

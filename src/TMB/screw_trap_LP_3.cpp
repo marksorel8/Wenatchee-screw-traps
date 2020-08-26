@@ -27,6 +27,8 @@ Type objective_function<Type>::operator() ()
     
     DATA_INTEGER(Use_NB);     // flag indicating whether to use Negative Binomial distribution, as opposed to Poisson, for the daily catch
  
+    DATA_IVECTOR(breaks)      // day of year breaks for aggregating emigrants accross days within "windows" 
+                              // based on post-hoc analysis of average timing with mixture diistribution.
   
 //Parameters
 
@@ -48,8 +50,8 @@ Type objective_function<Type>::operator() ()
     
 //objective function
 using namespace density;       // load "package" with AR1 distribtion
-vector<Type> jnll_comp(3);              // declare vector of 3 likelihood componenets
-jnll_comp.setZero();                    // set likelihood componenets to zero
+vector<Type> jnll_comp(3);     // declare vector of 3 likelihood componenets (AR1 errors, efficency trials, and catch data)
+jnll_comp.setZero();           // set likelihood componenets to zero
 
 //Variables
 Type phi_d=invlogit(logit_phi_d);// transform correlation coefficient for across-year daily outmigrant errors to "0-1" space. I don't thing a negative correlation would ever be the case here, and must be >1 to be stationar
@@ -148,9 +150,9 @@ for( int Iday=0; Iday<N_trap; Iday++){ // loop over all days with catch data
                for( int Iyear=0; Iyear<Nyears; Iyear++){ //loop through years
            temp=M_hat.col(Iyear);                  // get daily counts for a given year
            if(subyearlings){               
-             LH_sums (Iyear,0)=temp.segment(0,(138-first_DOY)).sum();             //sum over fry migration window
-             LH_sums (Iyear,1)=temp.segment((138-first_DOY),(265-138)).sum();       //sum over summer parr migration window;
-             LH_sums (Iyear,2)=temp.segment((265-first_DOY),(N_day-(265-first_DOY))).sum();} //sum over fall parr migration window
+             LH_sums (Iyear,0)=temp.segment(0,(breaks[0]-first_DOY)).sum();             //sum over fry migration window
+             LH_sums (Iyear,1)=temp.segment((breaks[0]-first_DOY),(breaks[1]-breaks[0])).sum();       //sum over summer parr migration window;
+             LH_sums (Iyear,2)=temp.segment((breaks[1]-first_DOY),(N_day-(breaks[1]-first_DOY))).sum();} //sum over fall parr migration window
            else{
              LH_sums(Iyear,0)=temp.sum();}                           //sum over all days if a yearling model
          }
