@@ -30,6 +30,8 @@ Type objective_function<Type>::operator() ()
     DATA_IVECTOR(breaks)      // day of year breaks for aggregating emigrants accross days within "windows" 
                               // based on post-hoc analysis of average timing with mixture diistribution.
   
+    DATA_SCALAR(stream_length);      // lengh (km) of natal stream surveyed for spawners, for standardizing emigrant estimates
+  
 //Parameters
 
    
@@ -41,7 +43,7 @@ Type objective_function<Type>::operator() ()
     PARAMETER_VECTOR(pCoefs); // coefficients in trap capture efficiency model
     PARAMETER(log_phi_NB);    // log -transformed overdispersion paramater for negative binomial 
 
-  
+   
 //Random Effects   
     PARAMETER_VECTOR(delta);   // accross-year errors of log-means of daily emigrants 
     PARAMETER_MATRIX(epsilon); // year-specific errors of log-means of daily emigrants
@@ -157,7 +159,7 @@ for( int Iday=0; Iday<N_trap; Iday++){ // loop over all days with catch data
              LH_sums(Iyear,0)=temp.sum();}                           //sum over all days if a yearling model
          }
   
-         LH_sums=log(LH_sums.array());                               //take log of sums for defining lognormal posterior distribution using the delta method
+         LH_sums=log(LH_sums.array()/stream_length);                               //take log of sums for defining lognormal posterior distribution using the delta method
          
 //average log(emigrants) per day accross years         
          matrix<Type> log_M_hat= log(M_hat.array());                 //convert daily emigrants to log(emigrants)

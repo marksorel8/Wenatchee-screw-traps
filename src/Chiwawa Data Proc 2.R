@@ -151,6 +151,7 @@ mutate(Date= as.Date(as.character(Date),format = ifelse(grepl("-",as.character(D
     #fill in the few missing discharges with data obtained with dataRetrieval package
     mutate(Disch.cfs=coalesce(Mean.discharge..CFS., as.integer(round(chiwDis$flow[match(Date,chiwDis$date-1)])))) %>% 
     
+    
   dplyr::full_join(select(ChiwEfficTrials,sub_rel:yrlng_recap,DOY ,Year)) %>%  #join with efficiency trial data
     
   mutate(year_factor=as.numeric(as.factor(Year))) %>% #year as factor
