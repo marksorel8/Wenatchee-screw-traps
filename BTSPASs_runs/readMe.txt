@@ -1,1 +1,0 @@
-This R script is Mark attempting to run BTSPAS on data. all the files other than the ".R" file are automatically generated when BTSPAS is run.

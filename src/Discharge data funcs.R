@@ -68,6 +68,7 @@ Nason_White_Discharge_Func<-function(){
     out$date<-as.Date(out$date,format="%m/%d/%Y")
     out$Year<-as.integer(format(out$date,"%Y"))
     out$month<-as.integer(format(out$date,"%m"))
+    out$doy<-as.integer(format(out$date,"%j"))
     
     return(out)
   }

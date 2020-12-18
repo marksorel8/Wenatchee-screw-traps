@@ -1,0 +1,119 @@
+---
+title: "Untitled"
+output: word_document
+---
+
+
+
+
+
+$$N_{y+1,a} =\begin{cases} C_{l}(1-e^{-(N_{y,s}/\lambda_l)^{k_l}})e^{\epsilon_{l,y}}~~~~~~~for~  juvenile~emigrants in~ their~ first~ year~l=1-3 \\ 
+ \\
+ \frac {\alpha_lN_{y-1,s} }{1+\alpha_lN_{y-1,s} /C_l}e^{\epsilon_{l,y}}~for~  juvenile~emigrants~ in~ their~ second~ year l=4\\
+ \\
+ \sum_{l=1}^3\sum_{i=1}^3 \left({N_{y-i,1,l}~s_{y-i,1,l}~a_{y-i,1,l}^{i+3}}\right )+\\\sum_{i=0}^2 \left({N_{y-i,2}~s_{y-i,2}~a_{y-i,2}^{i+4}}\right ) - R_{y} +S^h ~~f  \\\end{cases} $$
+
+
+
+
+$S_{y}$ = the number of  spawners in brood year $y$
+
+$J_{y}^l$= the number of juvenile emigrants with life history $l$ originating from brood year $y$
+
+
+The number of juveniles of each of 4 life-histories is a nonlinear function of of the number of spawners.
+To allow the number of juveniles in the early-migrant life histories (fry, summer parr, and fall parr) 
+$$J_{y}^l = \frac {\alpha_lS_y }{1+\alpha_lS_y /Rmax_l}e^{\epsilon_{l,y}}$$  Beverton-Holt function of the number of spawners
+$$J_{y}^l = \frac {\alpha_lS_y }{1+\alpha_lS_y /Rmax_l}e^{\epsilon_{l,y}}$$
+
+with multivariate lognormal error,
+
+$$\epsilon_y \sim MVN(\boldsymbol0,\Sigma_J)$$
+.
+
+
+The number of natural-origin adult returns $S_{n,y}$ is, 
+
+$$S_{y}^W = \sum_{i=3}^5 \left({J_{y-i}^l~s_{y}^l~a_{i}^l}\right ) - B_{y}$$
+where
+$s_{y}^l$ = survival from juvenile to adult for lifestage $l$ in year $y$, 
+$p_{i}^l$ proportion of adults of lifestage $l$ that return at age $i$,
+and 
+
+$B_{y}$ = the number of natural origin adults taken for broodstock in brood year $y$
+
+
+$$logit(s_{y,l})= \alpha +0.18 f_l+ \epsilon_{y}$$
+
+
+$$\epsilon_{y}=\rho_s\epsilon_{y-1} +\sqrt{1-\rho_s^2}\eta_t$$
+
+$$\eta_t\sim N\left(0,\sigma_s  \right) $$
+
+$$alr(\mathbf {p_b} ) = \mathbf {\gamma} +\epsilon_b $$
++ \sqrt{1-\rho^2} \eta_t
+ 
+ =  rho 
+ 
+$$\mathbf {\epsilon}_b = \rho_p \mathbf{\epsilon}_{b-1} + \sqrt{1-\rho_p^2} \mathbf{\eta}_b$$
+
+$$\mathbf{\eta}_b\sim MVN \left(0,\mathbf{\Sigma}_b  \right)  $$
+
+
+$$\epsilon_y \sim MVN(\boldsymbol 0,\Sigma_s)$$
+
+
+$$N^h_y=N^w_y*p^{h}_y/(1-p^{h}_y) $$
+
+$$log(n^{obs}_{y,a,l}) \sim N(log(n_{y,a,l}),\sigma_{y,a,l}) $$
+
+
+$$\mathbf{n}_{b,a}^{obs} \sim multinomial(\mathbf p_{b,a})  $$
+
+$$\mathbf{n}_{y,a}^{obs} \sim multinomial(\mathbf p_{y,a})  $$
+c= carcass
+$$c_y^h \sim binomial(c_y,p^h_y)  $$
+
+$$\sigma_s \sim N(0.055,0.02)$$
+
+
+, $d_l$ is the median day of brood year that a given life history emigrates from the natal stream.
+
+
+$p_{i}^l$ was given as a data and [.125,.725,.15] for subyearling emigrant life histories and [.06,.65,.29] for yearling smolt emigrants.
+
+
+
+The number of hatchery origin spawners $S_{y}^H$ is
+$$S_{y}^H = S_y^WP_{HOS,y}/(1-P_{HOS,y})$$ 
+
+
+The total number of spawners in a brood year is then $S_y=S_{y}^W+S_{y}^H$.
+
+
+$$C_y^H \sim binomial(C_y,p_{HOS,y})$$
+$$\boldsymbol J_{y,obs}^l\sim lognormal(log(J_y^l),\sigma_y^l)$$ 
+$$\boldsymbol S_{y,obs}\sim lognormal(log(S_y),\sigma_S)$$ 
+
+
+
+
+
+
+$$log(n_{y,t,j})= \mu_y+ \rho_{y}\epsilon_{t-1} +\sqrt{1-\rho_y^2}\eta_t$$
+
+
+$$\eta_t\sim N\left(0,\sigma_j  \right) $$
+$$N_{y,j}=\sum_{t}n_t$$
+
+$$logit(p_{y,t}) =  \mathbf x_t \boldsymbol \beta $$
+
+$$rec_{y,t} \sim Binomial(rel_{y,t},p_{y,t})$$
+
+
+
+$$\bar c_{y,t} = p_{y,t}n_{y,t,j} $$
+
+
+
+$$c^{obs}_{y,t}\sim Poisson(\bar c_{y,t}) $$
