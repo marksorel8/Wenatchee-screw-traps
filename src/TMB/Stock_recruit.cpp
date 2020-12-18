@@ -128,7 +128,7 @@ Type objective_function<Type>::operator() ()
   // 
 
   PARAMETER_VECTOR(log_proc_sigma);    // year by stream by life history process errors standard deviations
-  vector<Type> proc_sigma = (log_proc_sigma);
+  vector<Type> proc_sigma = exp(log_proc_sigma);
   REPORT(proc_sigma);
 
   // PARAMETER(log_sigma_delta);               // year sds
@@ -136,18 +136,23 @@ Type objective_function<Type>::operator() ()
   // REPORT(sigma_delta);
   // 
   PARAMETER_VECTOR(log_sigma_theta);               // streamn by year sds
-  vector<Type> sigma_theta = (log_sigma_theta);
+  vector<Type> sigma_theta = exp(log_sigma_theta);
   REPORT(sigma_theta);
   
-  //PARAMETER_VECTOR(log_sigma_e);               // stream by year sds
-  //vector<Type> sigma_e = (log_sigma_e);
-  //REPORT(sigma_e);
+  // PARAMETER_VECTOR(log_sigma_e);               // stream by year sds
+  // vector<Type> sigma_e = (log_sigma_e);
+  // REPORT(sigma_e);
   // 
+  
+ 
+
   // PARAMETER_VECTOR(log_sigma_log_fifty);
   // vector<Type> sigma_log_fifty = exp(log_sigma_log_fifty);
+  // 
   // PARAMETER_VECTOR(log_sigma_log_rm);
   // vector<Type> sigma_log_rm = exp(log_sigma_log_rm);
-  //PARAMETER_VECTOR(log_sigma_kappa);               // life history by year sds 
+  // 
+  // // PARAMETER_VECTOR(log_sigma_kappa);               // life history by year sds
   //vector<Type> sigma_kappa = exp(log_sigma_kappa);
   //REPORT(sigma_kappa);
   // PARAMETER_VECTOR(proc_theta);    // annual process errors standard deviation
@@ -172,6 +177,14 @@ Type objective_function<Type>::operator() ()
 PARAMETER_VECTOR(gamma);           // stream by year by life history process errors in juvenile recruitment
 
  REPORT(gamma);
+  matrix<Type>gamma_sim(gamma.size(),int(100));
+ SIMULATE{
+   for ( int i=0 ;i<gamma.size();i++){
+     for(int j=0 ;j<int(100);j++){
+     gamma_sim(i,j)=rnorm(Type(0),Type(1));
+   }
+   }
+ }
   
   //PARAMETER_VECTOR(delta);           // year process errors in juvenile recruitment
   
@@ -180,6 +193,16 @@ PARAMETER_VECTOR(gamma);           // stream by year by life history process err
  PARAMETER_VECTOR(theta);           // stream by year process errors in juvenile recruitment
   
   REPORT(theta);
+    matrix<Type>theta_sim(theta.size(),int(100));  
+  SIMULATE{
+
+    for ( int i=0 ;i<theta.size();i++){
+      for(int j=0 ;j<int(100);j++){
+        theta_sim(i,j)=rnorm(Type(0),Type(1));
+      }
+    }
+    
+  }
   
   //PARAMETER_VECTOR(kappa);            // life history by year  process errors in juvenile recruitment
   
@@ -199,7 +222,9 @@ PARAMETER_VECTOR(gamma);           // stream by year by life history process err
   
   
 
-  
+  DATA_IVECTOR(pen_flag);
+  DATA_VECTOR(prior_mean);
+  DATA_VECTOR(exp_rates);
   //
 
   //calculate intrinsic productivity and asymptotic maximum recruitment
@@ -233,7 +258,7 @@ PARAMETER_VECTOR(gamma);           // stream by year by life history process err
       //probabilities of random effects in life-history and stream- specific
       // productivity and maximum recruitment
     //
-     // UNSTRUCTURED_CORR_t<Type> mvnorm_proc(par_theta);
+     //UNSTRUCTURED_CORR_t<Type> mvnorm_proc(par_theta);
      // matrix<Type> test2 = mvnorm_proc.cov();
      // REPORT(test2);
      //  vector<Type> par_sigma(3);
@@ -257,25 +282,59 @@ PARAMETER_VECTOR(gamma);           // stream by year by life history process err
       //
       // jnll_comp(0)-=dnorm(eps_a(i*n_l+j), Type(0.0), sigma_a(j), true);
       // jnll_comp(0)-=dnorm(eps_rm(i*n_l+j), Type(0.0), sigma_rm(j),true);
-      // jnll_comp(0)-=dnorm(eps_f(i*n_l+j), Type(0.0), sigma_f(j),true);
+      
+       
 
-
-
-
-
-
-// jnll_comp(0)-=dnorm(exp(eps_f(i*n_l+j)),Type(0.0),sigma_log_fifty(i*n_l+j), true)+eps_f(i*n_l+j);  //normal (centered on zero) priors on coefficients
+       // jnll_comp(0)-= (dexp(sigma_log_fifty(i*n_l+j),Type(1),true)
+       //                       +log_sigma_log_fifty(i*n_l+j));
+// DATA_SCALAR(neg_cor);
+//        matrix<Type> Sigma(2,2);
+//        Sigma.fill(neg_cor);
+//        Sigma(0,0)=sigma_log_fifty(i*n_l+j);
+//          Sigma(1,1)=sigma_log_rm(i*n_l+j);
 // 
-// jnll_comp(0)-= (dexp(sigma_log_fifty(i*n_l+j),Type(1),true)
-//                   +log_sigma_log_fifty(i*n_l+j));
+// MVNORM_t<Type> N_0_Sigma(Sigma);
+// REPORT(N_0_Sigma.cov());
 // 
-// 
-// jnll_comp(0)-=dnorm(eps_rm(i*n_l+j),Type(0.0),sigma_log_rm(i*n_l+j), true);  //normal (centered on zero) priors on coefficients
-// 
-// jnll_comp(0)-= (dexp(sigma_log_rm(i*n_l+j),Type(1),true)
-//                   +log_sigma_log_rm(i*n_l+j));
+// DATA_SCALAR(rmax_prior);
 
-//jnll_comp(0)-= (dexp(sigma_log_fifty(i*n_l+j),Type(1.0),true)
+// vector<Type>tmp(2);
+// tmp(0)=eps_f(i*n_l+j)-log(f_prior);
+// tmp(1)=eps_rm(i*n_l+j)-log(Type(rmax_prior));
+
+// jnll_comp(0)+=N_0_Sigma(tmp);
+// // 
+
+// 
+// if(pen_flag(0)){
+// 
+// jnll_comp(0)-=dnorm(eps_f(i*n_l+j),Type(log(prior_mean(0))),sigma_log_fifty(i*n_l+j), true);  //normal (centered on zero) priors on coefficients
+// 
+// 
+// DATA_VECTOR(exp_rates);
+//  jnll_comp(0)-= (dexp(sigma_log_fifty(i*n_l+j),Type(exp_rates(0)),true)
+//                    +log_sigma_log_fifty(i*n_l+j));
+// }
+// 
+// if(pen_flag(1)){
+//   
+//   jnll_comp(0)-=dnorm(eps_rm(i*n_l+j),Type(log(prior_mean(1))),sigma_log_rm(i*n_l+j), true);  //normal (centered on zero) priors on coefficients
+//   
+//   
+// 
+//   jnll_comp(0)-= (dexp(sigma_log_rm(i*n_l+j),Type(exp_rates(1)),true)
+//                     +log_sigma_log_rm(i*n_l+j));
+// }
+
+
+//
+//
+//  jnll_comp(0)-=dnorm(eps_rm(i*n_l+j),log(Type(4e6)),sigma_log_rm(i*n_l+j), true);  //normal (centered on zero) priors on coefficients
+//
+//  jnll_comp(0)-= (dexp(sigma_log_rm(i*n_l+j),Type(exp_rates(1)),true)
+// +log_sigma_log_rm(i*n_l+j));
+
+// jnll_comp(0)-= (dexp(sigma_log_fifty(i*n_l+j),Type(1.0),true)
 //                  +log_sigma_log_fifty(i*n_l+j));
 
 
@@ -303,20 +362,22 @@ PARAMETER_VECTOR(gamma);           // stream by year by life history process err
 
 
   //transform productivities and maximum recruitment to positive real space
-  vector<Type> alpha =exp(log_alpha);
+  vector<Type> alpha = exp(log_alpha);
   REPORT(alpha);
   vector<Type> R_max = exp(log_R_max);
   REPORT(R_max);
-  vector<Type> fifty =  Type(1)+exp(log_fifty);
+  vector<Type> fifty =  exp(log_fifty);
    REPORT(fifty);
 
-
+   
+   
 
 
 
 
 
   //derived quantitites
+  vector<Type> R_hat(n_i);     // vector to hold latent recruits
   vector<Type> R_pred(n_i);     // vector to hold latent recruits
 
   //vector to hold unscaled random coefficients
@@ -345,47 +406,59 @@ for( int i=0; i<n_i; i++){      // loop over all streams, life-histories, and ye
 
  if(mod(sl_i(i))==1){
 //depensatory Beverton holt I
-R_pred(i)=  (alpha(sl_i(i))* pow(S_hat(st_i(i)),fifty(sl_i(i)))) /
+R_hat(i)=  (alpha(sl_i(i))* pow(S_hat(st_i(i)),fifty(sl_i(i)))) /
   (Type(1.0)+   alpha(sl_i(i))* pow(S_hat(st_i(i)),fifty(sl_i(i))) / R_max(sl_i(i)));
  }
    else { if(mod(sl_i(i))==2){
 // depensatory Beverton holt II
-   R_pred(i)= (S_hat(st_i(i))/(S_hat(st_i(i))+fifty(sl_i(i))))  *   (alpha(sl_i(i))*S_hat(st_i(i))) /
+R_hat(i)= (S_hat(st_i(i))/(S_hat(st_i(i))+fifty(sl_i(i))))  *   (alpha(sl_i(i))*S_hat(st_i(i))) /
 (Type(1.0)/alpha(sl_i(i))+   S_hat(st_i(i)) / R_max(sl_i(i)));
+
+
+// R_pred(i)= (Type(1)-exp((log(Type(0.5))/fifty(sl_i(i)))* S_hat(st_i(i))))  *   (alpha(sl_i(i))*S_hat(st_i(i))) /
+// (Type(1.0)/alpha(sl_i(i))+   S_hat(st_i(i)) / R_max(sl_i(i)));
+     
  } else{if(mod(sl_i(i))==3){
 // depensatory smooth hockey stock
-R_pred(i)= (S_hat(st_i(i))/(S_hat(st_i(i))+fifty(sl_i(i))))  * alpha(sl_i(i))*d*R_max(sl_i(i))*(1.0+exp(-1.0/d))*(S_hat(st_i(i))/(d*R_max(sl_i(i))) -
+R_hat(i)= (S_hat(st_i(i))/(S_hat(st_i(i))+fifty(sl_i(i))))  * alpha(sl_i(i))*d*R_max(sl_i(i))*(1.0+exp(-1.0/d))*(S_hat(st_i(i))/(d*R_max(sl_i(i))) -
 log((1+exp((S_hat(st_i(i))-R_max(sl_i(i)))/(d*R_max(sl_i(i)))))/(1.0+exp(-1.0/d))));
  } else{if(mod(sl_i(i))==4){
  //depensatory Ricker
- R_pred(i)= (S_hat(st_i(i))/(S_hat(st_i(i))+fifty(sl_i(i)))) * alpha(sl_i(i))* S_hat(st_i(i)) *exp(-1*R_max(sl_i(i))*S_hat(st_i(i)));
+ R_hat(i)= (S_hat(st_i(i))/(S_hat(st_i(i))+fifty(sl_i(i)))) * alpha(sl_i(i))* S_hat(st_i(i)) *exp(-1*R_max(sl_i(i))*S_hat(st_i(i)));
 
  } else{if(mod(sl_i(i))==5){
    //depensatory linear
-   R_pred(i)=  (S_hat(st_i(i))/(S_hat(st_i(i))+fifty(sl_i(i)))) * (alpha(sl_i(i))* S_hat(st_i(i)));
+   R_hat(i)=  (S_hat(st_i(i))/(S_hat(st_i(i))+fifty(sl_i(i)))) * (alpha(sl_i(i))* S_hat(st_i(i)));
 
  } else{if(mod(sl_i(i))==6){
    //Beverton Holt
-   R_pred(i)=  (alpha(sl_i(i))* S_hat(st_i(i))) /
+   R_hat(i)=  (alpha(sl_i(i))* S_hat(st_i(i))) /
      (Type(1.0)+   alpha(sl_i(i))*S_hat(st_i(i)) / R_max(sl_i(i)));
 
  }else{if(mod(sl_i(i))==7){
    // smooth hockey stock
-   R_pred(i)=  alpha(sl_i(i))*d*R_max(sl_i(i))*(1.0+exp(-1.0/d))*(S_hat(st_i(i))/(d*R_max(sl_i(i))) -
+   R_hat(i)=  alpha(sl_i(i))*d*R_max(sl_i(i))*(1.0+exp(-1.0/d))*(S_hat(st_i(i))/(d*R_max(sl_i(i))) -
      log((1+exp((S_hat(st_i(i))-R_max(sl_i(i)))/(d*R_max(sl_i(i)))))/(1.0+exp(-1.0/d))));
 
  } else{if(mod(sl_i(i))==8){
    //Ricker
-   R_pred(i)=  alpha(sl_i(i))* S_hat(st_i(i)) *exp(-1*R_max(sl_i(i))*S_hat(st_i(i)));
+   R_hat(i)=  alpha(sl_i(i))* S_hat(st_i(i)) *exp(-1*R_max(sl_i(i))*S_hat(st_i(i)));
 
  } else{if(mod(sl_i(i))==9){
    //linear
-   R_pred(i)=  (alpha(sl_i(i))* S_hat(st_i(i)));
+   R_hat(i)=  (alpha(sl_i(i))* S_hat(st_i(i)));
 
  } else{if(mod(sl_i(i))==10){
    //Power function
-   R_pred(i)=  alpha(sl_i(i))* pow(S_hat(st_i(i)),fifty(sl_i(i)));
-   }
+   R_hat(i)=  alpha(sl_i(i))* pow(S_hat(st_i(i)),fifty(sl_i(i)));
+ } else{if(mod(sl_i(i))==11){
+   //Power function
+   R_hat(i)=  (R_max(sl_i(i))*pow(S_hat(st_i(i)),fifty(sl_i(i))))/( (1/alpha(sl_i(i)))+
+     pow(S_hat(st_i(i)),fifty(sl_i(i)))); //Type III functional response
+
+ }
+
+ }
  }
  }
  }
@@ -396,8 +469,17 @@ log((1+exp((S_hat(st_i(i))-R_max(sl_i(i)))/(d*R_max(sl_i(i)))))/(1.0+exp(-1.0/d)
  }
 }
 
+    matrix<Type> sim_out(int(100),n_i);
+   SIMULATE{
+     for(int sim=0; sim<int(100); sim++){
+      sim_out(sim,i)= R_hat(i) * exp(gamma_sim(i,sim)*proc_sigma(sl_i(i))+
+        theta_sim(st_i(i),sim)*sigma_theta(s_i(i)));
+     }
+     REPORT(sim_out);
+   }
+
 //multiplicitive process errors
- R_pred(i) *= exp(cov_e(i)+gamma(i)*proc_sigma(sl_i(i))+theta(st_i(i))*sigma_theta(s_i(i)));//+kappa(lt_i(i))))+delta(t_i(i));
+ R_pred(i) = R_hat(i)* exp(cov_e(i)+gamma(i)*proc_sigma(sl_i(i))+theta(st_i(i))*sigma_theta(s_i(i)));//+kappa(lt_i(i))))+delta(t_i(i));
 
 
   jnll_comp(1)-=dnorm(gamma(i) ,

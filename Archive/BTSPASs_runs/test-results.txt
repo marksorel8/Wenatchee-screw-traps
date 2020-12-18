@@ -1,0 +1,733 @@
+Time Stratified Petersen with Diagonal recaptures and error in smoothed U -  Tue Aug 06 16:12:42 2019
+Version: 2014-09-01 
+
+
+
+ Chiw_15-16 Results 
+
+*** Raw data *** 
+       time  n1 m2   u2 SampFrac logitPcov[1]
+  [1,]  125  NA NA    0        1            1
+  [2,]  126  NA NA    0        1            1
+  [3,]  127  NA NA    0        1            1
+  [4,]  128  NA NA    0        1            1
+  [5,]  129  NA NA    0        1            1
+  [6,]  130  NA NA    0        1            1
+  [7,]  131  NA NA    0        1            1
+  [8,]  132  NA NA   NA        1            1
+  [9,]  133 160 32    0        1            1
+ [10,]  134  NA NA    0        1            1
+ [11,]  135  NA NA    0        1            1
+ [12,]  136  NA NA    0        1            1
+ [13,]  137  NA NA    0        1            1
+ [14,]  138  NA NA    0        1            1
+ [15,]  139  NA NA    0        1            1
+ [16,]  140  NA NA    0        1            1
+ [17,]  141  71 10    0        1            1
+ [18,]  142  NA NA    0        1            1
+ [19,]  143  NA NA    3        1            1
+ [20,]  144  NA NA    2        1            1
+ [21,]  145  NA NA    9        1            1
+ [22,]  146  NA NA   20        1            1
+ [23,]  147  NA NA   41        1            1
+ [24,]  148  NA NA   25        1            1
+ [25,]  149  NA NA    5        1            1
+ [26,]  150  NA NA   17        1            1
+ [27,]  151  NA NA   29        1            1
+ [28,]  152  NA NA   23        1            1
+ [29,]  153  NA NA   54        1            1
+ [30,]  154  NA NA   35        1            1
+ [31,]  155  NA NA   36        1            1
+ [32,]  156  NA NA   22        1            1
+ [33,]  157  NA NA   56        1            1
+ [34,]  158  NA NA   46        1            1
+ [35,]  159  NA NA   85        1            1
+ [36,]  160  NA NA   49        1            1
+ [37,]  161  NA NA   80        1            1
+ [38,]  162  NA NA  110        1            1
+ [39,]  163  NA NA  125        1            1
+ [40,]  164  NA NA  227        1            1
+ [41,]  165  NA NA  259        1            1
+ [42,]  166  NA NA  227        1            1
+ [43,]  167  NA NA  241        1            1
+ [44,]  168  NA NA  173        1            1
+ [45,]  169  NA NA  186        1            1
+ [46,]  170  NA NA  318        1            1
+ [47,]  171  NA NA  270        1            1
+ [48,]  172  NA NA  309        1            1
+ [49,]  173  NA NA  226        1            1
+ [50,]  174  NA NA  260        1            1
+ [51,]  175  98 26  137        1            1
+ [52,]  176  NA NA  211        1            1
+ [53,]  177  NA NA   90        1            1
+ [54,]  178  NA NA   49        1            1
+ [55,]  179  NA NA   47        1            1
+ [56,]  180  NA NA   34        1            1
+ [57,]  181  NA NA   86        1            1
+ [58,]  182  NA NA   81        1            1
+ [59,]  183  NA NA   53        1            1
+ [60,]  184  NA NA   42        1            1
+ [61,]  185  NA NA   57        1            1
+ [62,]  186  NA NA   76        1            1
+ [63,]  187  NA NA   56        1            1
+ [64,]  188  NA NA  121        1            1
+ [65,]  189  NA NA  113        1            1
+ [66,]  190  NA NA  130        1            1
+ [67,]  191  NA NA  133        1            1
+ [68,]  192  NA NA  198        1            1
+ [69,]  193  NA NA  241        1            1
+ [70,]  194  NA NA  238        1            1
+ [71,]  195 100 20  268        1            1
+ [72,]  196  NA NA  139        1            1
+ [73,]  197  NA NA  138        1            1
+ [74,]  198  NA NA  147        1            1
+ [75,]  199  NA NA   96        1            1
+ [76,]  200  NA NA   35        1            1
+ [77,]  201  NA NA   31        1            1
+ [78,]  202  NA NA   37        1            1
+ [79,]  203  NA NA   50        1            1
+ [80,]  204  NA NA   65        1            1
+ [81,]  205  NA NA   66        1            1
+ [82,]  206  NA NA   58        1            1
+ [83,]  207  NA NA   70        1            1
+ [84,]  208  NA NA   78        1            1
+ [85,]  209  NA NA   98        1            1
+ [86,]  210  NA NA   41        1            1
+ [87,]  211  NA NA   14        1            1
+ [88,]  212  NA NA   17        1            1
+ [89,]  213  NA NA   18        1            1
+ [90,]  214  NA NA   24        1            1
+ [91,]  215  NA NA   10        1            1
+ [92,]  216  NA NA   45        1            1
+ [93,]  217  NA NA   81        1            1
+ [94,]  218  NA NA   98        1            1
+ [95,]  219 100 26   81        1            1
+ [96,]  220  NA NA   64        1            1
+ [97,]  221  NA NA   68        1            1
+ [98,]  222  NA NA   60        1            1
+ [99,]  223  NA NA   56        1            1
+[100,]  224  NA NA   87        1            1
+[101,]  225  NA NA   54        1            1
+[102,]  226  NA NA   59        1            1
+[103,]  227  NA NA   67        1            1
+[104,]  228  NA NA   74        1            1
+[105,]  229  NA NA   69        1            1
+[106,]  230  NA NA   50        1            1
+[107,]  231  NA NA   44        1            1
+[108,]  232  NA NA   40        1            1
+[109,]  233  NA NA   36        1            1
+[110,]  234  NA NA   44        1            1
+[111,]  235  NA NA   38        1            1
+[112,]  236  NA NA   49        1            1
+[113,]  237  NA NA   26        1            1
+[114,]  238  NA NA    9        1            1
+[115,]  239  NA NA    7        1            1
+[116,]  240  NA NA    3        1            1
+[117,]  241  NA NA    1        1            1
+[118,]  242  NA NA    1        1            1
+[119,]  243  NA NA   46        1            1
+[120,]  244  NA NA   32        1            1
+[121,]  245  NA NA   30        1            1
+[122,]  246  NA NA  128        1            1
+[123,]  247  NA NA  117        1            1
+[124,]  248  NA NA   99        1            1
+[125,]  249  NA NA   61        1            1
+[126,]  250 112 27   49        1            1
+[127,]  251  NA NA   46        1            1
+[128,]  252  NA NA   20        1            1
+[129,]  253  NA NA   11        1            1
+[130,]  254  NA NA   14        1            1
+[131,]  255  NA NA   NA        1            1
+[132,]  256  NA NA   NA        1            1
+[133,]  257  NA NA   NA        1            1
+[134,]  258  NA NA   NA        1            1
+[135,]  259  NA NA   NA        1            1
+[136,]  260  NA NA   NA        1            1
+[137,]  261  NA NA   NA        1            1
+[138,]  262  NA NA   NA        1            1
+[139,]  263  NA NA   NA        1            1
+[140,]  264  NA NA   NA        1            1
+[141,]  265  NA NA   NA        1            1
+[142,]  266  NA NA   NA        1            1
+[143,]  267  NA NA   NA        1            1
+[144,]  268  NA NA   NA        1            1
+[145,]  269  NA NA   NA        1            1
+[146,]  270  NA NA   15        1            1
+[147,]  271  NA NA   NA        1            1
+[148,]  272  NA NA   NA        1            1
+[149,]  273  NA NA   NA        1            1
+[150,]  274  NA NA   NA        1            1
+[151,]  275  NA NA   NA        1            1
+[152,]  276  NA NA   NA        1            1
+[153,]  277  NA NA   NA        1            1
+[154,]  278  NA NA   NA        1            1
+[155,]  279  NA NA   NA        1            1
+[156,]  280  NA NA   NA        1            1
+[157,]  281  NA NA   NA        1            1
+[158,]  282  NA NA   75        1            1
+[159,]  283  NA NA   30        1            1
+[160,]  284  NA NA  478        1            1
+[161,]  285  NA NA 2016        1            1
+[162,]  286  NA NA  785        1            1
+[163,]  287  NA NA  288        1            1
+[164,]  288  NA NA  109        1            1
+[165,]  289  NA NA   67        1            1
+[166,]  290  NA NA   80        1            1
+ [ reached getOption("max.print") -- omitted 250 rows ]
+
+
+Jump point are after strata: none - A single spline is fit
+
+Values of bad.n1 are :  125 126 127 128 129 130 131 132 134 135 136 137 138 139 140 142 143 144 145 146 147 148 149 150 151 152 153 154 155 156 157 158 159 160 161 162 163 164 165 166 167 168 169 170 171 172 173 174 176 177 178 179 180 181 182 183 184 185 186 187 188 189 190 191 192 193 194 196 197 198 199 200 201 202 203 204 205 206 207 208 209 210 211 212 213 214 215 216 217 218 220 221 222 223 224 225 226 227 228 229 230 231 232 233 234 235 236 237 238 239 240 241 242 243 244 245 246 247 248 249 251 252 253 254 255 256 257 258 259 260 261 262 263 264 265 266 267 268 269 270 271 272 273 274 275 276 277 278 279 280 281 282 283 284 285 286 287 288 289 290 291 292 293 294 295 296 297 298 299 300 301 302 303 304 305 306 307 308 309 310 311 312 313 314 315 316 317 318 319 320 321 322 323 324 325 326 327 328 329 330 331 332 333 334 335 336 337 338 339 340 341 342 343 344 345 346 347 348 349 350 351 352 353 354 355 356 357 358 359 360 361 362 363 364 365 366 367 368 369 370 371 372 373 374 375 376 377 378 379 380 381 382 383 384 385 386 387 388 389 390 391 392 393 394 395 396 397 398 399 400 401 402 403 404 405 406 407 408 409 410 411 412 413 414 415 416 417 418 419 420 421 422 423 424 425 426 427 428 429 431 432 434 435 437 438 439 440 441 442 443 444 445 446 447 448 449 450 451 452 453 454 455 456 458 460 461 462 463 464 465 466 467 468 469 470 471 472 473 474 475 476 477 478 479 480 481 482 483 484 485 486 487 488 489 490 491 492 493 494 495 496 497 498 499 500 501 502 503 504 505 506 507 508 509 510 511 512 513 514 515 516 517 518 519 520 521 522 523 524 525 526 527 528 529 530 531 533 534 535 536 537 538 539 540 . The value of n1 will be set to 1 and m2 to NA for these strata
+Values of bad.m2 are :  . The value of m2 will be set to NA for these stratanone.
+Values of bad.u2 are :  132 255 256 257 258 259 260 261 262 263 264 265 266 267 268 269 271 272 273 274 275 276 277 278 279 280 281 305 306 319 322 323 329 330 331 332 333 334 335 336 337 338 339 340 341 342 343 344 345 346 347 348 349 350 351 352 353 354 355 356 357 358 359 360 361 362 363 364 365 366 367 368 369 370 371 372 373 374 375 376 377 378 379 380 381 382 383 384 385 386 387 388 389 390 391 392 393 394 395 396 397 398 399 400 401 402 403 404 405 406 407 408 409 410 411 412 413 414 415 416 417 418 419 420 421 422 423 424 425 426 460 464 465 466 467 468 469 471 472 475 476 477 478 479 480 489 490 491 492 493 494 495 521 523 524 525 526 527 528 . The value of u2 will be set to NA for these strata
+
+*** Pooled Petersen Estimate based on pooling over ALL strata
+Values of u2 are adjusting for sampling fraction 
+
+Total n1= 1688 ;  m2= 227 ;  u2= 20627 
+
+Est U(total)  152,809   (SE  9,443 )
+
+
+
+
+*** Pooled Petersen Estimate after EXCLUDING strata with missing value or flagged as bad.n1, bad.m2 or bad.m2. 
+Values of u2 are adjusted for sampling fraction
+
+The following strata are excluded because n1=0, NA values in m2 or u2, or flagged by bad.n1, bad.m2 or bad.u2: 125 126 127 128 129 130 131 132 134 135 136 137 138 139 140 142 143 144 145 146 147 148 149 150 151 152 153 154 155 156 157 158 159 160 161 162 163 164 165 166 167 168 169 170 171 172 173 174 176 177 178 179 180 181 182 183 184 185 186 187 188 189 190 191 192 193 194 196 197 198 199 200 201 202 203 204 205 206 207 208 209 210 211 212 213 214 215 216 217 218 220 221 222 223 224 225 226 227 228 229 230 231 232 233 234 235 236 237 238 239 240 241 242 243 244 245 246 247 248 249 251 252 253 254 255 256 257 258 259 260 261 262 263 264 265 266 267 268 269 270 271 272 273 274 275 276 277 278 279 280 281 282 283 284 285 286 287 288 289 290 291 292 293 294 295 296 297 298 299 300 301 302 303 304 305 306 307 308 309 310 311 312 313 314 315 316 317 318 319 320 321 322 323 324 325 326 327 328 329 330 331 332 333 334 335 336 337 338 339 340 341 342 343 344 345 346 347 348 349 350 351 352 353 354 355 356 357 358 359 360 361 362 363 364 365 366 367 368 369 370 371 372 373 374 375 376 377 378 379 380 381 382 383 384 385 386 387 388 389 390 391 392 393 394 395 396 397 398 399 400 401 402 403 404 405 406 407 408 409 410 411 412 413 414 415 416 417 418 419 420 421 422 423 424 425 426 427 428 429 431 432 434 435 437 438 439 440 441 442 443 444 445 446 447 448 449 450 451 452 453 454 455 456 458 460 461 462 463 464 465 466 467 468 469 470 471 472 473 474 475 476 477 478 479 480 481 482 483 484 485 486 487 488 489 490 491 492 493 494 495 496 497 498 499 500 501 502 503 504 505 506 507 508 509 510 511 512 513 514 515 516 517 518 519 520 521 522 523 524 525 526 527 528 529 530 531 533 534 535 536 537 538 539 540 
+
+Total n1= 1688 ;  m2= 227 ;  u2= 1124 
+
+Est U(total)  8,333   (SE  561 )
+
+
+*** Stratified Petersen Estimator for each stratum PRIOR to removing strata with bad.n1, bad.m2, or bad.u2 values.
+    Values of u2 are adjusted for sampling fraction ***
+
+       time  n1 m2   u2 U[i] SE(U[i])
+  [1,]  125  NA NA    0   NA       NA
+  [2,]  126  NA NA    0   NA       NA
+  [3,]  127  NA NA    0   NA       NA
+  [4,]  128  NA NA    0   NA       NA
+  [5,]  129  NA NA    0   NA       NA
+  [6,]  130  NA NA    0   NA       NA
+  [7,]  131  NA NA    0   NA       NA
+  [8,]  132  NA NA   NA   NA       NA
+  [9,]  133 160 32    0    4        0
+ [10,]  134  NA NA    0   NA       NA
+ [11,]  135  NA NA    0   NA       NA
+ [12,]  136  NA NA    0   NA       NA
+ [13,]  137  NA NA    0   NA       NA
+ [14,]  138  NA NA    0   NA       NA
+ [15,]  139  NA NA    0   NA       NA
+ [16,]  140  NA NA    0   NA       NA
+ [17,]  141  71 10    0    6        0
+ [18,]  142  NA NA    0   NA       NA
+ [19,]  143  NA NA    3   NA       NA
+ [20,]  144  NA NA    2   NA       NA
+ [21,]  145  NA NA    9   NA       NA
+ [22,]  146  NA NA   20   NA       NA
+ [23,]  147  NA NA   41   NA       NA
+ [24,]  148  NA NA   25   NA       NA
+ [25,]  149  NA NA    5   NA       NA
+ [26,]  150  NA NA   17   NA       NA
+ [27,]  151  NA NA   29   NA       NA
+ [28,]  152  NA NA   23   NA       NA
+ [29,]  153  NA NA   54   NA       NA
+ [30,]  154  NA NA   35   NA       NA
+ [31,]  155  NA NA   36   NA       NA
+ [32,]  156  NA NA   22   NA       NA
+ [33,]  157  NA NA   56   NA       NA
+ [34,]  158  NA NA   46   NA       NA
+ [35,]  159  NA NA   85   NA       NA
+ [36,]  160  NA NA   49   NA       NA
+ [37,]  161  NA NA   80   NA       NA
+ [38,]  162  NA NA  110   NA       NA
+ [39,]  163  NA NA  125   NA       NA
+ [40,]  164  NA NA  227   NA       NA
+ [41,]  165  NA NA  259   NA       NA
+ [42,]  166  NA NA  227   NA       NA
+ [43,]  167  NA NA  241   NA       NA
+ [44,]  168  NA NA  173   NA       NA
+ [45,]  169  NA NA  186   NA       NA
+ [46,]  170  NA NA  318   NA       NA
+ [47,]  171  NA NA  270   NA       NA
+ [48,]  172  NA NA  309   NA       NA
+ [49,]  173  NA NA  226   NA       NA
+ [50,]  174  NA NA  260   NA       NA
+ [51,]  175  98 26  137  505       89
+ [52,]  176  NA NA  211   NA       NA
+ [53,]  177  NA NA   90   NA       NA
+ [54,]  178  NA NA   49   NA       NA
+ [55,]  179  NA NA   47   NA       NA
+ [56,]  180  NA NA   34   NA       NA
+ [57,]  181  NA NA   86   NA       NA
+ [58,]  182  NA NA   81   NA       NA
+ [59,]  183  NA NA   53   NA       NA
+ [60,]  184  NA NA   42   NA       NA
+ [61,]  185  NA NA   57   NA       NA
+ [62,]  186  NA NA   76   NA       NA
+ [63,]  187  NA NA   56   NA       NA
+ [64,]  188  NA NA  121   NA       NA
+ [65,]  189  NA NA  113   NA       NA
+ [66,]  190  NA NA  130   NA       NA
+ [67,]  191  NA NA  133   NA       NA
+ [68,]  192  NA NA  198   NA       NA
+ [69,]  193  NA NA  241   NA       NA
+ [70,]  194  NA NA  238   NA       NA
+ [71,]  195 100 20  268 1293      254
+ [72,]  196  NA NA  139   NA       NA
+ [73,]  197  NA NA  138   NA       NA
+ [74,]  198  NA NA  147   NA       NA
+ [75,]  199  NA NA   96   NA       NA
+ [76,]  200  NA NA   35   NA       NA
+ [77,]  201  NA NA   31   NA       NA
+ [78,]  202  NA NA   37   NA       NA
+ [79,]  203  NA NA   50   NA       NA
+ [80,]  204  NA NA   65   NA       NA
+ [81,]  205  NA NA   66   NA       NA
+ [82,]  206  NA NA   58   NA       NA
+ [83,]  207  NA NA   70   NA       NA
+ [84,]  208  NA NA   78   NA       NA
+ [85,]  209  NA NA   98   NA       NA
+ [86,]  210  NA NA   41   NA       NA
+ [87,]  211  NA NA   14   NA       NA
+ [88,]  212  NA NA   17   NA       NA
+ [89,]  213  NA NA   18   NA       NA
+ [90,]  214  NA NA   24   NA       NA
+ [91,]  215  NA NA   10   NA       NA
+ [92,]  216  NA NA   45   NA       NA
+ [93,]  217  NA NA   81   NA       NA
+ [94,]  218  NA NA   98   NA       NA
+ [95,]  219 100 26   81  306       57
+ [96,]  220  NA NA   64   NA       NA
+ [97,]  221  NA NA   68   NA       NA
+ [98,]  222  NA NA   60   NA       NA
+ [99,]  223  NA NA   56   NA       NA
+[100,]  224  NA NA   87   NA       NA
+[101,]  225  NA NA   54   NA       NA
+[102,]  226  NA NA   59   NA       NA
+[103,]  227  NA NA   67   NA       NA
+[104,]  228  NA NA   74   NA       NA
+[105,]  229  NA NA   69   NA       NA
+[106,]  230  NA NA   50   NA       NA
+[107,]  231  NA NA   44   NA       NA
+[108,]  232  NA NA   40   NA       NA
+[109,]  233  NA NA   36   NA       NA
+[110,]  234  NA NA   44   NA       NA
+[111,]  235  NA NA   38   NA       NA
+[112,]  236  NA NA   49   NA       NA
+[113,]  237  NA NA   26   NA       NA
+[114,]  238  NA NA    9   NA       NA
+[115,]  239  NA NA    7   NA       NA
+[116,]  240  NA NA    3   NA       NA
+[117,]  241  NA NA    1   NA       NA
+[118,]  242  NA NA    1   NA       NA
+[119,]  243  NA NA   46   NA       NA
+[120,]  244  NA NA   32   NA       NA
+[121,]  245  NA NA   30   NA       NA
+[122,]  246  NA NA  128   NA       NA
+[123,]  247  NA NA  117   NA       NA
+[124,]  248  NA NA   99   NA       NA
+[125,]  249  NA NA   61   NA       NA
+[126,]  250 112 27   49  201       40
+[127,]  251  NA NA   46   NA       NA
+[128,]  252  NA NA   20   NA       NA
+[129,]  253  NA NA   11   NA       NA
+[130,]  254  NA NA   14   NA       NA
+[131,]  255  NA NA   NA   NA       NA
+[132,]  256  NA NA   NA   NA       NA
+[133,]  257  NA NA   NA   NA       NA
+[134,]  258  NA NA   NA   NA       NA
+[135,]  259  NA NA   NA   NA       NA
+[136,]  260  NA NA   NA   NA       NA
+[137,]  261  NA NA   NA   NA       NA
+[138,]  262  NA NA   NA   NA       NA
+[139,]  263  NA NA   NA   NA       NA
+[140,]  264  NA NA   NA   NA       NA
+[141,]  265  NA NA   NA   NA       NA
+[142,]  266  NA NA   NA   NA       NA
+[143,]  267  NA NA   NA   NA       NA
+[144,]  268  NA NA   NA   NA       NA
+[145,]  269  NA NA   NA   NA       NA
+[146,]  270  NA NA   15   NA       NA
+[147,]  271  NA NA   NA   NA       NA
+[148,]  272  NA NA   NA   NA       NA
+[149,]  273  NA NA   NA   NA       NA
+[150,]  274  NA NA   NA   NA       NA
+[151,]  275  NA NA   NA   NA       NA
+[152,]  276  NA NA   NA   NA       NA
+[153,]  277  NA NA   NA   NA       NA
+[154,]  278  NA NA   NA   NA       NA
+[155,]  279  NA NA   NA   NA       NA
+[156,]  280  NA NA   NA   NA       NA
+[157,]  281  NA NA   NA   NA       NA
+[158,]  282  NA NA   75   NA       NA
+[159,]  283  NA NA   30   NA       NA
+[160,]  284  NA NA  478   NA       NA
+[161,]  285  NA NA 2016   NA       NA
+[162,]  286  NA NA  785   NA       NA
+[163,]  287  NA NA  288   NA       NA
+[164,]  288  NA NA  109   NA       NA
+[165,]  289  NA NA   67   NA       NA
+[166,]  290  NA NA   80   NA       NA
+ [ reached getOption("max.print") -- omitted 250 rows ]
+
+Est U(total)  10,508   (SE  1,630 )
+
+
+*** Stratified Petersen Estimator for each stratum EXCLUDING strata with n1=0, NA values, or flagged by bad.n1, bad.m2, or bad.u2 values ***
+    Values of u2 are adjusted for sampling fraction ***
+
+       time  n1 m2  u2 U[i] SE(U[i])
+  [1,]  125  NA NA  NA   NA       NA
+  [2,]  126  NA NA  NA   NA       NA
+  [3,]  127  NA NA  NA   NA       NA
+  [4,]  128  NA NA  NA   NA       NA
+  [5,]  129  NA NA  NA   NA       NA
+  [6,]  130  NA NA  NA   NA       NA
+  [7,]  131  NA NA  NA   NA       NA
+  [8,]  132  NA NA  NA   NA       NA
+  [9,]  133 160 32   0    4        0
+ [10,]  134  NA NA  NA   NA       NA
+ [11,]  135  NA NA  NA   NA       NA
+ [12,]  136  NA NA  NA   NA       NA
+ [13,]  137  NA NA  NA   NA       NA
+ [14,]  138  NA NA  NA   NA       NA
+ [15,]  139  NA NA  NA   NA       NA
+ [16,]  140  NA NA  NA   NA       NA
+ [17,]  141  71 10   0    6        0
+ [18,]  142  NA NA  NA   NA       NA
+ [19,]  143  NA NA  NA   NA       NA
+ [20,]  144  NA NA  NA   NA       NA
+ [21,]  145  NA NA  NA   NA       NA
+ [22,]  146  NA NA  NA   NA       NA
+ [23,]  147  NA NA  NA   NA       NA
+ [24,]  148  NA NA  NA   NA       NA
+ [25,]  149  NA NA  NA   NA       NA
+ [26,]  150  NA NA  NA   NA       NA
+ [27,]  151  NA NA  NA   NA       NA
+ [28,]  152  NA NA  NA   NA       NA
+ [29,]  153  NA NA  NA   NA       NA
+ [30,]  154  NA NA  NA   NA       NA
+ [31,]  155  NA NA  NA   NA       NA
+ [32,]  156  NA NA  NA   NA       NA
+ [33,]  157  NA NA  NA   NA       NA
+ [34,]  158  NA NA  NA   NA       NA
+ [35,]  159  NA NA  NA   NA       NA
+ [36,]  160  NA NA  NA   NA       NA
+ [37,]  161  NA NA  NA   NA       NA
+ [38,]  162  NA NA  NA   NA       NA
+ [39,]  163  NA NA  NA   NA       NA
+ [40,]  164  NA NA  NA   NA       NA
+ [41,]  165  NA NA  NA   NA       NA
+ [42,]  166  NA NA  NA   NA       NA
+ [43,]  167  NA NA  NA   NA       NA
+ [44,]  168  NA NA  NA   NA       NA
+ [45,]  169  NA NA  NA   NA       NA
+ [46,]  170  NA NA  NA   NA       NA
+ [47,]  171  NA NA  NA   NA       NA
+ [48,]  172  NA NA  NA   NA       NA
+ [49,]  173  NA NA  NA   NA       NA
+ [50,]  174  NA NA  NA   NA       NA
+ [51,]  175  98 26 137  505       89
+ [52,]  176  NA NA  NA   NA       NA
+ [53,]  177  NA NA  NA   NA       NA
+ [54,]  178  NA NA  NA   NA       NA
+ [55,]  179  NA NA  NA   NA       NA
+ [56,]  180  NA NA  NA   NA       NA
+ [57,]  181  NA NA  NA   NA       NA
+ [58,]  182  NA NA  NA   NA       NA
+ [59,]  183  NA NA  NA   NA       NA
+ [60,]  184  NA NA  NA   NA       NA
+ [61,]  185  NA NA  NA   NA       NA
+ [62,]  186  NA NA  NA   NA       NA
+ [63,]  187  NA NA  NA   NA       NA
+ [64,]  188  NA NA  NA   NA       NA
+ [65,]  189  NA NA  NA   NA       NA
+ [66,]  190  NA NA  NA   NA       NA
+ [67,]  191  NA NA  NA   NA       NA
+ [68,]  192  NA NA  NA   NA       NA
+ [69,]  193  NA NA  NA   NA       NA
+ [70,]  194  NA NA  NA   NA       NA
+ [71,]  195 100 20 268 1293      254
+ [72,]  196  NA NA  NA   NA       NA
+ [73,]  197  NA NA  NA   NA       NA
+ [74,]  198  NA NA  NA   NA       NA
+ [75,]  199  NA NA  NA   NA       NA
+ [76,]  200  NA NA  NA   NA       NA
+ [77,]  201  NA NA  NA   NA       NA
+ [78,]  202  NA NA  NA   NA       NA
+ [79,]  203  NA NA  NA   NA       NA
+ [80,]  204  NA NA  NA   NA       NA
+ [81,]  205  NA NA  NA   NA       NA
+ [82,]  206  NA NA  NA   NA       NA
+ [83,]  207  NA NA  NA   NA       NA
+ [84,]  208  NA NA  NA   NA       NA
+ [85,]  209  NA NA  NA   NA       NA
+ [86,]  210  NA NA  NA   NA       NA
+ [87,]  211  NA NA  NA   NA       NA
+ [88,]  212  NA NA  NA   NA       NA
+ [89,]  213  NA NA  NA   NA       NA
+ [90,]  214  NA NA  NA   NA       NA
+ [91,]  215  NA NA  NA   NA       NA
+ [92,]  216  NA NA  NA   NA       NA
+ [93,]  217  NA NA  NA   NA       NA
+ [94,]  218  NA NA  NA   NA       NA
+ [95,]  219 100 26  81  306       57
+ [96,]  220  NA NA  NA   NA       NA
+ [97,]  221  NA NA  NA   NA       NA
+ [98,]  222  NA NA  NA   NA       NA
+ [99,]  223  NA NA  NA   NA       NA
+[100,]  224  NA NA  NA   NA       NA
+[101,]  225  NA NA  NA   NA       NA
+[102,]  226  NA NA  NA   NA       NA
+[103,]  227  NA NA  NA   NA       NA
+[104,]  228  NA NA  NA   NA       NA
+[105,]  229  NA NA  NA   NA       NA
+[106,]  230  NA NA  NA   NA       NA
+[107,]  231  NA NA  NA   NA       NA
+[108,]  232  NA NA  NA   NA       NA
+[109,]  233  NA NA  NA   NA       NA
+[110,]  234  NA NA  NA   NA       NA
+[111,]  235  NA NA  NA   NA       NA
+[112,]  236  NA NA  NA   NA       NA
+[113,]  237  NA NA  NA   NA       NA
+[114,]  238  NA NA  NA   NA       NA
+[115,]  239  NA NA  NA   NA       NA
+[116,]  240  NA NA  NA   NA       NA
+[117,]  241  NA NA  NA   NA       NA
+[118,]  242  NA NA  NA   NA       NA
+[119,]  243  NA NA  NA   NA       NA
+[120,]  244  NA NA  NA   NA       NA
+[121,]  245  NA NA  NA   NA       NA
+[122,]  246  NA NA  NA   NA       NA
+[123,]  247  NA NA  NA   NA       NA
+[124,]  248  NA NA  NA   NA       NA
+[125,]  249  NA NA  NA   NA       NA
+[126,]  250 112 27  49  201       40
+[127,]  251  NA NA  NA   NA       NA
+[128,]  252  NA NA  NA   NA       NA
+[129,]  253  NA NA  NA   NA       NA
+[130,]  254  NA NA  NA   NA       NA
+[131,]  255  NA NA  NA   NA       NA
+[132,]  256  NA NA  NA   NA       NA
+[133,]  257  NA NA  NA   NA       NA
+[134,]  258  NA NA  NA   NA       NA
+[135,]  259  NA NA  NA   NA       NA
+[136,]  260  NA NA  NA   NA       NA
+[137,]  261  NA NA  NA   NA       NA
+[138,]  262  NA NA  NA   NA       NA
+[139,]  263  NA NA  NA   NA       NA
+[140,]  264  NA NA  NA   NA       NA
+[141,]  265  NA NA  NA   NA       NA
+[142,]  266  NA NA  NA   NA       NA
+[143,]  267  NA NA  NA   NA       NA
+[144,]  268  NA NA  NA   NA       NA
+[145,]  269  NA NA  NA   NA       NA
+[146,]  270  NA NA  NA   NA       NA
+[147,]  271  NA NA  NA   NA       NA
+[148,]  272  NA NA  NA   NA       NA
+[149,]  273  NA NA  NA   NA       NA
+[150,]  274  NA NA  NA   NA       NA
+[151,]  275  NA NA  NA   NA       NA
+[152,]  276  NA NA  NA   NA       NA
+[153,]  277  NA NA  NA   NA       NA
+[154,]  278  NA NA  NA   NA       NA
+[155,]  279  NA NA  NA   NA       NA
+[156,]  280  NA NA  NA   NA       NA
+[157,]  281  NA NA  NA   NA       NA
+[158,]  282  NA NA  NA   NA       NA
+[159,]  283  NA NA  NA   NA       NA
+[160,]  284  NA NA  NA   NA       NA
+[161,]  285  NA NA  NA   NA       NA
+[162,]  286  NA NA  NA   NA       NA
+[163,]  287  NA NA  NA   NA       NA
+[164,]  288  NA NA  NA   NA       NA
+[165,]  289  NA NA  NA   NA       NA
+[166,]  290  NA NA  NA   NA       NA
+ [ reached getOption("max.print") -- omitted 250 rows ]
+
+Est U(total)  10,508   (SE  1,630 )
+
+
+*** Test if pooled Petersen is allowable on strata without problems in n1 or m2. [Check if marked fractions are equal] ***
+
+(Large Sample) Chi-square test statistic  78.31462  has p-value 3.122394e-12 
+
+      time n1-m2 m2 E[n1-m2] E[m2] X2[n1-m2] X2[m2]
+ [1,]  133   128 32    138.5  21.5       0.8    5.1
+ [2,]  141    61 10     61.5   9.5       0.0    0.0
+ [3,]  175    72 26     84.8  13.2       1.9   12.5
+ [4,]  195    80 20     86.6  13.4       0.5    3.2
+ [5,]  219    74 26     86.6  13.4       1.8   11.7
+ [6,]  250    85 27     96.9  15.1       1.5    9.5
+ [7,]  430   117 15    114.2  17.8       0.1    0.4
+ [8,]  433    94 12     91.7  14.3       0.1    0.4
+ [9,]  436   112 14    109.1  16.9       0.1    0.5
+[10,]  457   167 11    154.1  23.9       1.1    7.0
+[11,]  459   227 13    207.7  32.3       1.8   11.5
+[12,]  532   244 21    229.4  35.6       0.9    6.0
+
+ Be cautious of using this test in cases of small expected values. 
+
+
+
+*** Revised data *** 
+    time  n1 m2  u2 sampfrac new.logitP.cov jump.indicator
+1    125   1 NA   0        1              1               
+2    126   1 NA   0        1              1               
+3    127   1 NA   0        1              1               
+4    128   1 NA   0        1              1               
+5    129   1 NA   0        1              1               
+6    130   1 NA   0        1              1               
+7    131   1 NA   0        1              1               
+8    132   1 NA  NA        1              1               
+9    133 160 32   0        1              1               
+10   134   1 NA   0        1              1               
+11   135   1 NA   0        1              1               
+12   136   1 NA   0        1              1               
+13   137   1 NA   0        1              1               
+14   138   1 NA   0        1              1               
+15   139   1 NA   0        1              1               
+16   140   1 NA   0        1              1               
+17   141  71 10   0        1              1               
+18   142   1 NA   0        1              1               
+19   143   1 NA   3        1              1               
+20   144   1 NA   2        1              1               
+21   145   1 NA   9        1              1               
+22   146   1 NA  20        1              1               
+23   147   1 NA  41        1              1               
+24   148   1 NA  25        1              1               
+25   149   1 NA   5        1              1               
+26   150   1 NA  17        1              1               
+27   151   1 NA  29        1              1               
+28   152   1 NA  23        1              1               
+29   153   1 NA  54        1              1               
+30   154   1 NA  35        1              1               
+31   155   1 NA  36        1              1               
+32   156   1 NA  22        1              1               
+33   157   1 NA  56        1              1               
+34   158   1 NA  46        1              1               
+35   159   1 NA  85        1              1               
+36   160   1 NA  49        1              1               
+37   161   1 NA  80        1              1               
+38   162   1 NA 110        1              1               
+39   163   1 NA 125        1              1               
+40   164   1 NA 227        1              1               
+41   165   1 NA 259        1              1               
+42   166   1 NA 227        1              1               
+43   167   1 NA 241        1              1               
+44   168   1 NA 173        1              1               
+45   169   1 NA 186        1              1               
+46   170   1 NA 318        1              1               
+47   171   1 NA 270        1              1               
+48   172   1 NA 309        1              1               
+49   173   1 NA 226        1              1               
+50   174   1 NA 260        1              1               
+51   175  98 26 137        1              1               
+52   176   1 NA 211        1              1               
+53   177   1 NA  90        1              1               
+54   178   1 NA  49        1              1               
+55   179   1 NA  47        1              1               
+56   180   1 NA  34        1              1               
+57   181   1 NA  86        1              1               
+58   182   1 NA  81        1              1               
+59   183   1 NA  53        1              1               
+60   184   1 NA  42        1              1               
+61   185   1 NA  57        1              1               
+62   186   1 NA  76        1              1               
+63   187   1 NA  56        1              1               
+64   188   1 NA 121        1              1               
+65   189   1 NA 113        1              1               
+66   190   1 NA 130        1              1               
+67   191   1 NA 133        1              1               
+68   192   1 NA 198        1              1               
+69   193   1 NA 241        1              1               
+70   194   1 NA 238        1              1               
+71   195 100 20 268        1              1               
+72   196   1 NA 139        1              1               
+73   197   1 NA 138        1              1               
+74   198   1 NA 147        1              1               
+75   199   1 NA  96        1              1               
+76   200   1 NA  35        1              1               
+77   201   1 NA  31        1              1               
+78   202   1 NA  37        1              1               
+79   203   1 NA  50        1              1               
+80   204   1 NA  65        1              1               
+81   205   1 NA  66        1              1               
+82   206   1 NA  58        1              1               
+83   207   1 NA  70        1              1               
+84   208   1 NA  78        1              1               
+85   209   1 NA  98        1              1               
+86   210   1 NA  41        1              1               
+87   211   1 NA  14        1              1               
+88   212   1 NA  17        1              1               
+89   213   1 NA  18        1              1               
+90   214   1 NA  24        1              1               
+91   215   1 NA  10        1              1               
+92   216   1 NA  45        1              1               
+93   217   1 NA  81        1              1               
+94   218   1 NA  98        1              1               
+95   219 100 26  81        1              1               
+96   220   1 NA  64        1              1               
+97   221   1 NA  68        1              1               
+98   222   1 NA  60        1              1               
+99   223   1 NA  56        1              1               
+100  224   1 NA  87        1              1               
+101  225   1 NA  54        1              1               
+102  226   1 NA  59        1              1               
+103  227   1 NA  67        1              1               
+104  228   1 NA  74        1              1               
+105  229   1 NA  69        1              1               
+106  230   1 NA  50        1              1               
+107  231   1 NA  44        1              1               
+108  232   1 NA  40        1              1               
+109  233   1 NA  36        1              1               
+110  234   1 NA  44        1              1               
+111  235   1 NA  38        1              1               
+112  236   1 NA  49        1              1               
+113  237   1 NA  26        1              1               
+114  238   1 NA   9        1              1               
+115  239   1 NA   7        1              1               
+116  240   1 NA   3        1              1               
+117  241   1 NA   1        1              1               
+118  242   1 NA   1        1              1               
+119  243   1 NA  46        1              1               
+120  244   1 NA  32        1              1               
+121  245   1 NA  30        1              1               
+122  246   1 NA 128        1              1               
+123  247   1 NA 117        1              1               
+124  248   1 NA  99        1              1               
+125  249   1 NA  61        1              1               
+126  250 112 27  49        1              1               
+127  251   1 NA  46        1              1               
+128  252   1 NA  20        1              1               
+129  253   1 NA  11        1              1               
+130  254   1 NA  14        1              1               
+131  255   1 NA  NA        1              1               
+132  256   1 NA  NA        1              1               
+133  257   1 NA  NA        1              1               
+134  258   1 NA  NA        1              1               
+135  259   1 NA  NA        1              1               
+136  260   1 NA  NA        1              1               
+137  261   1 NA  NA        1              1               
+138  262   1 NA  NA        1              1               
+139  263   1 NA  NA        1              1               
+140  264   1 NA  NA        1              1               
+141  265   1 NA  NA        1              1               
+142  266   1 NA  NA        1              1               
+ [ reached 'max' / getOption("max.print") -- omitted 274 rows ]
+
+
+
+
+*** Information on priors *** 
+   Parameters for prior on tauU (variance in spline coefficients:  1 0.05  which corresponds to a mean/std dev of 1/var of: 20 20 
+   Parameters for prior on taueU (variance of log(U) about spline:  1 0.05  which corresponds to a mean/std dev of 1/var of: 20 20 
+   Parameters for prior on beta.logitP[1] (intercept) (mean, 1/var): -1.862 2.49429  which corresponds to a median P of  0.134 
+   Parameters for prior on tauP (residual variance of logit(P) after adjusting for covariates:  0.001 0.001  which corresponds to a mean/std dev of 1/var of: 1 31.62 
+
+
+*** Initial seed for this run is:  6231988 

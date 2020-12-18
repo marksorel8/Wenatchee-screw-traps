@@ -22,12 +22,12 @@ all_data_lists<-make_data_list_func(chiw_data = chiw_data, nas_whi_data = nas_wh
 #fit all models
 load(file=here("results","Rdata",paste0("emigrant_estimates Sep 08 2020",".Rdata")))
 ts<-Sys.time() 
-all_emigrants_estimates_4<-fit_all(all_data_lists=all_data_lists)
+all_emigrants_estimates_1112<-fit_all(all_data_lists=all_data_lists)
 Sys.time()-ts
 lapply(all_emigrants_estimates_4,function(x)(x$fit3$AIC))
 
 #save as ".Rdata" objects
-save(all_emigrants_estimates,file=here("results",paste0("emigrant_estimates",substr(date(),4,10),substr(date(),20,25),".Rdata")))
+save(all_emigrants_estimates_1112,file=here("results",paste0("emigrant_estimates",substr(date(),4,10),substr(date(),20,25),".Rdata")))
 
 #plot geomeans of emigrants for each day of year across years
 png(file=here("results","plots","average-timing.png"),units="in",width = 6,height=6,res=300)
@@ -168,7 +168,7 @@ return(params)
 
 
 #function to fit model 
-fit_model<-function(data_in,get_jp=FALSE ){
+fit_model<-function(data_in,get_jp=TRUE ){
 setwd(here("src","TMB"))
 TMB::compile("screw_trap_LP_3.cpp") #compile TMB model
 dyn.load("screw_trap_LP_3") #load TMB model
@@ -187,7 +187,7 @@ try({
 })
 
 #bootstrap log juvenile sums and sds
-boot<-bootstrap_juves(data_in, mod$env$last.par.best, fit3$SD$jointPrecision, n_sim=10000,seed=1234)
+boot<-bootstrap_juves(data_in, mod$env$last.par.best, fit3$SD$jointPrecision, n_sim=50000,seed=1234)
 
  
 return(list(LH_sums=LH_sums,LH_sums_sd=LH_sums_sd,boot=boot,fit3=fit3,mod=mod,M_hat=mod$report()$M_hat))
