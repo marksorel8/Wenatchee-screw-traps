@@ -4,6 +4,9 @@ The goal of this repository is to estimate the number and timing of juvenile Chi
 
 Please do not distributre any of the data in this repository without permission. 
 
-If you are just arriving. Start with at [Methods/screw-trap-model.pdf](https://github.com/marksorel8/Wenatchee-screw-traps/blob/main/Methods/screw-trap-model.pdf) and associated Rmarkdown script [Methods/screw-trap-model.Rmd](https://github.com/marksorel8/Wenatchee-screw-traps/blob/main/Methods/screw%20trap%20model.Rmd)
+The controlling script for the analysis is `SR_all_LVR.R`, which sources a number of other `R` and `.cpp` scripts within the `src` folder. 
+
+Please let me know if anything is confusing or requires additional documention.
 
 Thanks!
+
