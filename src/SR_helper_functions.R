@@ -22,18 +22,18 @@ make_dat_func<-function(streams=c( 0:2), #streams to model 0 = chiwawa, 1 = naso
   for (i in streams){ #loop through streams
     for(j in LHs){      #loop though life histories
       
-      years<-as.numeric(rownames(all_emigrants_estimates_1112[[i*2+1]]$LH_sums))#years (of observations)
+      years<-as.numeric(rownames(all_emigrants_estimates[[i*2+1]]$LH_sums))#years (of observations)
       BY<-c(BY,(years-ifelse(j==4,2,1)))#brood years corresponding with observation years for given life history
       n_year<-length(years)#number of years
       
       # likelihood penalty mean and standard deviations for juvenile emigrant abundances
       if(j<4){
-        means<-(all_emigrants_estimates_1112[[i*2+1]]$boot$boot_log_means)[,j] #subyearlings
-        sds<-(all_emigrants_estimates_1112[[i*2+1]]$boot$boot_log_sds)[,j] #subyearlings
+        means<-(all_emigrants_estimates[[i*2+1]]$boot$boot_log_means)[,j] #subyearlings
+        sds<-(all_emigrants_estimates[[i*2+1]]$boot$boot_log_sds)[,j] #subyearlings
         
       }else{
-        means<-all_emigrants_estimates_1112[[i*2+2]]$boot$boot_log_means[,1] # yearlings
-        sds<- all_emigrants_estimates_1112[[i*2+2]]$boot$boot_log_sds[,1] # yearlings
+        means<-all_emigrants_estimates[[i*2+2]]$boot$boot_log_means[,1] # yearlings
+        sds<- all_emigrants_estimates[[i*2+2]]$boot$boot_log_sds[,1] # yearlings
       }
       # log means- concatenate current vector with all life histories
       log_m_means<-c(log_m_means,                                 #current vector

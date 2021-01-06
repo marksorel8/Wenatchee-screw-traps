@@ -312,7 +312,7 @@
 8/26/2013,Nason,1.5 m,BI,Pulled ,Pulled ,NA,,58.8,N/A,N/A,N/A,15.9,N/A,Pulled-low water
 8/27/2013,Nason,1.5 m,BI,Pulled ,Pulled ,NA,,61.5,N/A,N/A,N/A,15.9,N/A,Pulled-low water
 8/28/2013,Nason,1.5 m,"JH,KS",Pulled ,Pulled ,NA,,63.1,N/A,N/A,N/A,16.1,N/A,Pulled-low water
-8/29/2013,Nason,1.5 m,"JH,KS",Pulled ,Pulled ,NA,,71.3,N/A,N/A,N/A,16.0,N/A,Pulled-low water
+8/29/2013,Nason,1.5 m,"JH,KS",Pulled ,Pulled ,NA,,71.3,N/A,N/A,N/A,16,N/A,Pulled-low water
 8/30/2013,Nason,1.5 m,"JH,KS",Pulled ,Pulled ,NA,,85.4,N/A,N/A,N/A,14.3,N/A,Pulled-low water
 8/31/2013,Nason,1.5 m,"JH,KS",Pulled ,Pulled ,NA,,73.1,N/A,N/A,N/A,14.5,N/A,Pulled-low water
 9/1/2013,Nason,1.5 m,MWC,Pulled ,Pulled ,NA,,65.2,N/A,N/A,N/A,16,N/A,Pulled-low water
@@ -335,7 +335,7 @@
 9/20/2013,Nason,1.5 m,"JH,KS",Pulled ,Pulled ,NA,,57.8,N/A,N/A,N/A,11.9,N/A,Pulled-low water
 9/21/2013,Nason,1.5 m,"JH,KS",Pulled ,Pulled ,NA,,57,N/A,N/A,N/A,13.1,N/A,Pulled-low water
 9/22/2013,Nason,1.5 m,"JH,KS",Pulled ,Pulled ,NA,,60.1,N/A,N/A,N/A,11.8,N/A,Pulled-low water
-9/27/2013,Nason,1.5 m,"JH,KS",Pulled ,Pulled ,NA,,72,N/A,N/A,N/A,9.0,N/A,Pulled-low water
+9/27/2013,Nason,1.5 m,"JH,KS",Pulled ,Pulled ,NA,,72,N/A,N/A,N/A,9,N/A,Pulled-low water
 11/23/2013,Nason,1.5 m,"JH,KS",Pulled ,Pulled ,NA,,262,N/A,N/A,N/A,0.1,N/A,Pulled due to ice
 3/3/2014,Nason,1.5 m,"JH,KS",Pulled ,Pulled ,NA,,113,N/A,N/A,N/A,0.1,Clear,"Frozen, trap pulled"
 6/26/2014,Nason,1.5 m,"MWC,KS",Pulled ,Pulled ,NA,,760,N/A,N/A,N/A,9.3,N/A,
@@ -788,7 +788,7 @@
 6/30/2011,Nason,1.5 m,"NO, MWC",8:40am,Pulled ,NA,,1770,12,Small,Small,5.5,Cloudy,Pulled. High water > 2000cfs
 6/4/2012,Nason,1.5 m,"EB, BI",8:30am,Pulled ,NA,,1360,10,Medium,Small,5.2,Clear,Pulled 3:47 pm
 10/30/2015,Nason,1.5 m,"KS, MC",8:30am,Pulled ,NA,,356,N/A,M,S,8.5,Clear,lowered cone 1 notch
-11/30/2017,White,1.5/2.4 m,"KS,MC",8:30am,Pulled ,3,,973,4/1,S,S,3.3,Clear,Pulled for season
+11/30/2017,White,1.5/2.4 m,"KS,MC",8:30am,Pulled ,3,,973,1-Apr,S,S,3.3,Clear,Pulled for season
 11/30/2016,White,1.5 m,JH,8:20am,Pulled ,1,,488,4.5,S,S,2.8,Clear,End of Season
 8/21/2009,Nason,1.5m,NO,8:15am,Pulled ,NA,,52.8,N/A,N/A,N/A,N/A,N/A,Pulled due to low flows <2 RPMs
 10/21/2017,White,1.5/2.4 m,"JH,MC",8:15am,Pulled ,6,,379,N/A,M,S,5.1,Cloudy,Pulled Traps due to heavy rain
@@ -1439,7 +1439,7 @@
 5/20/2004,Nason,1.5 m,"MR,PJ",1:00am,N/A,NA,,1340,N/A,N/A,N/A,N/A,N/A,
 5/21/2004,Nason,1.5 m,"PJ,MR",1:00am,N/A,NA,,1420,N/A,N/A,N/A,N/A,N/A,
 5/22/2004,Nason,1.5 m,"MR,PJ",1:00am,N/A,NA,,1290,N/A,N/A,N/A,N/A,N/A,
-9/8/2017,White,1.5/2.4 m,"MC,KS",Continuous/Stopped,Continuous/12:20,NA,,260,6/2,S,S,13.5,Cloudy,Log stopped trap B
+9/8/2017,White,1.5/2.4 m,"MC,KS",Continuous/Stopped,Continuous/12:20,NA,,260,2-Jun,S,S,13.5,Cloudy,Log stopped trap B
 9/21/2010,Nason,1.5m,"BI, MWC",Stopped ,Continuous,1,,185,6,Medium,Medium,10.1,Clear,Trap stopped by log.
 10/13/2014,Nason,1.5 m,"JH,BH",Stopped ,Continuous,NA,,68.4,1,Medium,Small,10.8,Clear,Stopped by stick
 8/4/2010,White,1.5m,"MWC, NV, LSO",Stopped ,Continuous,NA,,1110,6,Small,Small,10.8,Cloudy,Trap stopped
@@ -1934,7 +1934,7 @@
 10/3/2014,Nason,1.5 m,"BI,MWC",Continuous,Continuous,1,,57.6,0.75,Small,Small,9,Clear,
 10/4/2014,Nason,1.5 m,"KS,MWC",Continuous,Continuous,NA,,56.4,0.5,Small,Small,8.9,Clear,
 10/5/2014,Nason,1.5 m,"JH,BI",Continuous,Continuous,2,,55.4,0.75,Small,Small,9.8,Clear,
-10/6/2014,Nason,1.5 m,BI,Continuous,Continuous,1,,53.8,0.50,Small,Small,10.8,Clear,
+10/6/2014,Nason,1.5 m,BI,Continuous,Continuous,1,,53.8,0.5,Small,Small,10.8,Clear,
 10/7/2014,Nason,1.5 m,BI,Continuous,Continuous,1,,52.9,0.5,Small,Small,10.8,Clear,
 10/8/2014,Nason,1.5 m,"BH,MWC",Continuous,Continuous,NA,,52.4,0.5,Small,Small,12,Clear,
 10/10/2014,Nason,1.5 m,"BI,MWC",Continuous,Continuous,NA,,52.3,0.5,Small,Small,9.8,Clear,
@@ -1958,7 +1958,7 @@
 10/31/2014,Nason,1.5 m,"KS, MWC",Continuous,Continuous,77,,523,8,Large,Small,6.8,Cloudy,Heavy debris slowed trap but didn’t stop it
 11/1/2014,Nason,1.5 m,"MWC,KS",Continuous,Continuous,27,,391,6.5,Medium,Small,5.8,Clear,
 11/2/2014,Nason,1.5 m,"JH,BI",Continuous,Continuous,28,,301,7.5,Medium,Small,5.6,Clear,
-11/3/2014,Nason,1.5 m,"JH,BH",Continuous,Continuous,20,,290,7.0,Small,Small,6.4,Clear,
+11/3/2014,Nason,1.5 m,"JH,BH",Continuous,Continuous,20,,290,7,Small,Small,6.4,Clear,
 11/6/2014,Nason,1.5 m,"KS, TJ",Continuous,Continuous,11,,569,8,Medium,Small,7.1,Cloudy,
 11/8/2014,Nason,1.5 m,"KS, MWC",Continuous,Continuous,25,,427,6.5,Large,Small,4.6,Clear,
 11/10/2014,Nason,1.5 m,"JH,BH",Continuous,Continuous,31,,421,7.5,Large,Small,4.1,Clear,
@@ -2763,31 +2763,31 @@
 8/2/2017,White,1.5 m,"JH,TJ",Continuous,Continuous,2,,615,6,S,S,11.3,Cloudy,
 8/3/2017,White,1.5 m,"KS,MC",Continuous,Continuous,4,,639,6,S,S,12,Cloudy,
 8/4/2017,White,1.5 m,"KS,MC",Continuous,Continuous,3,,615,6,S,S,11.8,Cloudy,
-8/10/2017,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,10,,463,6/4,S,S,12,Cloudy,
-8/11/2017,White,1.5/2.4 m,"MC,TJ",Continuous,Continuous,2,,437,6/4,S,S,12.1,Cloudy,
-8/12/2017,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,6,,435,6/4,S,S,12.8,Cloudy,
-8/16/2017,White,1.5/2.4 m,"JH,MC,KS",Continuous,Continuous,15,,304,6/4,S,S,10.8,Cloudy,
-8/17/2017,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,10,,324,6/4,S,S,12.1,Cloudy,
+8/10/2017,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,10,,463,4-Jun,S,S,12,Cloudy,
+8/11/2017,White,1.5/2.4 m,"MC,TJ",Continuous,Continuous,2,,437,4-Jun,S,S,12.1,Cloudy,
+8/12/2017,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,6,,435,4-Jun,S,S,12.8,Cloudy,
+8/16/2017,White,1.5/2.4 m,"JH,MC,KS",Continuous,Continuous,15,,304,4-Jun,S,S,10.8,Cloudy,
+8/17/2017,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,10,,324,4-Jun,S,S,12.1,Cloudy,
 8/18/2017,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,8,,306,6/3.5,S,S,12.1,Cloudy,
 8/19/2017,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,9,,298,6/3.5,S,S,11.4,Cloudy,
-8/23/2017,White,1.5/2.4 m,"JH,MC,KS",Continuous,Continuous,5,,293,6/3,S,S,12.5,Clear,
-8/24/2017,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,6,,287,6/3,S,S,12.8,Clear,
-8/25/2017,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,5,,243,6/3,S,S,9.7,Clear,
-8/26/2017,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,5,,222,6/3,S,S,9.2,Clear,
+8/23/2017,White,1.5/2.4 m,"JH,MC,KS",Continuous,Continuous,5,,293,3-Jun,S,S,12.5,Clear,
+8/24/2017,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,6,,287,3-Jun,S,S,12.8,Clear,
+8/25/2017,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,5,,243,3-Jun,S,S,9.7,Clear,
+8/26/2017,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,5,,222,3-Jun,S,S,9.2,Clear,
 8/29/2017,White,1.5/2.4 m,"JH,TJ",Continuous,Continuous,1,,260,6/3.5,S,S,11.8,Cloudy,
 8/30/2017,White,1.5/2.4 m,"JH,MC,KS",Continuous,Continuous,NA,,254,6/2.5,S,S,10.8,Cloudy,
 8/31/2017,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,2,,251,6/2.5,S,S,11.9,Cloudy,
-9/1/2017,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,3,,249,6/3,S,S,11.3,Cloudy,
-9/2/2017,White,1.5/2.4 m,"JH,MC",Continuous,Continuous,NA,,250,6/3,S,S,10.8,Cloudy,
-9/4/2017,White,1.5/2.4 m,"JH,TJ",Continuous,Continuous,NA,,241,6/3,S,S,11.6,Cloudy,
-9/5/2017,White,1.5/2.4 m,"JH,TJ",Continuous,Continuous,NA,,254,6/3,S,S,11.8,Cloudy,
-9/6/2017,White,1.5/2.4 m,"JH,KS",Continuous,Continuous,1,,261,6/3,S,S,11.6,Cloudy,
-9/7/2017,White,1.5/2.4 m,"MC,TJ",Continuous,Continuous,NA,,264,6/3,S,S,11.6,Cloudy,
+9/1/2017,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,3,,249,3-Jun,S,S,11.3,Cloudy,
+9/2/2017,White,1.5/2.4 m,"JH,MC",Continuous,Continuous,NA,,250,3-Jun,S,S,10.8,Cloudy,
+9/4/2017,White,1.5/2.4 m,"JH,TJ",Continuous,Continuous,NA,,241,3-Jun,S,S,11.6,Cloudy,
+9/5/2017,White,1.5/2.4 m,"JH,TJ",Continuous,Continuous,NA,,254,3-Jun,S,S,11.8,Cloudy,
+9/6/2017,White,1.5/2.4 m,"JH,KS",Continuous,Continuous,1,,261,3-Jun,S,S,11.6,Cloudy,
+9/7/2017,White,1.5/2.4 m,"MC,TJ",Continuous,Continuous,NA,,264,3-Jun,S,S,11.6,Cloudy,
 9/9/2017,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,NA,,251,6/2.5,S,S,13,Cloudy,
-9/10/2017,White,1.5/2.4 m,"BI,MC",Continuous,Continuous,NA,,224,6/3,S,S,11.8,Cloudy,
-9/11/2017,White,1.5/2.4 m,"JH,KS",Continuous,Continuous,NA,,193,6/3,S,S,14.5,Cloudy,
-9/12/2017,White,1.5/2.4 m,"JH,KS",Continuous,Continuous,NA,,196,6/3,S,S,10.8,Cloudy,Pulled Trap A closer to RR
-9/13/2017,White,1.5/2.4 m,"JH,KS",Continuous,Continuous,5,,193,6/3,S,S,10.4,Cloudy,
+9/10/2017,White,1.5/2.4 m,"BI,MC",Continuous,Continuous,NA,,224,3-Jun,S,S,11.8,Cloudy,
+9/11/2017,White,1.5/2.4 m,"JH,KS",Continuous,Continuous,NA,,193,3-Jun,S,S,14.5,Cloudy,
+9/12/2017,White,1.5/2.4 m,"JH,KS",Continuous,Continuous,NA,,196,3-Jun,S,S,10.8,Cloudy,Pulled Trap A closer to RR
+9/13/2017,White,1.5/2.4 m,"JH,KS",Continuous,Continuous,5,,193,3-Jun,S,S,10.4,Cloudy,
 9/14/2017,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,1,,165,6/1.5,S,S,10,Cloudy,Raised Trap B one notch
 9/15/2017,White,1.5/2.4 m,MC,Continuous,Continuous,6,,144,5/Pulled,S,S,8.8,Cloudy,Trap B stopped
 9/16/2017,White,1.5/2.4 m,MC,Continuous,Continuous,5,,132,5/Pulled,S,S,8.7,Cloudy,Trap B Pulled
@@ -2823,21 +2823,21 @@
 3/2/2018,White,1.5/2.4 m,"MC,KS",Continuous,Continuous,NA,,309,6/2.5,S,S,2.3,Clear,
 3/3/2018,White,1.5/2.4 m,"MC,KS",Continuous,Continuous,NA,,296,6/2.5,S,S,3.9,Clear,
 3/4/2018,White,1.5/2.4 m,"MC,JH",Continuous,Continuous,1,,287,6/2.5,S,S,2.1,Clear,
-3/7/2018,White,1.5/2.4 m,"KS,JH",Continuous,Continuous,2,,265,6/2,S,S,1.8,Clear,
-3/8/2018,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,3,,269,6/2,S,S,2.1,Clear,
-3/9/2018,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,2,,278,6/2,S,S,2.1,Clear,
+3/7/2018,White,1.5/2.4 m,"KS,JH",Continuous,Continuous,2,,265,2-Jun,S,S,1.8,Clear,
+3/8/2018,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,3,,269,2-Jun,S,S,2.1,Clear,
+3/9/2018,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,2,,278,2-Jun,S,S,2.1,Clear,
 3/10/2018,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,2,,262,6/2.25,S,S,2,Clear,
-3/11/2018,White,1.5/2.4 m,"JH,KS",Continuous,Continuous,6,,256,6/2,S,S,2.1,Clear,
+3/11/2018,White,1.5/2.4 m,"JH,KS",Continuous,Continuous,6,,256,2-Jun,S,S,2.1,Clear,
 3/13/2018,White,1.5/2.4 m,"JH,TJ",Continuous,Continuous,NA,,269,6/2.25,S,S,2.1,Clear,
 3/14/2018,White,1.5/2.4 m,"JH,MC,TJ",Continuous,Continuous,3,,287,6/2.25,S,S,3.5,Clear,
 3/15/2018,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,5,,284,6/2.25,S,S,2.7,Clear,
-3/16/2018,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,5,,284,6/2,S,S,2.9,Clear,
-3/17/2018,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,6,,289,6/2,S,S,2.8,Clear,
-3/18/2018,White,1.5/2.4 m,"JH,MC",Continuous,Continuous,3,,294,6/2,S,S,3,Clear,
-3/19/2018,White,1.5/2.4 m,"JH,BI",Continuous,Continuous,2,,296,6/2,S,S,3.1,Clear,
-3/20/2018,White,1.5/2.4 m,"JH,TJ",Continuous,Continuous,4,,300,6/2,S,S,3,Clear,
-3/21/2018,White,1.5/2.4 m,"JH,KS",Continuous,Continuous,6,,306,6/2,S,S,3,Clear,
-3/22/2018,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,1,,324,6/2,S,S,3.1,Clear,
+3/16/2018,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,5,,284,2-Jun,S,S,2.9,Clear,
+3/17/2018,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,6,,289,2-Jun,S,S,2.8,Clear,
+3/18/2018,White,1.5/2.4 m,"JH,MC",Continuous,Continuous,3,,294,2-Jun,S,S,3,Clear,
+3/19/2018,White,1.5/2.4 m,"JH,BI",Continuous,Continuous,2,,296,2-Jun,S,S,3.1,Clear,
+3/20/2018,White,1.5/2.4 m,"JH,TJ",Continuous,Continuous,4,,300,2-Jun,S,S,3,Clear,
+3/21/2018,White,1.5/2.4 m,"JH,KS",Continuous,Continuous,6,,306,2-Jun,S,S,3,Clear,
+3/22/2018,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,1,,324,2-Jun,S,S,3.1,Clear,
 3/23/2018,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,10,,329,6/2.5,S,S,2.5,Clear,
 3/24/2018,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,1,,319,6/2.5,S,S,2.7,Clear,
 3/25/2018,White,1.5/2.4 m,"JH,KS",Continuous,Continuous,6,,309,6/2.5,S,S,2.4,Clear,
@@ -2853,36 +2853,36 @@
 4/5/2018,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,12,,380,6/2.5,S,S,3.9,Clear,
 4/6/2018,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,15,,418,6/2.5,S,S,4.2,Clear,
 4/7/2018,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,24,,543,6/2.5,S,S,4.4,Clear,Dropped 8' cone further down
-4/26/2018,White,1.5/2.4 m,"TJ,MC",Continuous,Continuous,8,,1420,5/4,S,S,4.2,Clear,
-4/27/2018,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,2,,2010,4/3,S,S,4.6,Cloudy,
-4/28/2018,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,1,,2750,4/4,S,M,4.4,Cloudy,
-4/29/2018,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,NA,,2330,4/4,M,S,3.8,Cloudy,
-4/30/2018,White,1.5/2.4 m,"JH,MC",Continuous,Continuous,NA,,1960,4/4,M,S,3.9,Cloudy,
-5/1/2018,White,1.5/2.4 m,"JH,MC",Continuous,Continuous,1,,1870,4/4,M,S,4.9,Cloudy,
-5/2/2018,White,1.5/2.4 m,"JH,KS",Continuous,Continuous,2,,1980,4/4,M,S,4.5,Cloudy,
+4/26/2018,White,1.5/2.4 m,"TJ,MC",Continuous,Continuous,8,,1420,4-May,S,S,4.2,Clear,
+4/27/2018,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,2,,2010,3-Apr,S,S,4.6,Cloudy,
+4/28/2018,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,1,,2750,4-Apr,S,M,4.4,Cloudy,
+4/29/2018,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,NA,,2330,4-Apr,M,S,3.8,Cloudy,
+4/30/2018,White,1.5/2.4 m,"JH,MC",Continuous,Continuous,NA,,1960,4-Apr,M,S,3.9,Cloudy,
+5/1/2018,White,1.5/2.4 m,"JH,MC",Continuous,Continuous,1,,1870,4-Apr,M,S,4.9,Cloudy,
+5/2/2018,White,1.5/2.4 m,"JH,KS",Continuous,Continuous,2,,1980,4-Apr,M,S,4.5,Cloudy,
 5/3/2018,White,1.5/2.4 m,"KS,JH",Continuous,Continuous,1,,2380,4.5/3.5,M,S,5,Cloudy,
 5/5/2018,White,1.5/2.4 m,"MC,KS",Continuous,Continuous,NA,,3120,4.5/3.5,M,S,3.7,Cloudy,
 5/12/2018,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,NA,,3160,4/3.5,M,S,5.9,Cloudy,
 5/13/2018,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,1,,3580,4/3.5,M,S,5.5,Cloudy,
-5/14/2018,White,1.5/2.4 m,"JH,MC",Continuous,Continuous,NA,,4270,4/3,M,S,6.1,Cloudy,
-5/15/2018,White,1.5/2.4 m,"JH,MC",Continuous,Continuous,NA,,5030,4/3,L,S,5.6,Cloudy,Changed boat rope cranker
+5/14/2018,White,1.5/2.4 m,"JH,MC",Continuous,Continuous,NA,,4270,3-Apr,M,S,6.1,Cloudy,
+5/15/2018,White,1.5/2.4 m,"JH,MC",Continuous,Continuous,NA,,5030,3-Apr,L,S,5.6,Cloudy,Changed boat rope cranker
 5/16/2018,White,1.5/2.4 m,"JH,TJ",Continuous,Continuous,NA,,5560,4.25/Pulled,L,S,5.1,Cloudy,
-5/31/2018,White,1.5/2.4 m,"KS,JH",Continuous,Continuous,NA,,1840,4/3,S,S,5,Clear,
-7/20/2018,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,NA,,730,6/4,S,S,9.8,Clear,
-7/21/2018,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,NA,,600,6/4,S,S,9.2,Clear,
-7/22/2018,White,1.5/2.4 m,"JH,KS",Continuous,Continuous,NA,,556,6/4,S,S,10,Clear,
-7/23/2018,White,1.5/2.4 m,"JH,BI",Continuous,Continuous,NA,,581,6/4,S,S,11.5,Clear,
-7/24/2018,White,1.5/2.4 m,"JH,TJ",Continuous,Continuous,NA,,592,6/4,S,S,11.7,Clear,
-7/25/2018,White,1.5/2.4 m,"JH,KS",Continuous,Continuous,NA,,581,6/4,S,S,12.1,Clear,
-7/26/2018,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,1,,582,6/4,S,S,12.1,Clear,
-7/27/2018,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,NA,,578,6/4,S,S,12.8,Clear,
-7/28/2018,White,1.5/2.4 m,"JH,MC",Continuous,Continuous,NA,,584,6/4,S,S,12.2,Clear,
-7/29/2018,White,1.5/2.4 m,"JH,MC",Continuous,Continuous,NA,,569,6/4,S,S,12.5,Cloudy,
+5/31/2018,White,1.5/2.4 m,"KS,JH",Continuous,Continuous,NA,,1840,3-Apr,S,S,5,Clear,
+7/20/2018,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,NA,,730,4-Jun,S,S,9.8,Clear,
+7/21/2018,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,NA,,600,4-Jun,S,S,9.2,Clear,
+7/22/2018,White,1.5/2.4 m,"JH,KS",Continuous,Continuous,NA,,556,4-Jun,S,S,10,Clear,
+7/23/2018,White,1.5/2.4 m,"JH,BI",Continuous,Continuous,NA,,581,4-Jun,S,S,11.5,Clear,
+7/24/2018,White,1.5/2.4 m,"JH,TJ",Continuous,Continuous,NA,,592,4-Jun,S,S,11.7,Clear,
+7/25/2018,White,1.5/2.4 m,"JH,KS",Continuous,Continuous,NA,,581,4-Jun,S,S,12.1,Clear,
+7/26/2018,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,1,,582,4-Jun,S,S,12.1,Clear,
+7/27/2018,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,NA,,578,4-Jun,S,S,12.8,Clear,
+7/28/2018,White,1.5/2.4 m,"JH,MC",Continuous,Continuous,NA,,584,4-Jun,S,S,12.2,Clear,
+7/29/2018,White,1.5/2.4 m,"JH,MC",Continuous,Continuous,NA,,569,4-Jun,S,S,12.5,Cloudy,
 8/28/2018,White,1.5/2.4 m,"TJ,JH",Continuous,Continuous,1,,172,4/3.5,S,S,10.3,Clear,
 8/29/2018,White,1.5/2.4 m,"MC,JH",Continuous,Continuous,1,,176,4/3.5,S,S,11.5,Clear,
 8/30/2018,White,1.5/2.4 m,"MC,KS",Continuous,Continuous,NA,,177,4/3.5,S,S,12,Clear,
 8/31/2018,White,1.5/2.4 m,"MC,KS",Continuous,Continuous,NA,,165,4/3.5,S,S,11.9,Clear,
-9/1/2018,White,1.5/2.4 m,"MC,KS",Continuous,Continuous,NA,,161,5/3,S,S,11.8,Clear,
+9/1/2018,White,1.5/2.4 m,"MC,KS",Continuous,Continuous,NA,,161,3-May,S,S,11.8,Clear,
 9/2/2018,White,1.5/2.4 m,"JH,KS",Continuous,Continuous,NA,,153,3/2.5,S,S,11.3,Clear,
 9/4/2018,White,1.5/2.4 m,"JH,MC",Continuous,Continuous,NA,,152,3/2.5,S,S,11.6,Clear,
 9/5/2018,White,1.5/2.4 m,"JH,MC",Continuous,Continuous,NA,,145,3/2.5,S,S,11.1,Clear,
@@ -2935,14 +2935,14 @@
 10/30/2018,White,1.5/2.4 m,"JH,AT",Continuous,Continuous,2,,236,3/2.5,M,S,5.3,Clear,
 10/31/2018,White,1.5/2.4 m,"JH,KS",Continuous,Continuous,NA,,340,3/2.5,M,S,5.4,Clear,
 11/1/2018,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,NA,,1170,4.5/4,M,S,6.1,Cloudy,Started Trap B
-11/4/2018,White,1.5/2.4 m,"JH,TJ",Continuous,Continuous,NA,,1010,4/3,M,M,6.1,Cloudy,
+11/4/2018,White,1.5/2.4 m,"JH,TJ",Continuous,Continuous,NA,,1010,3-Apr,M,M,6.1,Cloudy,
 11/14/2018,White,1.5/2.4 m,"JH,KS",Continuous,Continuous,4,,304,4/2.5,S,S,1.8,Clear,
 11/15/2018,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,1,,331,4/2.5,S,S,3.6,Clear,
-11/16/2018,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,NA,,327,5/2,S,S,4.3,Clear,
-11/17/2018,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,NA,,297,6/2,S,S,4.1,Clear,
-11/18/2018,White,1.5/2.4 m,"KS,JH",Continuous,Continuous,1,,269,6/2,S,S,2.4,Clear,
-11/19/2018,White,1.5/2.4 m,KS.MC,Continuous,Continuous,2,,259,6/2,S,S,1.8,Clear,
-11/20/2018,White,1.5/2.4 m,"KS,TJ",Continuous,Continuous,4,,244,5/1,S,S,1.4,Clear,
+11/16/2018,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,NA,,327,2-May,S,S,4.3,Clear,
+11/17/2018,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,NA,,297,2-Jun,S,S,4.1,Clear,
+11/18/2018,White,1.5/2.4 m,"KS,JH",Continuous,Continuous,1,,269,2-Jun,S,S,2.4,Clear,
+11/19/2018,White,1.5/2.4 m,KS.MC,Continuous,Continuous,2,,259,2-Jun,S,S,1.8,Clear,
+11/20/2018,White,1.5/2.4 m,"KS,TJ",Continuous,Continuous,4,,244,1-May,S,S,1.4,Clear,
 11/21/2018,White,1.5/2.4 m,"JH,TJ",Continuous,Continuous,3,,239,5,S,S,1.6,Clear,Trap B stopped- low water- pulled for remainder of season
 11/22/2018,White,1.5/2.4 m,TJ,Continuous,Continuous,2,,238,5,S,S,1.5,Clear,
 11/23/2018,White,1.5/2.4 m,"KS,MC",Continuous,Continuous,1,,243,5,S,S,1.4,Clear,
@@ -3573,7 +3573,7 @@
 8/24/2012,White ,1.5 m,BI,Stopped ,9:58am,NA,,358,7,Small,Small,9.6,Cloudy,Stopped by by log
 4/13/2010,White,1.5m,"NO, BI, MWC",9:28am,9:58am,16,,303,6,Small,Small,5.3,Clear,
 7/27/2013,White ,1.5 m,"MWC,KS",8:06am,9:58am,1,,617,7,Small,Small,11.2,Clear,
-8/24/2018,White,1.5/2.4 m,"KS,MC",Stopped ,9:55am,1,,221,5/4,S,S,11.8,Clear,Trap A stopped by stick
+8/24/2018,White,1.5/2.4 m,"KS,MC",Stopped ,9:55am,1,,221,4-May,S,S,11.8,Clear,Trap A stopped by stick
 3/16/2016,Nason,1.5 m,"JH,KS,MC",9:45am,9:55am,NA,,393,8,S,S,2.6,Cloudy,
 3/18/2016,Nason,1.5 m,"KS,MC",9:45am,9:55am,NA,,353,7,S,S,1.6,Cloudy,
 3/19/2016,Nason,1.5 m,"KS,MC",9:45am,9:55am,NA,,338,7,S,S,2.8,Cloudy,
@@ -3770,8 +3770,8 @@
 3/28/2017,Nason,1.5 m,"JH,BI",9:30am,9:40am,1,,365,6.25,S,S,3.7,Clear,
 10/28/2017,Nason,1.5 m,"KS,MC",9:30am,9:40am,30,,235,5.5,S,S,4.6,Clear,
 8/29/2015,White,1.5 m,"KS, MC",9:30am,9:40am,NA,,214,6,S,S,12.1,Cloudy,
-11/11/2017,White,1.5/2.4 m,"KS,MC",9:30am,9:40am,6,,254,6/2,S,S,3.8,Clear,
-7/12/2018,White,1.5/2.4 m,"KS,MC",9:30am,9:40am,NA,,1170,4/3,S,S,9.3,Cloudy,
+11/11/2017,White,1.5/2.4 m,"KS,MC",9:30am,9:40am,6,,254,2-Jun,S,S,3.8,Clear,
+7/12/2018,White,1.5/2.4 m,"KS,MC",9:30am,9:40am,NA,,1170,3-Apr,S,S,9.3,Cloudy,
 8/3/2011,White ,1.5 m,"MWC, BI",9:30am,9:40am,NA,,1440,5,Small,Small,7.4,Clear,
 10/14/2011,White ,1.5 m,"MWC, DA",9:30am,9:40am,1,,320,7,Small,Small,6,Cloudy,
 11/19/2012,White ,1.5 m,BI/MC,9:30am,9:40am,3,,390,7.5,Small,Small,2.9,Clear,
@@ -3816,7 +3816,7 @@
 4/7/2014,Nason,1.5 m,"JH,BI",8:40am,9:40am,18,,473,8,Small,Small,4.5,Clear,
 4/21/2014,Nason,1.5 m,"JH,BI",8:30am,9:40am,15,,608,8,Small,Small,3.7,Clear,
 10/2/2010,White,1.5m,MWC,8:30am,9:40am,6,,338,6,Medium,Small,8.5,Cloudy,
-11/15/2017,White,1.5/2.4 m,"TJ,AT",8:20am,9:40am,4,,268,6/2,S,S,3.1,Clear,
+11/15/2017,White,1.5/2.4 m,"TJ,AT",8:20am,9:40am,4,,268,2-Jun,S,S,3.1,Clear,
 11/17/2007,Nason,1.5 m,KE,8:15am,9:40am,102,,265,8,Small,Small,3,Clear,
 7/19/2012,Nason,1.5 m,"MC, JH",8:45am,9:39am,7,,528,10,Small,Small,11,Clear,
 7/9/2012,Nason,1.5 m,"BI,JH ",Pulled ,9:38am,NA,,1250,10,N/A,N/A,N/A,Cloudy,Trap Set 
@@ -3854,7 +3854,7 @@
 10/25/2004,Nason,1.5 m,TB,9:00am,9:35am,28,,140,6,Medium,Small,5,Clear,
 10/25/2008,White,1.5m,MWC,9:00am,9:35am,8,,203,5,Small,Small,5,Clear,
 9/26/2010,White,1.5m,BI,9:00am,9:35am,1,,411,6,Medium,Medium,N/A,Clear,2 sockeye adult carcasses in box
-10/20/2017,White,1.5/2.4 m,"MC,KS",9:00am,9:35am,NA,,506,6/2,S,S,5.5,Cloudy,8' started
+10/20/2017,White,1.5/2.4 m,"MC,KS",9:00am,9:35am,NA,,506,2-Jun,S,S,5.5,Cloudy,8' started
 11/27/2013,White ,1.5 m,"MWC,KS",9:00AM,9:35AM,5,,338,6,Small,Small,2.1,Clear,
 4/1/2012,Nason,1.5 m,"EB, BI",8:50am,9:35am,4,,230,6.25,Small,Small,2.8,Clear,
 8/27/2012,White ,1.5 m,JH,9:15am,9:34am,NA,,316,7,Small,Small,10.4,Clear,
@@ -3908,7 +3908,7 @@
 6/24/2008,White,2.4m,"TR, MC",Stopped ,9:30am,NA,,1910,5,Small,Small,5,Cloudy,Trap stopped by debris
 9/5/2008,White,1.5m,TR,Stopped ,9:30am,NA,,208,5.5,Small,Small,10,Cloudy,Trap stopped by vandals
 10/21/2008,White,1.5m,"KE, TR",Stopped ,9:30am,0,,237,6.5,Small,Small,5,Clear,Trap stopped by debris
-4/8/2018,White,1.5/2.4 m,"JH,KS",Stopped ,9:30am,NA,,669,5/4,M,L,4,Cloudy,Tree under trap A
+4/8/2018,White,1.5/2.4 m,"JH,KS",Stopped ,9:30am,NA,,669,4-May,M,L,4,Cloudy,Tree under trap A
 3/28/2009,White ,1.5m,MWC,Stopped ,9:30am,4,,197,5,Small,Small,4.4,Clear,Stopped: debris
 8/8/2009,White ,1.5m,MWC,Stopped ,9:30am,NA,stops,318,7,Small,Small,12.6,Cloudy,Stopped: debris
 10/25/2009,White ,1.5m,"KE,BI,MWC",Stopped ,9:30am,NA,,392,6,Small,Medium,4.3,Cloudy,Stopped: debris
@@ -3939,7 +3939,7 @@
 6/25/2008,White,2.4m,"KE, TR",9:20am,9:30am,1,,1920,4,Small,Small,5,Cloudy,
 8/13/2010,White,1.5m,"MWC, LSO",9:20am,9:30am,NA,,546,6,Small,Small,12.4,Cloudy,
 9/17/2010,White,1.5m,MWC,9:20am,9:30am,2,,354,7,Medium,Large,11.5,Cloudy,
-11/9/2017,White,1.5/2.4 m,"KS,MC",9:20am,9:30am,11,,271,6/2,S,S,3.1,Clear,
+11/9/2017,White,1.5/2.4 m,"KS,MC",9:20am,9:30am,11,,271,2-Jun,S,S,3.1,Clear,
 11/18/2017,White,1.5/2.4 m,"KS,MC",9:20am,9:30am,13,,237,6/1.5,S,S,3.7,Clear,
 4/14/2018,White,1.5/2.4 m,"JH,MC",9:20am,9:30am,3,,854,5.5/4,S,S,3.8,Cloudy,
 4/6/2011,White ,1.5 m,"NO, MWC",9:20am,9:30am,1,,736,6.75,Small,Small,3,Clear,
@@ -4035,7 +4035,7 @@
 8/28/2009,White ,1.5m,MWC,8:30am,9:30am,6,,206,6.5,Small,Small,11.7,Cloudy,
 8/29/2009,White ,1.5m,MWC,8:20am,9:30am,5,,231,6,Small,Small,12.3,Cloudy,
 5/22/2013,Nason,1.5 m,"JH,MWC",8:15am,9:30am,22,,1210,10,Small,Small,4.8,Cloudy,Raining
-6/2/2018,White,1.5/2.4 m,"KS,MC",8:15am,9:30am,1,,1620,4/4,S,S,6.8,Clear,
+6/2/2018,White,1.5/2.4 m,"KS,MC",8:15am,9:30am,1,,1620,4-Apr,S,S,6.8,Clear,
 5/16/2005,Nason,1.5 m,N/A,8:00am,9:30am,1,,412,10,Small,Small,5,Clear,
 7/17/2007,Nason,1.5 m,"TR,GR",7:30am,9:30am,4,,161,4,Small,Small,15,Clear,
 6/1/2008,White,2.4m,"TR,MWC",5:00am,9:30am,NA,,3260,7,Medium,Large,5.5,Cloudy,
@@ -4053,7 +4053,7 @@
 5/16/2010,White,1.5m,"MWC, KO",7:00am,9:25pm,4,,2340,5,Medium,Large,4.5,Cloudy,Flows up
 7/18/2007,White,1.5m,MWC,10:15am,9:25pm,NA,,1120,8,Small,Small,10,Cloudy,
 7/30/2007,White,1.5m,MWC,10:15am,9:25pm,NA,,595,6,Small,Small,10,Cloudy,
-10/2/2018,White,1.5/2.4 m,"TJ,MC",Stopped ,9:25am,2,,370,6/4,L,M,9,Cloudy,
+10/2/2018,White,1.5/2.4 m,"TJ,MC",Stopped ,9:25am,2,,370,4-Jun,L,M,9,Cloudy,
 11/24/2013,Nason,1.5 m,"MWC,BI",Pulled ,9:25AM,NA,,244,8.5,N/A,N/A,0.3,N/A,
 3/24/2016,Nason,1.5 m,"KS,MC",9:20am,9:25am,NA,,419,7.5,S,S,4.5,Cloudy,
 4/3/2017,Nason,1.5 m,"BI,TJ",9:20am,9:25am,23,,454,7,S,S,2.9,Clear,
@@ -4099,7 +4099,7 @@
 10/25/2017,Nason,1.5 m,"MC,KS,JH,AT",Stopped ,9:20am,18,,287,6,M,M,4.2,Clear,Stopped by stick
 9/19/2010,White,1.5m,BI,Stopped ,9:20am,NA,,769,5,Medium,Medium,11.4,Cloudy,Trap stopped. High flows with lots of debris.
 9/25/2016,White,1.5 m,BI,Stopped ,9:20am,1,,129,3,S,S,8.8,Cloudy,
-10/26/2017,White,1.5/2.4 m,"KS,MC",Stopped ,9:20am,2,,780,6/3,L,S,4.6,Clear,Both Traps stopped
+10/26/2017,White,1.5/2.4 m,"KS,MC",Stopped ,9:20am,2,,780,3-Jun,L,S,4.6,Clear,Both Traps stopped
 10/11/2012,White ,1.5 m,EB/MWC,Stopped ,9:20AM,4,,106,3.5,Small,Small,6.6,Clear,Cone stopped-hit bottom
 6/12/2011,Nason,1.5 m,"BI, EB",Pulled ,9:20am,NA,,1690,12,N/A,N/A,6.1,N/A,"Flows ↓, set trap"
 11/1/2015,White,1.5 m,"BI,MWC",Pulled ,9:20am,NA,,2040,5.5,N/A,N/A,N/A,N/A,Trap started
@@ -4119,10 +4119,10 @@
 9/18/2010,White,1.5m,MWC,9:10am,9:20am,NA,,507,7,Medium,Medium,11.4,Cloudy,
 4/10/2015,White,1.5 m,"MC,JH",9:10am,9:20am,NA,,521,5.5,S,S,4.8,Clear,
 6/26/2015,White,1.5 m,"JH,MC",9:10am,9:20am,NA,,682,5.5,S,S,11.3,Cloudy,
-11/3/2017,White,1.5/2.4 m,"KS,MC",9:10am,9:20am,1,,391,6/3,S,S,4.8,Clear,
+11/3/2017,White,1.5/2.4 m,"KS,MC",9:10am,9:20am,1,,391,3-Jun,S,S,4.8,Clear,
 11/17/2017,White,1.5/2.4 m,"KS,MC",9:10am,9:20am,7,,250,6/1.5,S,S,3.5,Clear,
-4/21/2018,White,1.5/2.4 m,"KS,MC",9:10am,9:20am,4,,790,4/3,S,S,4.5,Clear,
-6/8/2018,White,1.5/2.4 m,"KS,MC",9:10am,9:20am,NA,,1840,4/4,S,S,6.1,Clear,
+4/21/2018,White,1.5/2.4 m,"KS,MC",9:10am,9:20am,4,,790,3-Apr,S,S,4.5,Clear,
+6/8/2018,White,1.5/2.4 m,"KS,MC",9:10am,9:20am,NA,,1840,4-Apr,S,S,6.1,Clear,
 7/28/2013,White ,1.5 m,"MWC,BI",9:10AM,9:20AM,4,,564,7,Small,Small,11,Clear,
 11/20/2013,White ,1.5 m,"MWC,KS",9:10AM,9:20AM,5,,519,6,Small,Small,2.3,Clear,
 4/24/2015,Nason,1.5 m,"MC,JH",9:05am,9:20am,3,,339,7,S,S,4.8,Clear,
@@ -4141,8 +4141,8 @@
 11/1/2010,White,1.5m,"AH, BI",9:00am,9:20am,7,,743,6,Small,Small,5.1,Clear,
 3/29/2016,White,1.5 m,"JH,BI",9:00am,9:20am,1,,571,5,S,S,3.4,Clear,
 3/30/2016,White,1.5 m,"KS,MC",9:00am,9:20am,1,,602,5,S,S,3.3,Clear,
-6/22/2018,White,1.5/2.4 m,"KS,MC",9:00am,9:20am,NA,,2760,4/4,S,S,6.9,Cloudy,
-6/23/2018,White,1.5/2.4 m,"KS,MC",9:00am,9:20am,NA,,2330,4/4,S,S,7,Cloudy,
+6/22/2018,White,1.5/2.4 m,"KS,MC",9:00am,9:20am,NA,,2760,4-Apr,S,S,6.9,Cloudy,
+6/23/2018,White,1.5/2.4 m,"KS,MC",9:00am,9:20am,NA,,2330,4-Apr,S,S,7,Cloudy,
 5/3/2011,White ,1.5 m,"MWC, EB, BI",9:00am,9:20am,1,,574,6,Small,Small,4.8,Clear,
 5/6/2011,White ,1.5 m,"EB, MWC",9:00am,9:20am,1,,701,6,Small,Small,5.4,Clear,
 11/29/2011,White ,1.5 m,"EB, MC",9:00am,9:20am,7,,250,6,Small,Small,0.4,Clear,
@@ -4324,9 +4324,9 @@
 3/19/2016,White,1.5 m,"KS,MC",9:00am,9:10am,NA,,505,5,S,S,2.6,Clear,
 3/21/2016,White,1.5 m,"JH,BI",9:00am,9:10am,NA,,497,5.5,S,S,4,Clear,
 3/31/2016,White,1.5 m,"KS,MC",9:00am,9:10am,NA,,734,5,S,S,3.5,Clear,
-10/27/2017,White,1.5/2.4 m,"KS,MC",9:00am,9:10am,4,,638,6/3,M,S,4.4,Clear,
+10/27/2017,White,1.5/2.4 m,"KS,MC",9:00am,9:10am,4,,638,3-Jun,M,S,4.4,Clear,
 7/19/2018,White,1.5/2.4 m,"KS,MC",9:00am,9:10am,NA,,919,5/3.5,S,S,10.5,Clear,
-8/16/2018,White,1.5/2.4 m,"MC,KS",9:00am,9:10am,NA,,259,6/4,S,S,12.3,Clear,
+8/16/2018,White,1.5/2.4 m,"MC,KS",9:00am,9:10am,NA,,259,4-Jun,S,S,12.3,Clear,
 9/28/2011,White ,1.5 m,MWC,9:00am,9:10am,NA,,367,6.5,Small,Small,7.5,Cloudy,
 11/30/2012,White ,1.5 m,"JH,MWC",9:00AM,9:10AM,NA,,265,6.25,Small,Small,2.3,Clear,
 9/9/2013,White ,1.5 m,MWC,9:00AM,9:10AM,NA,,359,7,Small,Small,11.9,Cloudy,
@@ -4480,7 +4480,7 @@
 9/19/2016,White,1.5 m,BI,Stopped ,9:00am,NA,,243,4.5,M,S,8.3,Cloudy,
 9/27/2016,White,1.5 m,BI,Stopped ,9:00am,NA,,162,5,S,M,9.1,Clear,Stopped-debris
 10/17/2016,White,1.5 m,"JH,TJ",Stopped ,9:00am,NA,,991,5.25,S,L,6.1,Cloudy,Trap stopped by log
-10/5/2018,White,1.5/2.4 m,"KS,MC",Stopped ,9:00am,NA,,145,4/2,S,S,6,Cloudy,
+10/5/2018,White,1.5/2.4 m,"KS,MC",Stopped ,9:00am,NA,,145,2-Apr,S,S,6,Cloudy,
 6/24/2011,White ,1.5 m,"MWC, EB",Stopped ,9:00am,NA,,2730,5,Small,Small,4.7,Cloudy,Trap stopped/Log in trap
 11/17/2011,White ,1.5 m,"NO, DA",Stopped ,9:00am,0,,198,6.5,Small,Small,0.4,Clear,Trap not put out correctly. On shore
 11/5/2012,White ,1.5 m,JH/BI,Stopped ,9:00AM,NA,,2040,7,Medium,Medium,7,Cloudy,"Stopped by log, turbidity up"
@@ -4551,7 +4551,7 @@
 9/9/2010,White,1.5m,"BI, MWC",8:50am,9:00am,NA,,314,6,Small,Medium,9.8,Cloudy,
 11/29/2017,White,1.5/2.4 m,"KS,MC",8:50am,9:00am,3,,1110,4/1.25,M,S,5.4,Clear,
 4/12/2018,White,1.5/2.4 m,"KS,MC",8:50am,9:00am,3,,783,5.5/4,S,S,3.8,Clear,
-4/16/2018,White,1.5/2.4 m,"JH,BI",8:50am,9:00am,1,,963,3/4,M,S,4.1,Cloudy,
+4/16/2018,White,1.5/2.4 m,"JH,BI",8:50am,9:00am,1,,963,4-Mar,M,S,4.1,Cloudy,
 4/22/2018,White,1.5/2.4 m,"JH,KS",8:50am,9:00am,2,,760,4.5/3.5,S,S,4,Clear,
 6/14/2018,White,1.5/2.4 m,"KS,MC",8:50am,9:00am,1,,1150,4.25/4.5,S,S,5.9,Clear,
 6/28/2018,White,1.5/2.4 m,"KS,MC",8:50am,9:00am,1,,1230,5.5/3,S,S,6.3,Cloudy,
@@ -4656,7 +4656,7 @@
 3/3/2016,White,1.5 m,"KS,MC",8:45am,8:55am,NA,,725,5,S,S,3,Clear,
 4/9/2018,White,1.5/2.4 m,"JH,BI",8:45am,8:55am,3,,682,5.5/4,M,S,4,Cloudy,
 4/24/2018,White,1.5/2.4 m,"JH,TJ",8:45am,8:55am,1,,828,5/3.5,S,S,4,Clear,
-8/22/2018,White,1.5/2.4 m,"JH,KS",8:45am,8:55am,NA,,228,5/4,S,S,12.6,Clear,
+8/22/2018,White,1.5/2.4 m,"JH,KS",8:45am,8:55am,NA,,228,4-May,S,S,12.6,Clear,
 8/28/2012,White ,1.5 m,"DA, JH",8:45am,8:55am,1,,320,7.5,Small,Small,11,Clear,
 11/24/2014,White ,1.5 m,"JH,BH",8:45am,8:55am,1,,348,6,Small,Small,1.7,Clear,
 10/17/2013,Nason,1.5 m,"JH,KS",8:40AM,8:55AM,3,,158,6,Small,Small,5.5,Clear,
@@ -4708,7 +4708,7 @@
 9/25/2014,White ,1.5 m,"MWC,BI",8:45am,8:50am,NA,,412,6.1,Small,Small,10.1,Cloudy,
 3/24/2016,White,1.5 m,"KS,MC",8:44am,8:50am,NA,,567,6,S,S,3.9,Clear,
 4/20/2014,Nason,1.5 m,"JH,BI",8:40am,8:50am,12,,637,10,Small,Small,3.7,Clear,
-11/4/2014,Nason,1.5 m,"JH,BI",8:40am,8:50am,73,,616,8.0,Large,Small,6.2,Cloudy,
+11/4/2014,Nason,1.5 m,"JH,BI",8:40am,8:50am,73,,616,8,Large,Small,6.2,Cloudy,
 6/6/2015,Nason,1.5 m,"JH,MC",8:40am,8:50am,6,,212,6.5,S,S,12.2,Clear,
 6/11/2015,Nason,1.5 m,"JH,MC",8:40am,8:50am,NA,,164,5.5,S,S,13.5,Clear,
 4/3/2016,Nason,1.5 m,"JH,BI",8:40am,8:50am,13,,832,10.5,S,M,4.7,Cloudy,
@@ -4729,11 +4729,11 @@
 7/13/2010,White,1.5m,"BC, KO",8:40am,8:50am,NA,,1750,6,Small,Small,7,Cloudy,
 11/17/2010,White,1.5m,"MWC, BI",8:40am,8:50am,0,,733,6,Small,Small,4.7,Clear,
 10/28/2017,White,1.5/2.4 m,"KS,MC",8:40am,8:50am,5,,706,6/2.5,M,S,4.8,Clear,
-11/10/2017,White,1.5/2.4 m,"KS,MC",8:40am,8:50am,4,,263,6/2,S,S,3.2,Clear,
+11/10/2017,White,1.5/2.4 m,"KS,MC",8:40am,8:50am,4,,263,2-Jun,S,S,3.2,Clear,
 11/16/2017,White,1.5/2.4 m,"KS,MC",8:40am,8:50am,9,,259,6/1.5,S,S,2.8,Clear,
-3/5/2018,White,1.5/2.4 m,"JH,BI",8:40am,8:50am,1,,280,6/2,S,S,2.8,Clear,
+3/5/2018,White,1.5/2.4 m,"JH,BI",8:40am,8:50am,1,,280,2-Jun,S,S,2.8,Clear,
 4/13/2018,White,1.5/2.4 m,"KS,MC",8:40am,8:50am,3,,757,5.5/4,S,S,3.7,Clear,
-8/15/2018,White,1.5/2.4 m,"JH,MC",8:40am,8:50am,NA,,271,6/4,S,S,12.3,Clear,
+8/15/2018,White,1.5/2.4 m,"JH,MC",8:40am,8:50am,NA,,271,4-Jun,S,S,12.3,Clear,
 9/5/2012,White ,1.5 m,"JH,BI,AD",8:40am,8:50am,NA,,243,7.25,Small,Small,9.9,Clear,
 11/28/2012,White ,1.5 m,"JH,MWC",8:40AM,8:50am,1,,283,7,Small,Small,1.3,Clear,
 5/2/2013,White ,1.5 m,"BI,JH",8:40am,8:50am,2,,996,5.25,Small,Small,3.8,Clear,
@@ -4758,10 +4758,10 @@
 11/21/2013,White ,1.5 m,"JH,KS",8:30AM,8:50am,5,,451,6.5,Small,Small,0.7,Clear,Cold
 6/2/2015,Nason,1.5 m,"KS,BI",8:20am,8:50am,3,,272,6.5,S,S,11,Cloudy,
 6/18/2010,White,1.5m,"MWC, KO",8:20am,8:50am,NA,,1850,5.5,Small,Small,4.2,Cloudy,No fish
-11/7/2017,White,1.5/2.4 m,"BI, AT",8:20am,8:50am,9,,291,6/2,S,S,2.4,Clear,
-11/13/2017,White,1.5/2.4 m,"AT,TJ",8:20am,8:50am,12,,259,6/2,S,S,4.4,Clear,
+11/7/2017,White,1.5/2.4 m,"BI, AT",8:20am,8:50am,9,,291,2-Jun,S,S,2.4,Clear,
+11/13/2017,White,1.5/2.4 m,"AT,TJ",8:20am,8:50am,12,,259,2-Jun,S,S,4.4,Clear,
 11/14/2017,White,1.5/2.4 m,"BI, AT",8:20am,8:50am,8,,270,6/1.5,S,S,3.2,Clear,
-11/21/2017,White,1.5/2.4 m,"BI, AT",8:20am,8:50am,13,,441,6/2,S,S,2.3,Clear,
+11/21/2017,White,1.5/2.4 m,"BI, AT",8:20am,8:50am,13,,441,2-Jun,S,S,2.3,Clear,
 8/23/2013,White ,1.5 m,"KS,JH",8:15AM,8:50am,1,,279,7,Small,Small,12.3,Cloudy,
 5/17/2014,White ,1.5 m,"MWC,KS",7:00am,8:50am,NA,,3850,6,Large,Small,3.9,Cloudy,
 5/13/2015,Nason,1.5 m,"BI,KS",5:00am,8:50am,1,,440,8,S,S,6.7,Cloudy,
@@ -4844,7 +4844,7 @@
 6/16/2010,White,1.5m,"BI, MWC",8:30am,8:45am,NA,,2010,6.5,Medium,Small,5.3,Cloudy,
 6/17/2010,White,1.5m,"NO, MWC",8:30am,8:45am,1,moved,1850,6.5,Medium,Small,6.1,Cloudy,Moved to low water position
 11/28/2015,White,1.5 m,"KS,MC",8:30am,8:45am,2,,566,5.5,S,S,0.4,Clear,
-11/6/2017,White,1.5/2.4 m,"AT,JH",8:30am,8:45am,6,,312,6/3,M,S,3.5,Clear,
+11/6/2017,White,1.5/2.4 m,"AT,JH",8:30am,8:45am,6,,312,3-Jun,M,S,3.5,Clear,
 9/16/2009,White ,1.5m,"KE,MWC",8:30am,8:45am,NA,,199,6,Small,Small,10.7,Cloudy,
 9/22/2009,White ,1.5m,"NO,KE,MWC",8:30am,8:45am,NA,,152,6,Small,Large,9,Clear,
 9/30/2009,White ,1.5m,"KE,MWC",8:30am,8:45am,7,,115,5.5,Small,Small,7.8,Clear,
@@ -4882,7 +4882,7 @@
 11/19/2011,White ,1.5 m,"MWC, EB",Stopped ,8:43am,19,,182,N/A,Large,Small,0,Clear,
 7/21/2010,White,1.5m,"BI, MC",8:30am,8:43am,1,,1400,6,Small,Small,9.2,Cloudy,
 9/16/2010,White,1.5m,BI,8:25am,8:43am,1,,284,7,Medium,Medium,10.6,Cloudy,Debris amount up
-10/31/2017,White,1.5/2.4 m,"BI, AT",8:30am,8:42am,2,,497,6/2,M,M,4.6,Clear,
+10/31/2017,White,1.5/2.4 m,"BI, AT",8:30am,8:42am,2,,497,2-Jun,M,M,4.6,Clear,
 10/1/2013,White ,1.5 m,"MWC,BI",8:30AM,8:42am,NA,,932,5.5,Small,Small,4.6,Cloudy,
 5/30/2017,White,1.5 m,"JH,TJ",Stopped ,8:40pm,NA,,5750,4,M,S,4.9,Cloudy,
 4/29/2015,Nason,1.5 m,"KS, BI",7:45am,8:40pm,1,,355,6.5,S,S,6.1,Clear,
@@ -4944,10 +4944,10 @@
 10/16/2010,White,1.5m,"MWC, AH",8:30am,8:40am,1,,352,6,Small,Small,4.3,Clear,
 8/15/2015,White,1.5 m,"KS, MC",8:30am,8:40am,NA,,226,6,S,S,12.2,Cloudy,
 3/17/2016,White,1.5 m,"MC,KS",8:30am,8:40am,NA,,548,4.9,S,S,2.5,Clear,
-8/22/2017,White,1.5/2.4 m,"JH,TJ",8:30am,8:40am,11,,277,6/3,S,S,11.7,Clear,
+8/22/2017,White,1.5/2.4 m,"JH,TJ",8:30am,8:40am,11,,277,3-Jun,S,S,11.7,Clear,
 4/10/2018,White,1.5/2.4 m,"JH,TJ",8:30am,8:40am,3,,749,5.5/4,M,S,4,Cloudy,
-8/8/2018,White,1.5/2.4 m,"KS, TJ",8:30am,8:40am,NA,,347,6/3,S,S,12.9,Clear,
-8/9/2018,White,1.5/2.4 m,"KS,MC",8:30am,8:40am,NA,,373,6/3,S,S,13.3,Cloudy,
+8/8/2018,White,1.5/2.4 m,"KS, TJ",8:30am,8:40am,NA,,347,3-Jun,S,S,12.9,Clear,
+8/9/2018,White,1.5/2.4 m,"KS,MC",8:30am,8:40am,NA,,373,3-Jun,S,S,13.3,Cloudy,
 11/6/2018,White,1.5/2.4 m,"JH,BH",8:30am,8:40am,1,,643,5.5/4,M,S,5.4,Cloudy,
 9/1/2013,White ,1.5 m,MWC,8:30AM,8:40am,1,,320,6.75,Small,Small,11.2,Cloudy,
 10/4/2013,White ,1.5 m,"JH,KS",8:30AM,8:40am,NA,,646,6.5,Small,Small,5.3,Cloudy,
@@ -5068,19 +5068,19 @@
 11/7/2015,White,1.5 m,"KS, MC",8:20am,8:30am,3,,494,5.5,S,S,5,Clear,
 11/9/2015,White,1.5 m,"JH,BI",8:20am,8:30am,1,,532,6,S,S,4.1,Clear,
 11/29/2016,White,1.5 m,"JH,BI",8:20am,8:30am,1,,499,4.5,S,S,3.3,Clear,
-10/25/2017,White,1.5/2.4 m,"MC,KS,JH,AT",8:20am,8:30am,3,,680,6/3,M,S,4.3,Clear,
-11/2/2017,White,1.5/2.4 m,"KS,MC",8:20am,8:30am,2,,430,6/3,S,S,5.1,Clear,
-3/6/2018,White,1.5/2.4 m,"JH,TJ",8:20am,8:30am,NA,,271,6/2,S,S,2.1,Clear,
+10/25/2017,White,1.5/2.4 m,"MC,KS,JH,AT",8:20am,8:30am,3,,680,3-Jun,M,S,4.3,Clear,
+11/2/2017,White,1.5/2.4 m,"KS,MC",8:20am,8:30am,2,,430,3-Jun,S,S,5.1,Clear,
+3/6/2018,White,1.5/2.4 m,"JH,TJ",8:20am,8:30am,NA,,271,2-Jun,S,S,2.1,Clear,
 4/18/2018,White,1.5/2.4 m,"KS,JH",8:20am,8:30am,1,,824,4.5/3,M,S,4.1,Clear,
-4/25/2018,White,1.5/2.4 m,"TJ,MC",8:20am,8:30am,3,,1020,6/4,S,S,3.9,Clear,
-6/6/2018,White,1.5/2.4 m,"JH,MC",8:20am,8:30am,NA,,1550,4/4,S,S,5.5,Clear,
+4/25/2018,White,1.5/2.4 m,"TJ,MC",8:20am,8:30am,3,,1020,4-Jun,S,S,3.9,Clear,
+6/6/2018,White,1.5/2.4 m,"JH,MC",8:20am,8:30am,NA,,1550,4-Apr,S,S,5.5,Clear,
 6/13/2018,White,1.5/2.4 m,"KS,JH",8:20am,8:30am,NA,,1090,4.25/4.5,S,S,6.2,Clear,
-7/10/2018,White,1.5/2.4 m,"JH,TJ",8:20am,8:30am,NA,,1280,4/3,S,S,9.8,Clear,
-7/11/2018,White,1.5/2.4 m,"JH,KS",8:20am,8:30am,NA,,1090,4/3,S,S,8,Clear,
-7/17/2018,White,1.5/2.4 m,"JH,TJ",8:20am,8:30am,NA,,1060,5/4,S,S,11,Clear,
+7/10/2018,White,1.5/2.4 m,"JH,TJ",8:20am,8:30am,NA,,1280,3-Apr,S,S,9.8,Clear,
+7/11/2018,White,1.5/2.4 m,"JH,KS",8:20am,8:30am,NA,,1090,3-Apr,S,S,8,Clear,
+7/17/2018,White,1.5/2.4 m,"JH,TJ",8:20am,8:30am,NA,,1060,4-May,S,S,11,Clear,
 8/1/2018,White,1.5/2.4 m,"JH,MC",8:20am,8:30am,NA,,523,6/3.5,S,S,13.6,Clear,
-8/11/2018,White,1.5/2.4 m,"KS,MC",8:20am,8:30am,NA,,369,6/3,S,S,13.4,Cloudy,
-11/7/2018,White,1.5/2.4 m,"JH,MC",8:20am,8:30am,1,,528,6/3,S,S,4.3,Clear,
+8/11/2018,White,1.5/2.4 m,"KS,MC",8:20am,8:30am,NA,,369,3-Jun,S,S,13.4,Cloudy,
+11/7/2018,White,1.5/2.4 m,"JH,MC",8:20am,8:30am,1,,528,3-Jun,S,S,4.3,Clear,
 11/11/2018,White,1.5/2.4 m,"JH,MC",8:20am,8:30am,4,,326,4/2.5,S,S,2.2,Clear,
 8/29/2012,White ,1.5 m,"BI, JH",8:20am,8:30am,NA,,302,7.25,Small,Small,10.5,Clear,
 10/7/2013,White ,1.5 m,"MWC,TJ",8:20AM,8:30AM,NA,,775,6,Small,Small,6.7,Clear,
@@ -5096,11 +5096,11 @@
 6/23/2010,White,1.5m,"BI, MWC",8:15am,8:30am,NA,,3070,6,Medium,Small,6.5,Cloudy,
 9/15/2010,White,1.5m,"MWC, BI",8:15am,8:30am,NA,,258,6.5,Small,Small,10.3,Cloudy,
 11/25/2015,White,1.5 m,"KS,MC",8:15am,8:30am,NA,,739,6,M,S,2.8,Clear,
-8/21/2017,White,1.5/2.4 m,"JH,TJ",8:15am,8:30am,20,,274,6/3,S,S,11.2,Clear,
-10/30/2017,White,1.5/2.4 m,"JH,AT",8:15am,8:30am,1,,584,6/2,M,S,4.6,Clear,
-11/1/2017,White,1.5/2.4 m,"AT,JH,KS",8:15am,8:30am,8,,472,6/3,M,S,5.2,Clear,
-8/17/2018,White,1.5/2.4 m,MC,8:15am,8:30am,NA,,251,6/4,S,S,12.2,Clear,
-11/5/2018,White,1.5/2.4 m,"JH,TJ",8:15am,8:30am,3,,776,5/3,L,M,6.4,Cloudy,
+8/21/2017,White,1.5/2.4 m,"JH,TJ",8:15am,8:30am,20,,274,3-Jun,S,S,11.2,Clear,
+10/30/2017,White,1.5/2.4 m,"JH,AT",8:15am,8:30am,1,,584,2-Jun,M,S,4.6,Clear,
+11/1/2017,White,1.5/2.4 m,"AT,JH,KS",8:15am,8:30am,8,,472,3-Jun,M,S,5.2,Clear,
+8/17/2018,White,1.5/2.4 m,MC,8:15am,8:30am,NA,,251,4-Jun,S,S,12.2,Clear,
+11/5/2018,White,1.5/2.4 m,"JH,TJ",8:15am,8:30am,3,,776,3-May,L,M,6.4,Cloudy,
 9/23/2009,White ,1.5m,"KE,MWC",8:15am,8:30am,1,,164,6,Small,Small,9.1,Clear,
 9/13/2012,White ,1.5 m,"DA,JH",8:15am,8:30am,1,,185,7,Small,Small,7,Clear,
 3/28/2013,White ,1.5 m,"BI,JH",8:15am,8:30am,NA,,419,6,Small,Small,3.2,N/A,Sockeye fry up
@@ -5139,7 +5139,7 @@
 7/15/2007,White,1.5m,TR,8:00am,8:30am,NA,,1690,8.5,Small,Small,10,Cloudy,
 6/19/2010,White,1.5m,"MWC, KO",8:00am,8:30am,NA,,2140,5.25,Small,Small,6,Cloudy,
 7/2/2010,White,1.5m,"MWC, BC",8:00am,8:30am,3,,1510,5.5,Small,Small,6.6,Cloudy,
-7/18/2018,White,1.5/2.4 m,"JH,MC",8:00am,8:30am,NA,,1030,4/3,S,S,11.2,Clear,
+7/18/2018,White,1.5/2.4 m,"JH,MC",8:00am,8:30am,NA,,1030,3-Apr,S,S,11.2,Clear,
 3/24/2013,White ,1.5 m,"MWC,BI",8:00am,8:30am,1,,450,6,Small,Small,2.3,N/A,
 8/29/2013,White ,1.5 m,"JH,KS",8:00AM,8:30AM,NA,,618,6.5,Small,Small,12.8,Clear,
 10/19/2013,White ,1.5 m,"JH,KS",8:00AM,8:30AM,8,,380,6.5,Small,Small,5,Clear,
@@ -5159,7 +5159,7 @@
 5/27/2018,Nason,1.5 m,"KS,MC",5:00am,8:25pm,2,,1130,10,S,S,6.1,Cloudy,
 5/5/2016,Nason,1.5 m,"JH,KS",4:30am,8:25pm,NA,,1390,8,S,S,6.2,Cloudy,
 11/9/2016,White,1.5 m,"BI,KS",Stopped ,8:25am,NA,,899,4.5,S,S,5.7,Clear,Stopped Log
-6/21/2018,White,1.5/2.4 m,"MC,TJ",Stopped ,8:25am,NA,,3110,4/4,S,S,6.8,Cloudy,
+6/21/2018,White,1.5/2.4 m,"MC,TJ",Stopped ,8:25am,NA,,3110,4-Apr,S,S,6.8,Cloudy,
 3/27/2010,White,1.5m,"NO, MWC",8:20am,8:25am,NA,,369,6,Small,Small,3.1,Clear,No fish. Cleaned trap box
 7/1/2017,Nason,1.5 m,"JH,BI",8:15am,8:25am,11,,397,7.25,S,S,11,Clear,
 3/29/2017,White,1.5 m,"JH,BI",8:15am,8:25am,1,,584,5.5,S,S,3,Clear,
@@ -5167,8 +5167,8 @@
 10/20/2014,White ,1.5 m,"JH,BH",8:15am,8:25am,NA,,505,6.5,Medium,Small,9,Cloudy,
 6/6/2016,Nason,1.5 m,"JH,BI",8:10am,8:25am,1,,802,10,S,M,9.8,Cloudy,
 7/12/2015,White,1.5 m,"KS, BI",8:10am,8:25am,NA,,355,6,S,S,12,Cloudy,
-10/29/2017,White,1.5/2.4 m,"JH,AT",8:10am,8:25am,2,,693,6/2,M,S,5.1,Clear,
-6/3/2018,White,1.5/2.4 m,"JH,KS",8:10am,8:25am,NA,,1850,4/4,S,S,6.2,Clear,
+10/29/2017,White,1.5/2.4 m,"JH,AT",8:10am,8:25am,2,,693,2-Jun,M,S,5.1,Clear,
+6/3/2018,White,1.5/2.4 m,"JH,KS",8:10am,8:25am,NA,,1850,4-Apr,S,S,6.2,Clear,
 6/10/2018,White,1.5/2.4 m,"JH,MC",8:10am,8:25am,NA,,1550,4/5.5,S,S,5.5,Cloudy,
 3/30/2013,White ,1.5 m,"MWC,JH",8:10am,8:25am,NA,,499,6,Small,Small,3.2,N/A,
 11/28/2016,White,1.5 m,"JH,TJ",8:05am,8:25am,NA,,535,4.5,S,S,3,Clear,
@@ -5189,10 +5189,10 @@
 5/30/2015,White,1.5 m,"KS,MC",Stopped ,8:20am,NA,,1920,4.5,M,S,7.8,Cloudy,
 9/12/2015,White,1.5 m,KS,Stopped ,8:20am,NA,,182,4.5,S,S,11.3,Clear,
 10/15/2017,White,1.5/2.4 m,"JH,BI",Stopped ,8:20am,NA,,89.3,4/Pulled,M,S,5.3,Clear,
-11/5/2017,White,1.5/2.4 m,"JH,AT",Stopped ,8:20am,NA,,332,6/3,M,S,3.6,Clear,Trap A stopped by log
-6/20/2018,White,1.5/2.4 m,"MC,TJ",Stopped ,8:20am,NA,,2960,4/4,S,S,6.9,Cloudy,
+11/5/2017,White,1.5/2.4 m,"JH,AT",Stopped ,8:20am,NA,,332,3-Jun,M,S,3.6,Clear,Trap A stopped by log
+6/20/2018,White,1.5/2.4 m,"MC,TJ",Stopped ,8:20am,NA,,2960,4-Apr,S,S,6.9,Cloudy,
 9/23/2018,White,1.5/2.4 m,"KS,TJ",Stopped ,8:20am,NA,,300,5/3.5,M,S,9.4,Cloudy,"Started Trap B, Trap A stopped due to log"
-8/5/2018,White,1.5/2.4 m,"JH,MC",8:15am,8:20am,2,,348,6/3,S,S,13.2,Clear,
+8/5/2018,White,1.5/2.4 m,"JH,MC",8:15am,8:20am,2,,348,3-Jun,S,S,13.2,Clear,
 10/11/2013,White ,1.5 m,"JH,KS",8:15AM,8:20AM,NA,,554,6.5,Small,Small,5.3,Clear,
 10/12/2013,White ,1.5 m,"JH,KS",8:15AM,8:20AM,NA,,508,7,Small,Small,5.8,Clear,No Fish
 6/7/2015,Nason,1.5 m,"KS,BI",8:10am,8:20am,4,,210,6,S,S,13.4,Clear,
@@ -5206,13 +5206,13 @@
 11/11/2015,White,1.5 m,"KS, MC",8:10am,8:20am,NA,,471,5.5,S,S,4,Clear,
 4/4/2017,White,1.5 m,"JH,BI",8:10am,8:20am,1,,671,5.5,S,S,2.9,Clear,
 8/8/2017,White,1.5 m,"JH,TJ",8:10am,8:20am,1,,488,6,S,S,12.2,Cloudy,
-8/28/2017,White,1.5/2.4 m,"JH,TJ",8:10am,8:20am,1,,257,5/3,S,S,11.8,Cloudy,
-6/5/2018,White,1.5/2.4 m,"JH,TJ",8:10am,8:20am,NA,,1630,4/4,S,S,5.7,Clear,
+8/28/2017,White,1.5/2.4 m,"JH,TJ",8:10am,8:20am,1,,257,3-May,S,S,11.8,Cloudy,
+6/5/2018,White,1.5/2.4 m,"JH,TJ",8:10am,8:20am,NA,,1630,4-Apr,S,S,5.7,Clear,
 6/12/2018,White,1.5/2.4 m,"JH,TJ",8:10am,8:20am,NA,,1090,4.25/4.5,S,S,5.5,Clear,
-6/19/2018,White,1.5/2.4 m,"JH,TJ",8:10am,8:20am,NA,,2530,4/4,S,S,7.1,Cloudy,
+6/19/2018,White,1.5/2.4 m,"JH,TJ",8:10am,8:20am,NA,,2530,4-Apr,S,S,7.1,Cloudy,
 7/2/2018,White,1.5/2.4 m,"JH,BI",8:10am,8:20am,1,,1170,4.25/4,S,S,7.3,Clear,
-8/7/2018,White,1.5/2.4 m,"JH,TJ",8:10am,8:20am,NA,,340,6/3,S,S,12.8,Clear,
-8/12/2018,White,1.5/2.4 m,"KS,JH",8:10am,8:20am,1,,312,6/3,S,S,12.3,Clear,
+8/7/2018,White,1.5/2.4 m,"JH,TJ",8:10am,8:20am,NA,,340,3-Jun,S,S,12.8,Clear,
+8/12/2018,White,1.5/2.4 m,"KS,JH",8:10am,8:20am,1,,312,3-Jun,S,S,12.3,Clear,
 11/12/2018,White,1.5/2.4 m,"JH,MC",8:10am,8:20am,6,,302,4/2.5,S,S,2.2,Clear,
 11/13/2018,White,1.5/2.4 m,"JH,AT",8:10am,8:20am,5,,283,4/2.5,S,S,1.9,Clear,
 6/9/2010,White,1.5m,"BI, MWC",8:05am,8:20am,NA,,2860,6,Medium,Small,6,Cloudy,
@@ -5228,7 +5228,7 @@
 11/9/2010,White,1.5m,"MC, BI",8:00am,8:20am,2,,620,6.5,Medium,Small,4.3,Clear,
 4/19/2015,White,1.5 m,"KS, BI",8:00am,8:20am,NA,,609,5.5,S,S,6.1,Clear,
 11/15/2015,White,1.5 m,"JH,BI",8:00am,8:20am,NA,,2230,6,L,S,4.8,Cloudy,
-8/20/2017,White,1.5/2.4 m,"JH,BI",8:00am,8:20am,1,,278,6/3,S,S,11.2,Clear,
+8/20/2017,White,1.5/2.4 m,"JH,BI",8:00am,8:20am,1,,278,3-Jun,S,S,11.2,Clear,
 3/27/2013,White ,1.5 m,"BI,JH",8:00am,8:20am,NA,,420,6,Small,Small,3.2,N/A,
 8/16/2013,White ,1.5 m,"JH,KS",8:00AM,8:20AM,1,,423,7,Small,Small,11.7,Clear,
 8/18/2013,White ,1.5 m,"BI,MWC",8:00AM,8:20AM,NA,,341,6.5,Small,Small,11.3,Cloudy,
@@ -5241,7 +5241,7 @@
 4/7/2014,White ,1.5 m,"JH,BI",8:05am,8:18am,NA,,672,7,Small,Small,3.9,Clear,
 4/24/2013,White ,1.5 m,"BI,JH",8:00am,8:18am,NA,,770,6,Small,Small,4,Clear,
 8/10/2014,White ,1.5 m,"JH,BI",7:50am,8:18am,NA,,397,8,Small,Small,11.9,Cloudy,
-7/9/2018,White,1.5/2.4 m,"JH,BI",8:10am,8:16am,NA,,1200,4/3,S,S,9.1,Clear,
+7/9/2018,White,1.5/2.4 m,"JH,BI",8:10am,8:16am,NA,,1200,3-Apr,S,S,9.1,Clear,
 5/8/2018,Nason,1.5 m,"JH,MC",Stopped ,8:15pm,9,,2050,11,L,L,5.1,Cloudy,Trap stopped at 3am
 5/8/2016,White,1.5 m,"KS,MC",5:45am,8:15pm,NA,,3810,4,M,S,6.5,Cloudy,
 5/6/2018,Nason,1.5 m,"MC,KS",4:30am,8:15pm,3,,1550,11,M,S,4.9,Cloudy,
@@ -5265,11 +5265,11 @@
 5/11/2006,Nason,1.5 m,"SB,RK",8:15am,8:15am,1,,510,N/A,N/A,N/A,5,Clear,
 4/5/2014,White ,1.5 m,"JH,MWC",8:15am,8:15am,3,,553,7.5,Small,Small,3.5,Clear,
 6/9/2015,Nason,1.5 m,"KS,BI",8:10am,8:15am,3,,194,6,S,S,14,Clear,
-8/15/2017,White,1.5/2.4 m,"TJ,JH",8:10am,8:15am,7,,316,6/4,S,S,10.5,Cloudy,
-8/13/2018,White,1.5/2.4 m,JH.TJ,8:10am,8:15am,1,,280,6/3,S,S,12.3,Clear,Raised Trap B to second notch.
+8/15/2017,White,1.5/2.4 m,"TJ,JH",8:10am,8:15am,7,,316,4-Jun,S,S,10.5,Cloudy,
+8/13/2018,White,1.5/2.4 m,JH.TJ,8:10am,8:15am,1,,280,3-Jun,S,S,12.3,Clear,Raised Trap B to second notch.
 8/11/2010,White,1.5m,"BI, MWC",8:05am,8:15am,1,,522,6,Small,Small,10.5,Cloudy,
 3/27/2017,White,1.5 m,"JH,BI",8:05am,8:15am,3,,532,6,S,S,3.4,Clear,
-6/24/2018,White,1.5/2.4 m,"JH,MC",8:05am,8:15am,NA,,2300,4/4,S,S,6.7,Cloudy,
+6/24/2018,White,1.5/2.4 m,"JH,MC",8:05am,8:15am,NA,,2300,4-Apr,S,S,6.7,Cloudy,
 9/25/2009,White ,1.5m,"MWC,NO",8:05am,8:15am,NA,,154,6,Small,Small,10.5,Cloudy,
 8/6/2014,White ,1.5 m,"JH,BI",8:05am,8:15am,NA,,552,8,Small,Small,13,Cloudy,
 7/4/2010,White,1.5m,"BI, BH",8:01am,8:15am,1,,1510,6,Medium,Small,N/A,Cloudy,
@@ -5283,12 +5283,12 @@
 10/29/2018,Nason,1.5 m,"JH,TJ",8:00am,8:15am,33,,138,3.25,M,M,5.3,Clear,
 5/31/2010,White,1.5m,"BI, KO",8:00am,8:15am,NA,,2090,5,Small,Small,5.4,Cloudy,Flows up
 8/7/2017,White,1.5 m,"JH,TJ",8:00am,8:15am,1,,515,6,S,S,12,Cloudy,
-8/14/2017,White,1.5/2.4 m,"TJ,JH",8:00am,8:15am,2,,368,6/4,S,S,10.5,Cloudy,
-4/17/2018,White,1.5/2.4 m,"JH,TJ",8:00am,8:15am,1,,897,4/3,M,S,3.8,Cloudy,
-7/3/2018,White,1.5/2.4 m,"JH,TJ",8:00am,8:15am,NA,,989,4/4,S,S,7,Clear,
+8/14/2017,White,1.5/2.4 m,"TJ,JH",8:00am,8:15am,2,,368,4-Jun,S,S,10.5,Cloudy,
+4/17/2018,White,1.5/2.4 m,"JH,TJ",8:00am,8:15am,1,,897,3-Apr,M,S,3.8,Cloudy,
+7/3/2018,White,1.5/2.4 m,"JH,TJ",8:00am,8:15am,NA,,989,4-Apr,S,S,7,Clear,
 7/7/2018,White,1.5/2.4 m,"KS,MC",8:00am,8:15am,1,,1420,4/3.5,M,S,8.6,Cloudy,
 7/31/2018,White,1.5/2.4 m,"JH,TJ",8:00am,8:15am,NA,,513,6/3.5,S,S,13.3,Clear,
-8/6/2018,White,1.5/2.4 m,"JH,MC",8:00am,8:15am,NA,,345,6/3,S,S,12.6,Clear,Raised Trap B to first notch.
+8/6/2018,White,1.5/2.4 m,"JH,MC",8:00am,8:15am,NA,,345,3-Jun,S,S,12.6,Clear,Raised Trap B to first notch.
 3/23/2014,White ,1.5 m,"JH,BI",8:00am,8:15am,3,,628,8,Small,Small,2.9,Clear,
 3/24/2014,White ,1.5 m,"JH, BI",8:00am,8:15am,2,,602,7,Small,Small,3,Clear,
 3/25/2014,White ,1.5 m,"JH,BI",8:00am,8:15am,3,,588,7,Small,Small,3.3,Clear,
@@ -5304,7 +5304,7 @@
 3/15/2015,White,1.5 m,"KS,BI",Stopped ,8:10am,3,,1360,5,S,S,3.4,Clear,Stopped due to debris
 5/26/2015,White,1.5 m,"BI, KS",Stopped ,8:10am,NA,,1420,5.5,S,S,5.9,Cloudy,Stopped due to tampering
 11/13/2015,White,1.5 m,"KS, MC",Stopped ,8:10am,1,,3100,6,S,S,3.5,Clear,Pulled at 5:45pm for high water
-8/14/2018,White,1.5/2.4 m,"JH,TJ",8:05am,8:10am,NA,,268,6/3,S,S,11.8,Clear,
+8/14/2018,White,1.5/2.4 m,"JH,TJ",8:05am,8:10am,NA,,268,3-Jun,S,S,11.8,Clear,
 6/23/2015,White,1.5 m,"KS,BI",8:00am ,8:10am,NA,,536,5.5,S,S,10.4,Cloudy,
 4/21/2017,Nason,1.5 m,"KS,MC",8:00am,8:10am,17,,550,8,S,S,4.2,Clear,
 3/1/2018,Nason,1.5 m,JH,8:00am,8:10am,NA,,194,4,S,S,1.8,Clear,Trap started for season
@@ -5321,14 +5321,14 @@
 4/2/2017,White,1.5 m,"JH,BI",8:00am,8:10am,1,,724,5,S,S,3.6,Clear,
 4/5/2017,White,1.5 m,"JH,BI",8:00am,8:10am,NA,,659,5.25,S,S,4,Clear,
 4/20/2018,White,1.5/2.4 m,"KS,MC",8:00am,8:10am,1,,759,4.5/3,S,S,4.1,Clear,
-6/18/2018,White,1.5/2.4 m,"JH,BI",8:00am,8:10am,NA,,2070,4/4,S,S,6.4,Cloudy,
-7/8/2018,White,1.5/2.4 m,"JH,MC",8:00am,8:10am,NA,,1150,4/3,S,S,7.9,Clear,
-7/16/2018,White,1.5/2.4 m,"BI,JH",8:00am,8:10am,NA,,1050,5/4,S,S,10.8,Clear,
-8/19/2018,White,1.5/2.4 m,"JH,MC",8:00am,8:10am,1,,256,6/4,S,S,12.2,Clear,
-8/20/2018,White,1.5/2.4 m,"JH,TJ",8:00am,8:10am,NA,,238,6/4,S,S,12.2,Clear,
-8/21/2018,White,1.5/2.4 m,"JH,TJ",8:00am,8:10am,1,,224,5/4,S,S,11.8,Clear,
-8/25/2018,White,1.5/2.4 m,"KS,JH",8:00am,8:10am,NA,,195,5/4,S,S,11.2,Clear,
-8/26/2018,White,1.5/2.4 m,"KS,JH",8:00am,8:10am,1,,176,5/4,S,S,10.6,Clear,
+6/18/2018,White,1.5/2.4 m,"JH,BI",8:00am,8:10am,NA,,2070,4-Apr,S,S,6.4,Cloudy,
+7/8/2018,White,1.5/2.4 m,"JH,MC",8:00am,8:10am,NA,,1150,3-Apr,S,S,7.9,Clear,
+7/16/2018,White,1.5/2.4 m,"BI,JH",8:00am,8:10am,NA,,1050,4-May,S,S,10.8,Clear,
+8/19/2018,White,1.5/2.4 m,"JH,MC",8:00am,8:10am,1,,256,4-Jun,S,S,12.2,Clear,
+8/20/2018,White,1.5/2.4 m,"JH,TJ",8:00am,8:10am,NA,,238,4-Jun,S,S,12.2,Clear,
+8/21/2018,White,1.5/2.4 m,"JH,TJ",8:00am,8:10am,1,,224,4-May,S,S,11.8,Clear,
+8/25/2018,White,1.5/2.4 m,"KS,JH",8:00am,8:10am,NA,,195,4-May,S,S,11.2,Clear,
+8/26/2018,White,1.5/2.4 m,"KS,JH",8:00am,8:10am,1,,176,4-May,S,S,10.6,Clear,
 8/27/2018,White,1.5/2.4 m,"TJ,JH",8:00am,8:10am,2,,185,5/3.5,S,S,9.8,Clear,
 10/10/2013,White ,1.5 m,"JH,KS",8:00AM,8:10AM,NA,,618,6.5,Small,Small,5.7,Clear,No Fish
 10/18/2015,White,1.5 m,"JH,BI",7:55am,8:10am,3,,175,5.5,M,S,8.3,Clear,
@@ -5347,18 +5347,18 @@
 4/9/2015,Nason,1.5 m,"KS,MC,JH",8:00am,8:05am,2,,297,6,S,S,4,Clear,
 3/31/2014,White ,1.5 m,"BI, KS",7:55am,8:05am,NA,,541,8,Small,Small,2.9,Clear,
 8/22/2010,White,1.5m,"MWC, BI",7:50am,8:05am,2,,303,5,Small,Small,11.3,Cloudy,
-6/4/2018,White,1.5/2.4 m,"JH,BI",7:50am,8:05am,NA,,1860,4/4,S,S,5.8,Clear,
-7/14/2018,White,1.5/2.4 m,"KS,JH",7:50am,8:05am,1,,1160,5/4,S,S,10.2,Cloudy,
+6/4/2018,White,1.5/2.4 m,"JH,BI",7:50am,8:05am,NA,,1860,4-Apr,S,S,5.8,Clear,
+7/14/2018,White,1.5/2.4 m,"KS,JH",7:50am,8:05am,1,,1160,4-May,S,S,10.2,Cloudy,
 5/5/2017,Nason,1.5 m,"KS,MC",Stopped ,8:00pm,1,,2300,11.5,L,M,4,Cloudy,"Stopped by Debris, Pulled for night."
 5/4/2016,White,1.5 m,"JH,KS",Stopped ,8:00pm,1,,3400,5,S,S,5.2,Cloudy,
-5/10/2018,White,1.5/2.4 m,"KS,JH",5:50am,8:00pm,NA,,4280,4/3,L,M,4.4,Cloudy,
+5/10/2018,White,1.5/2.4 m,"KS,JH",5:50am,8:00pm,NA,,4280,3-Apr,L,M,4.4,Cloudy,
 5/6/2016,White,1.5 m,"KS,MC",5:45am,8:00pm,NA,,3070,4.5,M,S,5.4,Cloudy,
 5/7/2016,White,1.5 m,"KS,MC",5:45am,8:00pm,1,,3540,4.5,M,S,5.6,Cloudy,
 5/26/2018,White,1.5/2.4 m,"KS,MC",5:45am,8:00pm,NA,,3530,5.5/4,S,S,6.5,Cloudy,
 4/22/2016,White,1.5 m,"JH,KS",5:30am,8:00pm,NA,,4240,4,L,S,4.2,Cloudy,
 4/23/2016,White,1.5 m,"KS,MC",5:30am,8:00pm,1,,3540,4,L,S,6,Cloudy,
 4/24/2016,White,1.5 m,"KS,MC",5:30am,8:00pm,NA,,2930,5,M,S,4.1,Cloudy,
-5/7/2018,White,1.5/2.4 m,"JH,MC",5:30am,8:00pm,NA,,4270,4/3,L,M,5,Cloudy,
+5/7/2018,White,1.5/2.4 m,"JH,MC",5:30am,8:00pm,NA,,4270,3-Apr,L,M,5,Cloudy,
 4/29/2010,Nason,1.5m,"NO, BI",5:10am,8:00pm,NA,,505,5.5,Small,Small,4.8,Clear,
 9/5/2006,Nason,1.5 m,"TR,MC",5:00am,8:00pm,NA,,39.7,0.75,Small,Small,13.5,Clear,
 5/17/2018,White,1.5/2.4 m,"KS,JH",5:00am,8:00pm,NA,,5310,4.25/Pulled,M,S,4.7,Cloudy,
@@ -5375,7 +5375,7 @@
 4/9/2018,Nason,1.5 m,"JH,BI",Stopped ,8:00am,9,,477,8.25,M,M,4.1,Cloudy,
 9/6/2010,White,1.5m,BI,Stopped ,8:00am,NA,,228,6,Small,Small,10,Cloudy,Trap stopped by log
 9/4/2016,White,1.5 m,"JH,BI",Stopped ,8:00am,NA,,152,4.5,S,S,9.2,Cloudy,
-9/3/2017,White,1.5/2.4 m,"JH,BI",Stopped ,8:00am,NA,,258,6/3,S,S,11.3,Cloudy,
+9/3/2017,White,1.5/2.4 m,"JH,BI",Stopped ,8:00am,NA,,258,3-Jun,S,S,11.3,Cloudy,
 10/8/2018,White,1.5/2.4 m,"JH,TJ",Stopped ,8:00am,NA,,117,3.5,S,S,7.2,Clear,Trap A stopped by stick
 8/30/2014,White ,1.5 m,"KS,MWC",Stopped ,8:00am,1,,282,8,Small,Small,11.3,Cloudy,
 5/7/2005,Nason,1.5 m,"SP,VG",N/A,8:00am,NA,,356,10,N/A,N/A,N/A,Clear,
@@ -5407,11 +5407,11 @@
 4/11/2015,Nason,1.5 m,"MC,JH",8:00am,8:00am,10,,298,6.5,S,S,4.4,Clear,
 4/24/2018,Nason,1.5 m,"JH,TJ",7:50am,8:00am,9,,435,9,S,S,4.1,Clear,
 8/6/2017,White,1.5 m,"KS,JH",7:50am,8:00am,2,,540,6,S,S,11.8,Cloudy,
-6/30/2018,White,1.5/2.4 m,"KS,MC",7:50am,8:00am,NA,,1150,6/4,S,S,7.4,Cloudy,
-7/4/2018,White,1.5/2.4 m,"JH,MC",7:50am,8:00am,1,,1060,4/4,S,S,8,Clear,
+6/30/2018,White,1.5/2.4 m,"KS,MC",7:50am,8:00am,NA,,1150,4-Jun,S,S,7.4,Cloudy,
+7/4/2018,White,1.5/2.4 m,"JH,MC",7:50am,8:00am,1,,1060,4-Apr,S,S,8,Clear,
 4/23/2018,Nason,1.5 m,"JH,BI",7:45am,8:00am,24,,417,8.5,S,S,4.2,Clear,
-8/13/2017,White,1.5/2.4 m,"JH,BI",7:45am,8:00am,1,,411,6/4,S,S,12.7,Cloudy,
-7/1/2018,White,1.5/2.4 m,"KS,TJ",7:45am,8:00am,NA,,1260,6/4,S,S,7.4,Cloudy,
+8/13/2017,White,1.5/2.4 m,"JH,BI",7:45am,8:00am,1,,411,4-Jun,S,S,12.7,Cloudy,
+7/1/2018,White,1.5/2.4 m,"KS,TJ",7:45am,8:00am,NA,,1260,4-Jun,S,S,7.4,Cloudy,
 8/24/2014,White ,1.5 m,"BI, JH",7:45am,8:00am,1,,300,8,Small,Small,11.5,Cloudy,
 4/19/2018,Nason,1.5 m,"KS,MC",7:40am,8:00am,24,,445,9,S,S,3.5,Clear,
 5/4/2005,Nason,1.5 m,"SP,CK",7:15am,8:00am,NA,,349,10,Medium,Small,6,Clear,
@@ -5441,24 +5441,24 @@
 4/28/2017,Nason,1.5 m,"KS,MC",7:40am,7:50am,11,,609,8,S,S,4,Cloudy,
 6/17/2018,Nason,1.5 m,"JH,KS",7:40am,7:50am,14,,487,8,S,S,8.8,Clear,
 7/15/2018,Nason,1.5 m,"JH,KS",7:40am,7:50am,9,,132,3.5,S,S,14.5,Clear,
-8/4/2018,White,1.5/2.4 m,"KS,MC",7:40am,7:50am,1,,352,6/3,S,S,11.2,Clear,
-5/27/2018,White,1.5/2.4 m,"KS,MC",5:45am,7:50am,NA,,2980,4/3,S,S,6.4,Cloudy,
-5/28/2018,White,1.5/2.4 m,"JH,MC",5:45am,7:50am,NA,,3170,4/3,S,S,5.8,Cloudy,
-5/29/2018,White,1.5/2.4 m,"JH,MC",5:40am,7:50am,NA,,2830,4/3,S,S,5.4,Cloudy,
-5/30/2018,White,1.5/2.4 m,"JH,TJ",5:40am,7:50am,NA,,2140,4/3,S,S,4.9,Clear,
+8/4/2018,White,1.5/2.4 m,"KS,MC",7:40am,7:50am,1,,352,3-Jun,S,S,11.2,Clear,
+5/27/2018,White,1.5/2.4 m,"KS,MC",5:45am,7:50am,NA,,2980,3-Apr,S,S,6.4,Cloudy,
+5/28/2018,White,1.5/2.4 m,"JH,MC",5:45am,7:50am,NA,,3170,3-Apr,S,S,5.8,Cloudy,
+5/29/2018,White,1.5/2.4 m,"JH,MC",5:40am,7:50am,NA,,2830,3-Apr,S,S,5.4,Cloudy,
+5/30/2018,White,1.5/2.4 m,"JH,TJ",5:40am,7:50am,NA,,2140,3-Apr,S,S,4.9,Clear,
 7/7/2011,Nason,1.5 m,"MC, MWC",7:34am,7:48am,2,,1480,10.5,Small,Small,8.3,Clear,Flows up
 4/20/2016,White,1.5 m,"JH,KS",Stopped ,7:45pm,NA,,3260,4,M,S,4.2,Cloudy,
 4/21/2016,White,1.5 m,"JH,KS",Stopped ,7:45pm,NA,,4110,4,L,S,3.9,Cloudy,
 3/26/2015,Nason,1.5 m,"KS,JH",6:00am,7:45pm,9,,535,8,S,S,4.5,Clear,
-5/20/2018,White,1.5/2.4 m,"KS,MC",6:00am,7:45pm,NA,,3420,4/3,S,S,5.8,Cloudy,
-5/9/2018,White,1.5/2.4 m,"JH,TJ",5:50am,7:45pm,NA,,5600,4/3,L,M,4.5,Cloudy,Trap B Pulled
-5/21/2018,White,1.5/2.4 m,"JH,MC",5:50am,7:45pm,NA,,3380,4/3,S,S,5.7,Cloudy,
-5/22/2018,White,1.5/2.4 m,"JH,MC",5:50am,7:45pm,NA,,3470,4/3,S,S,5.7,Cloudy,
-5/11/2018,White,1.5/2.4 m,"KS,BI",5:40am,7:45pm,NA,,3220,4/3,M,S,5.3,Cloudy,
-5/19/2018,White,1.5/2.4 m,"KS,MC",5:40am,7:45pm,NA,,3590,4/3,M,S,5.6,Cloudy,
-5/23/2018,White,1.5/2.4 m,"JH,TJ",5:30am,7:45pm,NA,,4020,4/3,S,S,5.8,Cloudy,
-5/18/2018,White,1.5/2.4 m,"KS,BI",5:25am,7:45pm,NA,,4300,4/3,M,S,5.1,Cloudy,
-5/25/2018,White,1.5/2.4 m,"KS,BI",5:25am,7:45pm,NA,,4130,4/3,M,S,6.5,Cloudy,
+5/20/2018,White,1.5/2.4 m,"KS,MC",6:00am,7:45pm,NA,,3420,3-Apr,S,S,5.8,Cloudy,
+5/9/2018,White,1.5/2.4 m,"JH,TJ",5:50am,7:45pm,NA,,5600,3-Apr,L,M,4.5,Cloudy,Trap B Pulled
+5/21/2018,White,1.5/2.4 m,"JH,MC",5:50am,7:45pm,NA,,3380,3-Apr,S,S,5.7,Cloudy,
+5/22/2018,White,1.5/2.4 m,"JH,MC",5:50am,7:45pm,NA,,3470,3-Apr,S,S,5.7,Cloudy,
+5/11/2018,White,1.5/2.4 m,"KS,BI",5:40am,7:45pm,NA,,3220,3-Apr,M,S,5.3,Cloudy,
+5/19/2018,White,1.5/2.4 m,"KS,MC",5:40am,7:45pm,NA,,3590,3-Apr,M,S,5.6,Cloudy,
+5/23/2018,White,1.5/2.4 m,"JH,TJ",5:30am,7:45pm,NA,,4020,3-Apr,S,S,5.8,Cloudy,
+5/18/2018,White,1.5/2.4 m,"KS,BI",5:25am,7:45pm,NA,,4300,3-Apr,M,S,5.1,Cloudy,
+5/25/2018,White,1.5/2.4 m,"KS,BI",5:25am,7:45pm,NA,,4130,3-Apr,M,S,6.5,Cloudy,
 5/8/2018,White,1.5/2.4 m,"JH,MC",5:20am,7:45pm,NA,,4450,3/Pulled,L,M,5.1,Cloudy,
 4/18/2016,Nason,1.5 m,"BI,MC",4:55am,7:45pm,4,,875,7,S,S,5.8,Cloudy,
 4/19/2016,Nason,1.5 m,"BI,MC",4:50am,7:45pm,1,,1140,7.5,S,S,5.8,Cloudy,
@@ -5514,7 +5514,7 @@
 5/3/2009,White ,2.4m,"KE,MC",6:45am,7:15am,3,2.4m trap,778,5.5,Medium,Small,4.4,Clear,
 5/4/2009,White ,2.4m,"NO,KE",6:45am,7:15am,NA,2.4m trap,818,6,Small,Small,4.5,Cloudy,
 5/2/2009,White ,2.4m,"MWC,KE ",6:45am,7:10am,NA,2.4m trap,757,5.5,Small,Small,4.9,Clear,
-6/17/2018,White,1.5/2.4 m,"KS,JH",6:55am,7:05am,NA,,1670,4/4,S,S,6.6,Clear,
+6/17/2018,White,1.5/2.4 m,"KS,JH",6:55am,7:05am,NA,,1670,4-Apr,S,S,6.6,Clear,
 8/23/2014,White ,1.5 m,"KS,JH",6:45am,7:05am,1,,308,8,Small,Small,10.6,Cloudy,
 7/4/2009,White ,2.4m,MWC,6:40am,7:05am,1,2.4m trap,1240,8,Small,Small,9.4,Cloudy,
 11/1/2015,Nason,1.5 m,"BI,MWC",Pulled ,7:00pm,NA,,1470,12.5,N/A,N/A,N/A,N/A,Trap Set
@@ -5522,11 +5522,11 @@
 4/26/2005,Nason,1.5 m,"SP,TB",6:00m,7:00pm,13,,508,10,Medium,Small,5,Cloudy,
 9/13/2013,White ,1.5 m,KS,8:07am,7:00am,NA,,328,6.5,Small,Small,12.3,Cloudy,
 7/28/2007,Nason,1.5 m,MC,8:00am,7:00am,2,,100,3.2,Small,Small,15,Clear,
-7/15/2018,White,1.5/2.4 m,"JH,KS",6:50am,7:00am,NA,,1080,5/4,S,S,10.2,Clear,
+7/15/2018,White,1.5/2.4 m,"JH,KS",6:50am,7:00am,NA,,1080,4-May,S,S,10.2,Clear,
 5/1/2009,White ,2.4m,"MWC,NO",6:45am,7:00am,1,2.4m trap,690,5.5,Small,Small,4.5,Clear,
 8/14/2014,White ,1.5 m,"JH, KS",6:40am,7:00am,NA,,723,8,Small,Small,12.9,Cloudy,
 5/15/2012,Nason,1.5 m,"EB, BI",5:00am,7:00am,NA,,1910,11,Large,Medium,4,Cloudy,
-02/28/15,Nason,1.5 m,BI,Pulled ,6:45pm,NA,,312,5,N/A,N/A,3.9,Clear,Trap started for season
+2/28/2015,Nason,1.5 m,BI,Pulled ,6:45pm,NA,,312,5,N/A,N/A,3.9,Clear,Trap started for season
 5/15/2008,Nason,1.5m,"KE, TR",4:00am,6:45am,2,,1640,7,Large,Small,4,Cloudy,
 4/30/2015,White,1.5 m,"JH,MC",6:25am,6:40am,1,,722,5.5,S,S,6,Clear,
 7/23/2010,White,1.5m,"MWC, MC",6:20am,6:40am,NA,,1250,5.5,Small,Small,8.6,Cloudy,No fish
@@ -5741,7 +5741,7 @@
 4/2/2016,Nason,1.5 m,"JH,MC",8:00am,2:30pm,12,,703,9.2,S,S,4.4,Cloudy,
 3/22/2005,Nason,1.5 m,SP,2:30pm,2:30pm,1,,163,6,Small,Small,3,Clear,
 6/13/2005,Nason,1.5 m,CS,2:30pm,2:30pm,4,,151,4,Small,Small,16,Clear,
-11/8/2017,White,1.5/2.4 m,"KS,MC",2:20pm,2:30pm,6,,278,6/2,S,S,3.1,Clear,
+11/8/2017,White,1.5/2.4 m,"KS,MC",2:20pm,2:30pm,6,,278,2-Jun,S,S,3.1,Clear,
 3/2/2010,Nason,1.5m,"NO, MWC",2:15pm,2:30pm,1,,168,4.5,Small,Small,N/A,Clear,
 9/17/2013,White ,1.5 m,MWC,2:10PM,2:30PM,NA,,302,6.75,Small,Small,12.2,Cloudy,
 11/3/2008,White,1.5m,"KE, TR",2:05pm,2:30pm,1,,289,6.5,Small,Small,6.1,Clear,
@@ -6178,7 +6178,7 @@
 4/21/2012,Nason,1.5 m,"MWC, EB",9:15am,11:20am,32,,675,9.5,Medium,Medium,4.4,Cloudy,
 10/23/2007,White,1.5m,MC,11:15am,11:20am,NA,,569,8,Small,Small,5.5,Clear,
 3/9/2016,Nason,1.5 m,"JH,KS,MC",11:10am,11:20am,2,,255,8,S,S,3.3,Cloudy,
-8/23/2018,White,1.5/2.4 m,"KS,MC",11:10am,11:20am,NA,,228,5/4,S,S,12.3,Clear,
+8/23/2018,White,1.5/2.4 m,"KS,MC",11:10am,11:20am,NA,,228,4-May,S,S,12.3,Clear,
 3/10/2013,Nason,1.5 m,"JH,EB",11:00AM,11:20AM,11,,197,5,Small,Small,4.2,Clear,
 11/16/2009,White ,1.5m,"NO,KE",11:00am,11:20am,11,,338,N/A,Small,Small,0.7,Clear,
 11/12/2010,Nason,1.5m,"NO, MWC",10:50am,11:20am,40,,149,6,Small,Small,3.9,Clear,
@@ -6217,7 +6217,7 @@
 11/28/2009,Nason,1.5m,"MWC,BI",11:00am,11:15am,26,,267,N/A,Small,Small,3.8,Clear,
 4/2/2014,Nason,1.5 m,"KS,MWC",11:00am,11:15am,41,,372,8,Small,Small,3.5,Clear,
 3/22/2010,White,1.5m,"BI, BH",11:00am,11:15am,3,,320,6,Small,Small,4.5,Clear,"Used ""catfish"""
-11/12/2017,White,1.5/2.4 m,"JH,AT",11:00am,11:15am,4,,247,6/2,S,S,4,Clear,
+11/12/2017,White,1.5/2.4 m,"JH,AT",11:00am,11:15am,4,,247,2-Jun,S,S,4,Clear,
 9/27/2009,White ,1.5m,KE,11:00am,11:15am,5,,140,6,Medium,Small,9.3,Clear,
 10/15/2009,White ,1.5m,"NO,MWC",11:00am,11:15am,6,,120,4,Small,Small,5.5,Clear,
 11/26/2012,White ,1.5 m,BI,11:00AM,11:15AM,NA,,307,6.5,Small,Small,1.6,Clear,
@@ -6253,7 +6253,7 @@
 6/25/2011,Nason,1.5 m,"EB, MWC, MT",9:50am,11:10am,3,,1270,11,Small,Small,6.9,Cloudy,
 6/9/2018,Nason,1.5 m,"KS,MC",11:00am,11:10am,3,,632,10,S,S,8,Clear,
 11/4/2017,White,1.5/2.4 m,"KS,MC",11:00am,11:10am,8,,355,6/2.5,S,S,3.8,Clear,
-8/10/2018,White,1.5/2.4 m,"KS,MC",11:00am,11:10am,1,,388,6/3,S,S,13.9,Cloudy,
+8/10/2018,White,1.5/2.4 m,"KS,MC",11:00am,11:10am,1,,388,3-Jun,S,S,13.9,Cloudy,
 3/25/2010,Nason,1.5m,"BI, MWC",10:50am,11:10am,1,,200,5,Small,Small,5.1,Clear,
 4/7/2010,Nason,1.5m,"BI, MWC, NO",10:50am,11:10am,10,,189,5,Small,Small,5,Clear,
 7/22/2009,White ,2.4m,"NO,KE",10:45am,11:10am,1,,629,4,Small,Small,13.5,Cloudy,Switch to 1.5m trap
@@ -6435,7 +6435,7 @@
 7/13/2018,Nason,1.5 m,"KS,MC",10:30am,10:50am,10,,150,3.5,S,S,13.9,Clear,
 11/27/2008,White,1.5m,TR,10:30am,10:50am,4,,429,5.5,Small,Small,2,Clear,
 3/13/2013,Nason,1.5 m,EB,10:20AM,10:50AM,18,,392,5.5,Medium,Medium,3.5,Cloudy,Water up
-6/1/2018,White,1.5/2.4 m,"KS,MC",10:15am,10:50am,4,,1640,4/4,S,S,6.7,Clear,
+6/1/2018,White,1.5/2.4 m,"KS,MC",10:15am,10:50am,4,,1640,4-Apr,S,S,6.7,Clear,
 11/11/2009,Nason,1.5m,"BI,MWC",10:00am,10:50am,6,,208,4.5,Small,Small,4,Clear,
 7/14/2010,Nason,1.5m,"MWC, KO",10:00am,10:50am,29,,295,6,Small,Small,11,Clear,
 5/6/2012,Nason,1.5 m,"MWC, EB",10:00am,10:50am,1,,784,9.5,Small,Small,4.7,Clear,
@@ -6517,7 +6517,7 @@
 11/28/2013,White ,1.5 m,BI,10:33am,10:40am,5,,323,6,Small,Small,1.5,Clear,
 3/25/2017,Nason,1.5 m,"KS,MC",10:30am,10:40am,3,,381,6,S,S,3.3,Clear,
 5/1/2008,White,2.4m,"KE, MWC",10:30am,10:40am,1,,593,6,Small,Small,3,Clear,
-8/18/2018,White,1.5/2.4 m,"MC,KS",10:30am,10:40am,NA,,260,6/4,S,S,13.2,Clear,
+8/18/2018,White,1.5/2.4 m,"MC,KS",10:30am,10:40am,NA,,260,4-Jun,S,S,13.2,Clear,
 3/19/2010,Nason,1.5m,"MC, MWC",10:20am,10:40am,2,,167,4,Small,Small,3.1,Clear,
 3/28/2010,Nason,1.5m,"BI, MC",10:20am,10:40am,9,,207,5,Small,Small,4.9,Clear,
 7/11/2008,Nason,1.5m,"MWC, TR",10:15am,10:40am,9,,534,7,Large,Small,7.5,Clear,
@@ -6533,7 +6533,7 @@
 11/6/2012,Nason,1.5 m,JH/BI,9:15AM,10:37AM,48,,396,10,Small,Medium,5.6,Clear,
 7/30/2007,Nason,1.5 m,MWC,N/A,10:35pm,1,,93.4,2.25,Small,Small,16,Clear,
 8/10/2007,White,1.5m,"CS,LSKE",10:00am,10:35pm,NA,,336,3,Small,Small,10.5,Cloudy,
-11/26/2017,White,1.5/2.4 m,"JH,AT",Stopped ,10:35am,NA,,1930,4/2,L,S,3.8,Cloudy,
+11/26/2017,White,1.5/2.4 m,"JH,AT",Stopped ,10:35am,NA,,1930,2-Apr,L,S,3.8,Cloudy,
 4/9/2011,Nason,1.5 m,"NO, MWC",9:40am,10:35am,14,,463,7,Small,Small,3.9,Clear,
 11/13/2010,Nason,1.5m,"MWC, AH",9:30am,10:35am,51,,140,6,Small,Small,3.5,Clear,
 3/31/2010,White,1.5m,"BI, MWC",9:30am,10:35am,5,,392,6,Small,Small,3.8,Clear,
@@ -6632,7 +6632,7 @@
 4/30/2014,Nason,1.5 m,"KS,MWC",10:20am,10:30am,5,,551,8,Small,Small,4.6,Clear,
 7/12/2018,Nason,1.5 m,"KS,MC",10:20am,10:30am,8,,158,4,S,S,13.6,Clear,
 3/24/2017,White,1.5 m,"KS,MC",10:20am,10:30am,3,,600,5,S,S,3,Clear,
-8/2/2018,White,1.5/2.4 m,"KS,MC",10:20am,10:30am,NA,,444,6/3,S,S,12.4,Clear,
+8/2/2018,White,1.5/2.4 m,"KS,MC",10:20am,10:30am,NA,,444,3-Jun,S,S,12.4,Clear,
 6/19/2008,Nason,1.5m,"KE, TR",10:15am,10:30am,5,,1100,9,Medium,Small,6,Clear,
 3/16/2013,Nason,1.5 m,"JH,EB",10:15AM,10:30AM,18,,683,7,Large,Medium,3.2,Cloudy,Water up
 3/5/2014,Nason,1.5 m,CK,10:15am,10:30am,NA,,181,7,Large,Small,1,Clear,Box full of ice-some slush
@@ -6853,8 +6853,8 @@
 6/14/2018,Nason,1.5 m,"KS,MC",10:00am,10:10am,19,,487,8,S,S,8,Clear,
 8/26/2008,White,1.5m,"BH, LS",10:00am,10:10am,NA,,321,7,Small,Small,10.1,Cloudy,
 9/30/2010,White,1.5m,"MWC, NO",10:00am,10:10am,NA,,390,6,Medium,Medium,7.7,Cloudy,
-7/13/2018,White,1.5/2.4 m,"KS,MC",10:00am,10:10am,NA,,1190,4/3,S,S,9.9,Cloudy,
-8/3/2018,White,1.5/2.4 m,"KS,MC",10:00am,10:10am,1,,385,6/3,S,S,12.1,Clear,
+7/13/2018,White,1.5/2.4 m,"KS,MC",10:00am,10:10am,NA,,1190,3-Apr,S,S,9.9,Cloudy,
+8/3/2018,White,1.5/2.4 m,"KS,MC",10:00am,10:10am,1,,385,3-Jun,S,S,12.1,Clear,
 3/25/2006,Nason,1.5 m,"MW,SB",N/A,10:09am,NA,,138,6,Small,Small,2.5,Cloudy,
 11/6/2009,White ,1.5m,"MC,MWC",9:45am,10:09am,3,,567,7,Small,Small,4.5,Clear,
 4/29/2012,Nason,1.5 m,"EB, MC",9:00am,10:09am,NA,,1270,10,Medium,Medium,4.5,Cloudy,
@@ -6918,8 +6918,8 @@
 3/31/2017,Nason,1.5 m,"KS,MC",9:50am,10:00am,6,,484,7.5,S,S,3,Cloudy,
 4/1/2017,Nason,1.5 m,"KS,MC",9:50am,10:00am,7,,485,7,S,S,4.2,Clear,
 11/29/2017,Nason,1.5 m,"KS,MC",9:50am,10:00am,34,,453,8,S,S,2.9,Clear,
-6/7/2018,White,1.5/2.4 m,"KS,MC",9:50am,10:00am,1,,1770,4/4,S,S,6.3,Clear,
-6/16/2018,White,1.5/2.4 m,"KS,MC",9:50am,10:00am,1,,1400,4/4,S,S,6.4,Clear,
+6/7/2018,White,1.5/2.4 m,"KS,MC",9:50am,10:00am,1,,1770,4-Apr,S,S,6.3,Clear,
+6/16/2018,White,1.5/2.4 m,"KS,MC",9:50am,10:00am,1,,1400,4-Apr,S,S,6.4,Clear,
 11/23/2009,Nason,1.5m,"NO,KE,BI",9:45am,10:00am,20,,171,4.5,Small,Small,3,Clear,
 4/22/2015,Nason,1.5 m,"MC,JH",9:45am,10:00am,1,,409,7.5,S,S,5.7,Clear,
 3/14/2016,Nason,1.5 m,"BI,JH",9:45am,10:00am,2,,452,8,S,S,2.4,Cloudy,
@@ -6968,9 +6968,9 @@
 11/6/2008,White,1.5m,"KE, TR",9:30am,10:00am,3,,256,5,Small,Small,3.1,Clear,
 3/20/2010,White,1.5m,"MC, MWC",9:30am,10:00am,6,,284,5.5,Small,Small,2,Clear,E.T.-21 fish
 8/5/2017,White,1.5 m,"KS,MC",9:30am,10:00am,NA,,570,6,S,S,11.4,Cloudy,Removed debris chain
-11/8/2018,White,1.5/2.4 m,"KS,MC",9:30am,10:00am,9,,445,6/3,S,S,3,Clear,
-11/9/2018,White,1.5/2.4 m,"KS,MC",9:30am,10:00am,5,,405,6/3,S,S,3.6,Clear,
-11/10/2018,White,1.5/2.4 m,"KS,MC",9:30am,10:00am,7,,364,6/3,S,S,2.4,Clear,
+11/8/2018,White,1.5/2.4 m,"KS,MC",9:30am,10:00am,9,,445,3-Jun,S,S,3,Clear,
+11/9/2018,White,1.5/2.4 m,"KS,MC",9:30am,10:00am,5,,405,3-Jun,S,S,3.6,Clear,
+11/10/2018,White,1.5/2.4 m,"KS,MC",9:30am,10:00am,7,,364,3-Jun,S,S,2.4,Clear,
 6/16/2009,White ,2.4m,N/A,9:30am,10:00am,NA,2.4m trap,2330,N/A,N/A,N/A,N/A,N/A,
 11/24/2009,White ,1.5m,"KE,BI,MWC",9:30am,10:00am,6,,346,8,Small,Small,3.5,Clear,
 4/25/2011,White ,1.5 m,"BI, NO, EB",9:30am,10:00am,6,,482,6,Small,Small,4,Clear,

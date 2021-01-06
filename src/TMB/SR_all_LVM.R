@@ -9,13 +9,40 @@ library(TMBhelper)
 library(readxl)
 
 
+
+##  Analysis of screw trap data to estimate daily juvenile emigrants ##
+
+#fit/load model
+source(here("src","ST_all.R"))
+ST_all<-ST_all_func()
+
+# load functions to calculate geometric means of dialy emigrants and plot
+source(here("src","ST_plotting_funcs.R"))
+
+#plot average daily emigrants and LHP breaks
+# png(file=here("results","plots","temp_dis.png"),units="in",width = 6,height=4,res=300)
+with(ST_all,ggplot_timing_func(all_emigrants_estimates,all_data_lists,across_stream_geomean,mix_geomean_dens,breaks))
+# dev.off()
+
+
+#plot average daily temperature and discharge
+# png(file=here("results","plots","temp_dis.png"),units="in",width = 4.5,height=3,res=300)
+with(ST_all,plot_dis_temp_func(all_data_lists))
+# dev.off()
+
+rm(list=ls()[which(ls()!="ST_all")])#remove all all teh functions used for screw trap model
+
+
+#----------------------------------------------------------------------------
+##  Analysis of screw trap data to estimate daily juvenile emigrants ##
+
 ##   Load data ##
 {
   #read redd data from Hatchery program annual report (Hillman et al 2020)
   redds<-read_csv(here("data","redd_counts.csv")) %>% pivot_longer(c("Chiwawa","Nason","White"),"stream",values_to="redds") 
   
-  #load emigrant abundance posteriors from screw trap model
-  load(here("results","Rdata","emigrant_estimates Nov 12 2020.Rdata"))
+  ##emigrant abundance estiamtes (log means  emigra emigrascrew trapabunel
+  all_emigrants_estimates<-ST_all$all_emigrants_estimates; rm("ST_all")eriors from screw trap model
   
   #load stream flow covariate values (flow_covs)
   source(here("src","covariates.r"))
@@ -43,7 +70,6 @@ source(here("src","SR_helper_functions.R"))
  setwd(here("src","TMB"))
  TMB::compile("Stock_recruit_LVM.cpp")
  dyn.load(dynlib("Stock_recruit_LVM"))
- 
  
  
  #--------------------------------------------------------------------- 
@@ -139,8 +165,9 @@ dredge_ff
 # matrix of all combinations, where all streams within a given juvenile life histories have same functional form
 mod_mat<-expand.grid(fry=mods,sum=mods,fall=mods,spring=mods)
 
- if(file.exists(here("dredge_mat.Rdata"))){
-   load(file=here("dredge_mat.Rdata"))             #load previous presults
+ if(length(list.files(here("results"))[substr(list.files(here("results")),1,18)=="dredge_mat"])>0){
+   
+   load(file=here("results",list.files(here("results"))[substr(list.files(here("results")),1,10)=="dredge_mat"][which.max(lubridate::mdy(substr(list.files(here("results"))[substr(list.files(here("results")),1,10)=="dredge_mat"],12,22)))]))             #load previous presults
  }else{
 
   library(foreach)
@@ -152,7 +179,7 @@ mod_mat<-expand.grid(fry=mods,sum=mods,fall=mods,spring=mods)
  registerDoParallel(cl)
  
  system.time(
-   dredge_mat4<-foreach(i = iter(1:nrow(mod_mat),chunksize=nrow(mod_mat)/ncores),.packages=c('TMB','tidyverse','here'),.combine='rbind',.multicombine=TRUE,.inorder=FALSE) %dopar%{
+   dredge_mat2<-foreach(i = iter(1:nrow(mod_mat),chunksize=nrow(mod_mat)/ncores),.packages=c('TMB','tidyverse','here'),.combine='rbind',.multicombine=TRUE,.inorder=FALSE) %dopar%{
      
      
      #load TMB model
@@ -163,7 +190,7 @@ mod_mat<-expand.grid(fry=mods,sum=mods,fall=mods,spring=mods)
      out<-rep(NA,10)
      out[1:4]<-as.numeric(mod_mat[i,])  # save functional form combination in output array
      #attempt fitting 2 times. Throws errors when doesn't converge for one reason or another
-     fit_mod_result<-fit_mod_iter(rep(as.numeric(mod_mat[i,]),3),streams =0:2,LHs=1:4,n_f=1,no_rand_FF = 0, fit_env = 0, fit_attempts=5,additional_attempts = 25)   
+     fit_mod_result<-fit_mod_iter(rep(as.numeric(mod_mat[i,]),3),streams =0:2,LHs=1:4,n_f=1,no_rand_FF = 0, fit_env = 0, fit_attempts=10,additional_attempts = 20)   
       
      
      # save best BIC of model
@@ -178,34 +205,30 @@ mod_mat<-expand.grid(fry=mods,sum=mods,fall=mods,spring=mods)
  
   
  
- stopCluster(cl) #shut down parallel computing clusters
+  stopCluster(cl) #shut down parallel computing clusters
  unregister <- function() {
    env <- foreach:::.foreachGlobals
    rm(list=ls(name=env), pos=env)
  }
  unregister()
  
- # dredge_mat2<-dredge_mat
- save(dredge_mat2,file=here("dredge_mat1-3-20.Rdata"))  #save results
- load(here("dredge_mat1-3-20.Rdata"))
  
  #save result table as R object 
-save(dredge_mat,file=here("dredge_mat.Rdata"))  #save results
+save(dredge_mat,file=here("results",paste0("dredge_mat",substr(date(),4,10),substr(date(),20,25),".Rdata")))  #save results
 }
 
 
 
-sum(dredge_mat4[,5]==Inf) #number of models out of 256 that didn't converged
-
+sum(dredge_mat[,5]==Inf) #number of models out of 256 that didn't converged
 
 #best 20 models
-top_20_dredge<-as.data.frame(head(dredge_mat4[order(dredge_mat4[,5]),c(1:5,7:8)],20)) # grab 20 best models and sort by BIC
+top_20_dredge<-as.data.frame(head(dredge_mat2[order(dredge_mat2[,5]),c(1:5,7:8)],20)) # grab 20 best models and sort by BIC
 colnames(top_20_dredge)<-c("Fry","Summer","Fall","Smolts","BIC","Fixed effects","Random effects") # rename columns
 top_20_dredge$Delta_BIC<-round(top_20_dredge$BIC-min(top_20_dredge$BIC),3) #calculate delta BIC
 for (i in 1:4)top_20_dredge[,i]<-c("BH II","BH","Power","linear")[top_20_dredge[,i]] # give functional forms meaningful names
 
 #write results to csv file
-# write.csv(top_20_dredge,here("results","dredge_1-4-2020.csv")) # write. csv of top 20 table
+# write.csv(top_20_dredge,here("results","dredge_1-5-2020.csv")) # write. csv of top 20 table
 
 #---------------------------------------------------------------------
 

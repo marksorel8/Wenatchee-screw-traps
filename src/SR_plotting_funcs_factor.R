@@ -45,7 +45,7 @@ ggplot_spawner_juveniles<-function(mod_fit , mod_dat, mod_rep){
       
       
       alpha<-mod_rep$alpha[i]
-      R_max<-mod_rep$Jmax[i]
+      Jmax<-mod_rep$Jmax[i]
       S_hat<-seq(0,x_max,.2)
       fifty<-mod_rep$gamma[i]
       
@@ -57,7 +57,7 @@ ggplot_spawner_juveniles<-function(mod_fit , mod_dat, mod_rep){
       } else{if(mod[i]==2){
         #Beverton Holt 
         mod_pred<-  (alpha*(S_hat))/
-          (1+alpha*(S_hat)/R_max)
+          (1+alpha*(S_hat)/Jmax)
       } else{if(mod[i]==3){
         
         #power
@@ -237,7 +237,7 @@ return(list(sum_out=sum_out,preds=preds))
 ## returna a plot
 #----------------------------------------------------------------------------------------
 
-plot_cor<-function(mod_rep,mod_fit, mod_dat){
+plot_cor<-function(mod_rep,mod_fit, mod_dat,nsim=100000){
 
 lh_s_names<-paste(rep(c("Fry","Summ.","Fall","Smolt"),times=3),rep(c("Chiw.","Nason","White"),each=4),sep=" ")
 loadings2<-cbind(mod_rep$Loadings_pf,diag(mod_rep$sigma_eta))
@@ -246,7 +246,7 @@ cor_mat<-cov2cor( loadings2%*%t(loadings2))
 dimnames(cor_mat)<-list(lh_s_names,lh_s_names)
 
 
-bootstrap_corr<-function(mle=mod_fit$par,cov_mat=mod_fit$SD$cov.fixed,nsim=100000,n_f=mod_dat$n_f,n_sl=mod_dat$n_sl){
+bootstrap_corr<-function(mle=mod_fit$par,cov_mat=mod_fit$SD$cov.fixed,n_f=mod_dat$n_f,n_sl=mod_dat$n_sl){
   
   #empty array to hold bootstrapped correlation matrices  
   corr_array<-array(NA,dim=c(n_sl,n_sl,nsim))  
@@ -283,8 +283,7 @@ bootstrap_corr<-function(mle=mod_fit$par,cov_mat=mod_fit$SD$cov.fixed,nsim=10000
 
 corr_boot<-bootstrap_corr()
 
-p_corr<-apply(corr_boot,1:2,function(x){sum(sign(x)==-1)/100000})*sign(cor_mat)+as.numeric(sign(cor_mat)==-1)
-
+p_corr<-apply(corr_boot,1:2,function(x){sum(sign(x)<=0)/nsim})*sign(cor_mat)+as.numeric(sign(cor_mat)<=0)
 
 corrplot::corrplot(cor_mat,type="lower",method = "circle",
                    p.mat =p_corr*2,  insig = "p-value", sig.level = -.05,mar=c(0,0,0,0),oma=c(0,0,0,0),tl.cex=1.5,tl.col="black",cl.cex=1.5,tl.srt=45)
