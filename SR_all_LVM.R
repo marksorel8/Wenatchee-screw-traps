@@ -220,6 +220,9 @@ mod_mat<-expand.grid(fry=mods,sum=mods,fall=mods,spring=mods)
  
  #save result table as R object 
 save(dredge_mat,file=here("results",paste0("dredge_mat",substr(date(),4,10),substr(date(),20,25),".Rdata")))  #save results
+# and .csv
+write.csv(dredge_mat,here("results",paste0("dredge_mat",substr(date(),4,10),substr(date(),20,25),".csv"))) # write. csv of top 20 table
+
 }
 
 sum(dredge_mat[,5]==Inf) #number of models out of 256 that didn't converged
