@@ -11,16 +11,17 @@ library(readxl)
 
 
 ##  Analysis of screw trap data to estimate daily juvenile emigrants ##
+refit<-FALSE # whether to refit models rather that loading existing fitted model objects if they exist
 
 #fit/load model
 source(here("src","ST_all.R"))
-ST_all<-ST_all_func()
+ST_all<-ST_all_func(refit=refit)
 
 # load functions to calculate geometric means of dialy emigrants and plot
 source(here("src","ST_plotting_funcs.R"))
 
 #plot average daily emigrants and LHP breaks
-# png(file=here("results","plots","temp_dis.png"),units="in",width = 6,height=4,res=300)
+# png(file=here("results","plots","emigration_timing.png"),units="in",width = 6,height=4,res=300)
 with(ST_all,ggplot_timing_func(all_emigrants_estimates,all_data_lists,across_stream_geomean,mix_geomean_dens,breaks))
 # dev.off()
 
@@ -41,8 +42,8 @@ rm(list=ls()[which(ls()!="ST_all")])#remove all all teh functions used for screw
   #read redd data from Hatchery program annual report (Hillman et al 2020)
   redds<-read_csv(here("data","redd_counts.csv")) %>% pivot_longer(c("Chiwawa","Nason","White"),"stream",values_to="redds") 
   
-  ##emigrant abundance estiamtes (log means  emigra emigrascrew trapabunel
-  all_emigrants_estimates<-ST_all$all_emigrants_estimates; rm("ST_all")eriors from screw trap model
+  ##emigrant abundance estiamtes (log means and standard deviations from screw trap model)
+  all_emigrants_estimates<-ST_all$all_emigrants_estimates; rm("ST_all")
   
   #load stream flow covariate values (flow_covs)
   source(here("src","covariates.r"))
@@ -116,8 +117,8 @@ dredge_indivudal
  fit_mod_result$BIC_vec # BICs of fit attempts
  
  # plot of latent and expected juveniles vs spawners 
- ##png(file=here("results","plots","spawn_em_ind_14020.png"),units="in",height=5,width=6.5,res=300)
- dev.new() 
+ ##png(file=here("results","plots","spawn_em_ind_16020.png"),units="in",height=5,width=6.5,res=300)
+ # dev.new() 
  spawn_em<-ggplot_spawner_juveniles(mod_fit = fit_mod_result$fit,mod_dat =fit_mod_result$dat,mod_rep=fit_mod_result$report)
  ## dev.off()
  
@@ -165,7 +166,11 @@ dredge_ff
 # matrix of all combinations, where all streams within a given juvenile life histories have same functional form
 mod_mat<-expand.grid(fry=mods,sum=mods,fall=mods,spring=mods)
 
- if(length(list.files(here("results"))[substr(list.files(here("results")),1,18)=="dredge_mat"])>0){
+ if(!refit & length(list.files(here("results"))[substr(list.files(here("results")),1,10)=="dredge_mat"])>0){
+   
+   last_file_name<-list.files(here("results"))[substr(list.files(here("results")),1,10)=="dredge_mat"][which.max(lubridate::mdy(substr(list.files(here("results"))[substr(list.files(here("results")),1,10)=="dredge_mat"],12,22)))]
+   
+   print(paste("Loading file:",last_file_name))
    
    load(file=here("results",list.files(here("results"))[substr(list.files(here("results")),1,10)=="dredge_mat"][which.max(lubridate::mdy(substr(list.files(here("results"))[substr(list.files(here("results")),1,10)=="dredge_mat"],12,22)))]))             #load previous presults
  }else{
@@ -217,18 +222,16 @@ mod_mat<-expand.grid(fry=mods,sum=mods,fall=mods,spring=mods)
 save(dredge_mat,file=here("results",paste0("dredge_mat",substr(date(),4,10),substr(date(),20,25),".Rdata")))  #save results
 }
 
-
-
 sum(dredge_mat[,5]==Inf) #number of models out of 256 that didn't converged
 
 #best 20 models
-top_20_dredge<-as.data.frame(head(dredge_mat2[order(dredge_mat2[,5]),c(1:5,7:8)],20)) # grab 20 best models and sort by BIC
+top_20_dredge<-as.data.frame(head(dredge_mat[order(dredge_mat[,5]),c(1:5,7:8)],20)) # grab 20 best models and sort by BIC
 colnames(top_20_dredge)<-c("Fry","Summer","Fall","Smolts","BIC","Fixed effects","Random effects") # rename columns
 top_20_dredge$Delta_BIC<-round(top_20_dredge$BIC-min(top_20_dredge$BIC),3) #calculate delta BIC
 for (i in 1:4)top_20_dredge[,i]<-c("BH II","BH","Power","linear")[top_20_dredge[,i]] # give functional forms meaningful names
 
 #write results to csv file
-# write.csv(top_20_dredge,here("results","dredge_1-5-2020.csv")) # write. csv of top 20 table
+# write.csv(top_20_dredge,here("results","dredge_1-6-2020.csv")) # write. csv of top 20 table
 
 #---------------------------------------------------------------------
 
@@ -251,7 +254,7 @@ fit_mod_result$BIC_vec # BICs of fit attempts
   
   
   # plot of latent and expected juveniles vs spawners 
-  ##png(file=here("results","plots","spawn_em_123020.png"),units="in",height=5,width=6.5,res=300)
+  ##png(file=here("results","plots","spawn_em_125020.png"),units="in",height=5,width=6.5,res=300)
   spawn_em<-ggplot_spawner_juveniles(mod_fit = fit_mod_result$fit,mod_dat =fit_mod_result$dat,mod_rep=fit_mod_result$report)
   ##dev.off()
 

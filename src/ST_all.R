@@ -4,9 +4,8 @@
 
 #takes data collected from screw traps provided by Washington Department of Fish and Wildlife (Chiwawa River) and Yakama Nation Fisheries (Nason and White Rivers) and returns estimates of daily emigrants and log sums of emigrants within migrations windows representing juvenile life histories (Fry, summer parr, fall parr, yearling smolt), and standard errors.
 
-ST_all_func<-function(){
-library(here)
-library(mixtools)
+ST_all_func<-function(refit=FALSE){
+
 #------------------------------------------------------------------------------------
 # Load function for analysis
 #------------------------------------------------------------------------------------
@@ -31,9 +30,13 @@ all_data_lists<-make_data_list_func(chiw_data = chiw_data, nas_whi_data = nas_wh
 
 
 #load most recent evaluation of daily juvenile migrant abundance model if exists
-if(length(list.files(here("results"))[substr(list.files(here("results")),1,18)=="emigrant_estimates"])>0){
+if(!refit & length(list.files(here("results"))[substr(list.files(here("results")),1,18)=="emigrant_estimates"])>0){
 
-load(file=here("results",list.files(here("results"))[substr(list.files(here("results")),1,18)=="emigrant_estimates"][which.max(lubridate::mdy(substr(list.files(here("results"))[substr(list.files(here("results")),1,18)=="emigrant_estimates"],20,30)))]))
+  last_fit_file<-list.files(here("results"))[substr(list.files(here("results")),1,18)=="emigrant_estimates"][which.max(lubridate::mdy(substr(list.files(here("results"))[substr(list.files(here("results")),1,18)=="emigrant_estimates"],20,30)))]
+  
+  print(paste("Loading file:", last_fit_file ))
+  
+load(file=here("results",last_fit_file))
   
 }else{
   
@@ -79,11 +82,13 @@ for ( i in 1:3) breaks[i]<-which.min(mix_geomean_dens[((round(sort(mix_geomean$m
 
 #calculate bootstrapped distributions of total emigrants expressing each LHP in each stream (this takes ~ 10 minutes) if not already done
 if(is.null(all_emigrants_estimates[[1]]$boot)){
+  ts<-Sys.time() 
   all_emigrants_estimates<-lapply(all_emigrants_estimates,function(x){
   x$dat$breaks<-breaks[1:2]
   x$boot<-bootstrap_juves(x$dat,x$mod$env$last.par.best,x$fit$SD$jointPrecision,n_sim=50000,seed=1234)
   return(x)
 })
+  Sys.time()-ts
   #save as ".Rdata" objects
   save(all_emigrants_estimates,file=here("results",paste0("emigrant_estimates",substr(date(),4,10),substr(date(),20,25),".Rdata")))
 }
