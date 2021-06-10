@@ -1,0 +1,134 @@
+---
+title: "Discrete Density-Dependent Patterns in a Continuous Survival and Emigration Process"
+author: "Eric Buhle"
+date: "`r format(Sys.time(), '%Y-%m-%d')`"
+output: 
+  github_document:
+    toc: TRUE
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(tidy = FALSE, highlight = TRUE, comment = NA, 
+                      dev = "png", dev.args = list(type = "cairo-png"), dpi = 300)
+```
+
+## Preamble
+
+Consider a population undergoing simultaneous, continuous-time processes of mortality and emigration. A fixed initial cohort of residents *R*<sub>0</sub> will decline toward zero, with the balance of losses depending on the details of the functions governing survival and dispersal over time. Further suppose that both mortality and emigration are potentially density-dependent, and that we would like to infer the structure and functional forms of such density dependence. The data available to do this consist of an estimate of *R*<sub>0</sub> and estimates of cumulative migration &Delta;*M*<sub>*t*</sub> over discrete time steps (e.g., days) *t* - 1 to *t*. Let's assume for the sake of illustration that we observe both of these state variables without error, and that the underlying dynamics are deterministic.
+
+To make things concrete, suppose survival is density-dependent, while emigration is density-independent but subject to periodic forcing. For stream-rearing salmonids, this represents a minimal set of assumptions that can serve as a sort of null model against which to measure any empirical patterns we might observe in real data.
+
+## A Toy Model
+
+We can model these population dynamics as a simple system of ODEs using the **deSolve** package in R. First we need to define the system as a function. Let's take the resident population dynamics *dR*/*dt* to be logistic, with a negative intrinsic growth rate *r* since there is no reproduction. Over a finite time step &Delta;*t* the logistic integrates to give a Beverton-Holt function, and we can more easily parameterize by the maximum (density-independent) survival *s*<sub>0</sub> and the asymptote *R*<sub>max</sub>, which we then solve for the logistic parameters *r* and *K*.
+
+
+```{r define_ode}
+library(deSolve)
+
+survive_migrate <- function(t, x, parms) 
+{
+  with(as.list(c(x, parms)), {
+    r <- log(s0)
+    K <- Rmax*(s0 - 1)/s0
+    dRdt <- r*R*(1 - R/K) - dMdt(t, R, m, tau)
+    dMdt <- dMdt(t, R, m, tau)
+    
+    return(list(c(dRdt, dMdt)))
+  })
+}
+```
+
+We'll model the time-dependent per capita migration rate (1/*R*)*dM*/*dt* as a periodic function with baseline rate *m*, period *&tau;*, and a linear increase with time *t* so that the last migration pulses are reasonably large even though few residents remain.
+
+```{r dMdt}
+dMdt <- function(t, R, m, tau)
+{
+  R*m*t*exp(sin(2*pi*t/tau))
+}
+```
+
+Now we can simulate the dynamics by numerically solving the ODEs. We'll set the forcing period so that there are four migration pulses over the "migration season" of *T* = 100 time steps, which is normalized to length 1.
+
+```{r solve_ode}
+times <- seq(0, 1, length = 100)
+parms <- c(s0 = 0.50, Rmax = 100, m = 4, tau = max(times)/3.75)
+RMt <- ode(func = survive_migrate, parms = parms, y = c(R = 100, M = 0), times = times)
+RMt <- data.frame(RMt)
+```
+
+Here are the population dynamics. The lower panel shows the change in cumulative emigration per time step -- i.e., what we would observe in discrete daily sampling. The vertical lines between migration pulses define the partition we will use when looking for density dependence at each stage.
+
+```{r plot_solution, fig.height=7, fig.width=7, out.width="50%", echo=FALSE}
+par(mfrow = c(2,1), mar = c(4.5, 4.5, 0.5, 1))
+
+# total abundance
+plot(R ~ time, data = RMt, type = "l", col = "salmon", lwd = 3, las = 1,
+     cex.axis = 1.2, cex.lab = 1.5, ylim = range(RMt[,2:3]), xaxs = "i", yaxs = "i", 
+     xlab = "", ylab = "Abundance")
+lines(M ~ time, data = RMt, col = "darkblue", lwd = 3)
+text(rep(max(RMt[,"time"]), 2), RMt[nrow(RMt),c("R","M")], c("Resident", "Migrant"), 
+     cex = 1.5, adj = c(1.2,-0.5), col = c("salmon","darkblue"))
+
+# migration rate
+plot(c(NA, diff(M)) ~ time, data = RMt, type = "l", col = "darkblue", lwd = 3, 
+     las = 1, cex.axis = 1.2, cex.lab = 1.5, xaxs = "i", yaxs = "i", 
+     xlab = "Time", ylab = "Migration rate")
+abline(v = seq(0.75*parms["tau"], max(times) - parms["tau"], parms["tau"]), col = "lightgray")
+```
+
+## A Range of Simulations
+
+To do that we first need to repeat the simulation over a range of initial densities *R*<sub>0</sub>. This time we'll only record cumulative total emigrants &Delta;*M*<sub>*t*</sub> over each of the four discrete intervals or stages indicated above. 
+
+We'll also compute the additive log ratios of these stage-specific totals, using the final stage as the reference category. The conceptual motivation is that we can reparameterize the sequential stage-specific density-dependent relationships (all based on initial cohort size, as *R*(*t*) is not directly observed) into a single overall density-dependent function and the proportions of migrants in each stage, which may or may not show residual density dependence.
+
+```{r solve_ode_R0}
+R0 <- seq(1, parms["Rmax"]*10, length = 100)
+R0Mt <- do.call(rbind, lapply(R0, function(R) {
+  out <- ode(func = survive_migrate, parms = parms, y = c(R = R, M = 0), 
+             times = c(0, seq(0.75*parms["tau"], max(times), parms["tau"])))
+  dplyr::mutate(data.frame(R0 = R, out), dM = c(NA, diff(M)), alrM = log(dM / tail(dM,1)))
+}))
+```
+
+A plot of the final total of emigrants and surviving residents against initial cohort size clearly shows the effect of density-dependent resident survival. In fact, if the baseline emigration rate *m* were zero, this curve would simply be the Beverton-Holt.
+
+```{r plot_DD_total, fig.height=7, fig.width=7, out.width="50%", echo=FALSE}
+par(mar = c(4.5, 4.5, 0.5, 1))
+plot(R + M ~ R0, data = R0Mt, subset = time == max(time), 
+     type = "l", col = "plum4", lwd = 3, las = 1, cex.axis = 1.2, cex.lab = 1.5, 
+     xlab = bquote(italic(R)[0]), ylab = bquote(italic(R)[italic(T)] + italic(M)[italic(T)]))
+```
+
+Now let's examine density dependence in each stage-specific migrant pulse from time *t* - 1 to *t*, with respect to initial cohort size.
+
+```{r plot_DD_Mt, fig.height=3, fig.width=12, echo=FALSE}
+par(mfrow = c(1,4), mar = c(1,2.5,2,1), oma = c(3,2,0,0))
+for(tt in seq(0.75*parms["tau"], max(times), parms["tau"])) 
+  plot(M ~ R0, data = R0Mt, subset = time == tt, type = "l", col = "darkblue", lwd = 3, 
+       las = 1, cex.axis = 1.5, cex.main = 1.8, main = bquote(italic(t) == .(round(tt,2))))
+mtext(bquote(italic(R)[0]), cex = 1.8*par("cex"), side = 1, line = 2, outer = TRUE)
+mtext(bquote(Delta * italic(M)[italic(t)]), cex = 1.8*par("cex"), side = 2, line = 0.5, outer = TRUE)
+```
+
+Again we see the signature of density-dependent resident survival, even though we can only observe migrants and the instantaneous migration rate itself is density-independent. Interestingly, the apparent strength of density dependence increases steadily throughout the migration season because the migrants are drawn from a pool of residents that has experienced more and more density-dependent mortality.
+
+Perhaps counterintuitively, the same patterns emerge when we transform the compositional data (proportion of migrants in each pulse, conditional on total migration) from the simplex to additive log-ratio space. Because the loss of residents through density-dependent mortality increases with initial cohort size and disproportionately reduces the later migration pulses, the ratio of any earlier pulse to the final one increases with *R*<sub>0</sub>, but in a saturating way. We could choose different reference classes and get different but mathematically equivalent patterns; the underlying residual density dependence would remain.
+
+```{r, fig.height=3, fig.width=9, out.width="75%", echo=FALSE}
+par(mfrow = c(1,3), mar = c(1,2.5,2,1.2), oma = c(3,2.2,0,0))
+for(tt in seq(0.75*parms["tau"], max(times) - parms["tau"], parms["tau"])) 
+  plot(alrM ~ R0, data = R0Mt, subset = time == tt, type = "l", col = "darkblue", lwd = 3, las = 1, cex.axis = 1.5, cex.main = 1.8, main = bquote(italic(t) == .(round(tt,2))))
+mtext(bquote(italic(R)[0]), cex = 1.8*par("cex"), side = 1, line = 2, outer = TRUE)
+mtext(bquote(alr(Delta * italic(M)[italic(t)])), cex = 1.8*par("cex"), side = 2, line = 0.5, outer = TRUE)
+```
+
+## Summary
+
+This simple thought experiment is helpful in formulating a null hypothesis or baseline expectation of what we might see in empirical data on daily emigration from a system simultaneously undergoing mortality. One immediate conclusion is that density dependence of the entire cohort with respect to initial abundance manifests in migrant counts, even though the per capita migration rate itself and the timing and magnitude of its peaks are density-independent. 
+
+It is also notable that the apparent strength of density dependence increases across successive migration pulses or stages. The plot of &Delta;*M*<sub>*t*</sub> vs. *R*<sub>0</sub> in the first pulse is not depensatory, but if compensation were weaker than in this example and in the presence of correlated environmental stochasticity and observation noise, it could easily be mistaken for linear.
+
+Unfortunately, the log-ratio transformation does not appear to remove the density dependence, suggesting we cannot cleanly reparameterize from the abundance of each migrant pulse to the total abundance and relative frequency in each successive stage.
