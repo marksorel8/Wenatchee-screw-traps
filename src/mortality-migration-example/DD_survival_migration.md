@@ -7,6 +7,7 @@ Eric Buhle
 -   [Preamble](#preamble)
 -   [A Toy Model](#a-toy-model)
 -   [A Range of Simulations](#a-range-of-simulations)
+-   [Alternative Assumptions](#alternative-assumptions)
 -   [Summary](#summary)
 
 ## Preamble
@@ -77,7 +78,7 @@ length 1.
 
 ``` r
 times <- seq(0, 1, length = 100)
-parms <- c(s0 = 0.50, Rmax = 100, m = 4, tau = max(times)/3.75)
+parms <- c(s0 = 0.5, Rmax = 100, m = 2, tau = max(times)/3.75)
 RMt <- ode(func = survive_migrate, parms = parms, y = c(R = 100, M = 0), times = times)
 RMt <- data.frame(RMt)
 ```
@@ -146,6 +147,65 @@ remain.
 
 <img src="DD_survival_migration_files/figure-gfm/plot_DD_alrMt-1.png" width="75%" />
 
+## Alternative Assumptions
+
+Let’s relax our initial assumptions about the structure of density
+dependence to allow the instantaneous per capita emigration rate to
+increase with the density of residents. In effect the resident
+population now experiences two sources of (direct) density-dependent
+loss. Absent any system-specific motivation for a particular functional
+form, we’ll assume by analogy with the logistic model that the effect of
+*R* on (1/*R*)*dM*/*dt* is linear (in this case, affine).
+
+``` r
+dMdt <- function(t, R, m, tau)
+{
+  R^2*m*t*exp(sin(2*pi*t/tau))
+}
+```
+
+Again we simulate the dynamics, this time with the baseline migration
+rate *m* reduced to account for the extra factor of *R*.
+
+``` r
+times <- seq(0, 1, length = 100)
+parms <- c(s0 = 0.5, Rmax = 100, m = 0.05, tau = max(times)/3.75)
+RMt <- ode(func = survive_migrate, parms = parms, y = c(R = 100, M = 0), times = times)
+RMt <- data.frame(RMt)
+```
+
+The solution doesn’t look drastically different from the
+density-independent migration case, but the magnitude of the later
+pulses declines faster due to not only the dwindling population of
+residents but also the reduced emigration pressure from conspecific
+density.
+
+<img src="DD_survival_migration_files/figure-gfm/plot_solution_dep-1.png" width="50%" />
+
+The patterns of apparent density dependence in total emigrants from each
+pulse or stage, on the other hand, are completely different. Rather than
+compensation they seem to show depensation, with just a hint of an
+inflection point appearing in the later stages. “Depensation” is a
+misnomer in this case, however, as we are only observing migrants (whose
+subsequent fate, density-dependent or not, is unknown). In fact, these
+patterns reflect the balance between direct density-dependent losses
+from the resident pool that occur through emigration vs. mortality. The
+precise balance and resulting functional forms depend on the parameters,
+but initial exploration failed to find parameter values producing
+“realistic” dynamics, for which the relationships are convex in the
+early stages but strongly concave in the later ones.
+
+![](DD_survival_migration_files/figure-gfm/plot_DD_Mt_dep-1.png)<!-- -->
+
+Interestingly, the relationships in log-ratio space have the same
+concave form as in the density-independent migration case. By
+standardizing the migration pulses relative to one another, we recapture
+the diminishing returns later in the season as density increases –
+doubly so now that the migration pressure on the remaining residents
+weakens as their cohort declines.
+
+<img src="DD_survival_migration_files/figure-gfm/plot_DD_alrMt_dep-1.png" width="75%" />
+
 ## Summary
 
 This simple thought experiment is helpful in formulating a null
@@ -153,17 +213,28 @@ hypothesis or baseline expectation of what we might see in empirical
 data on daily emigration from a system simultaneously undergoing
 mortality. One immediate conclusion is that density dependence of the
 entire cohort with respect to initial abundance manifests in migrant
-counts, even though the per capita migration rate itself and the timing
-and magnitude of its peaks are density-independent.
+counts, even when the per capita migration rate itself and the timing
+and magnitude of its peaks are density-independent. Density-dependent
+emigration also manifests, and appears to produce very distinct
+patterns, at least for the model structure and parameter space
+considered here.
 
-It is also notable that the apparent strength of density dependence
-increases across successive migration pulses or stages. The plot of
-Δ*M*<sub>*t*</sub> vs. *R*<sub>0</sub> in the first pulse is not
-depensatory, but if compensation were weaker than in this example and in
-the presence of correlated environmental stochasticity and observation
-noise, it could easily be mistaken for linear.
+It is also notable that the apparent strength of compensation, at least
+with respect to initial cohort size *R*<sub>0</sub>, increases across
+successive migration pulses or stages regardless of density dependence
+in migration. It seems somewhat unlikely, based on limited parameter
+exploration, that this shift would be strong enough to convert an
+accelerating density-dependent relationship in stage 1 to a saturating
+one by stage 4. This suggests that such a pattern would require another
+explanation – for example, that the instantaneous migration rate becomes
+less strongly density-dependent over the course of the season, either
+gradually or abruptly.
 
 Unfortunately, the log-ratio transformation does not appear to remove
-the density dependence, suggesting we cannot cleanly reparameterize from
-the abundance of each migrant pulse to the total abundance and relative
-frequency in each successive stage.
+the compensatory density dependence, suggesting we cannot cleanly
+reparameterize from the abundance of each migrant pulse to the total
+abundance and relative frequency in each successive stage. However, the
+persistence (and enhancement) of concave functional forms in the
+log-ratio plots, even when the corresponding plots of abundance are
+convex, suggests a possible diagnostic to distinguish between the two
+hypotheses about emigration.
