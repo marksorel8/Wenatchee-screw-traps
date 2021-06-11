@@ -15,7 +15,7 @@ survive_migrate <- function(t, x, parms)
     dRdt <- r*R*(1 - R/K) - dMdt(t, R, m, tau)
     dMdt <- dMdt(t, R, m, tau)
     
-    return(list(c(dRdt,dMdt)))
+    return(list(c(dRdt, dMdt)))
   })
 }
 
@@ -102,7 +102,7 @@ dev.new()
 ## @knitr plot_DD_total
 par(mar = c(4.5, 4.5, 0.5, 1))
 plot(R + M ~ R0, data = R0Mt, subset = time == max(time), 
-     type = "l", col = "salmon", lwd = 3, las = 1, cex.axis = 1.2, cex.lab = 1.5, 
+     type = "l", col = "plum4", lwd = 3, las = 1, cex.axis = 1.2, cex.lab = 1.5, 
      xlab = bquote(italic(R)[0]), ylab = bquote(italic(R)[italic(T)] + italic(M)[italic(T)]))
 ## @knitr
 

@@ -2,7 +2,7 @@ Discrete Density-Dependent Patterns in a Continuous Survival and
 Emigration Process
 ================
 Eric Buhle
-2021-06-10
+2021-06-11
 
 -   [Preamble](#preamble)
 -   [A Toy Model](#a-toy-model)
@@ -54,7 +54,7 @@ survive_migrate <- function(t, x, parms)
     dRdt <- r*R*(1 - R/K) - dMdt(t, R, m, tau)
     dMdt <- dMdt(t, R, m, tau)
     
-    return(list(c(dRdt,dMdt)))
+    return(list(c(dRdt, dMdt)))
   })
 }
 ```
