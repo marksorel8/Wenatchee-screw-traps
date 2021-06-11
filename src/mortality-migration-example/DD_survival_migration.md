@@ -2,7 +2,7 @@ Discrete Density-Dependent Patterns in a Continuous Survival and
 Emigration Process
 ================
 Eric Buhle
-2021-06-09
+2021-06-10
 
 -   [Preamble](#preamble)
 -   [A Toy Model](#a-toy-model)
@@ -53,7 +53,7 @@ survive_migrate <- function(t, x, parms)
     dRdt <- r*R*(1 - R/K) - dMdt(t, R, m, tau)
     dMdt <- dMdt(t, R, m, tau)
     
-    return(list(c(dRdt, dMdt)))
+    return(list(c(dRdt,dMdt)))
   })
 }
 ```
@@ -144,7 +144,7 @@ different reference classes and get different but mathematically
 equivalent patterns; the underlying residual density dependence would
 remain.
 
-<img src="DD_survival_migration_files/figure-gfm/unnamed-chunk-1-1.png" width="75%" />
+<img src="DD_survival_migration_files/figure-gfm/plot_DD_alrMt-1.png" width="75%" />
 
 ## Summary
 
