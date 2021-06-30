@@ -17,7 +17,7 @@ ggplot_timing_func<-function(all_emigrants_estimates,all_data_lists,across_strea
   
   #text of lif ehistories to go on first fecet pannel
   dat_text <- data.frame(
-    label = c("Fry", "Summ.", "Fall","Smolt"),
+    label = c("Spr-0","Sum-0","Fall-0","Spr-1"),
     stream   = factor(rep("Chiwawa",4),levels = c("Chiwawa","Nason","White","Average")),
     x     = c(91,200,325,535),
     y     = rep(635,4)
@@ -85,7 +85,7 @@ plot_dis_temp_func<-function(all_data_lists){
   #range in years of temp data for each stream
   read_csv(here("data","Temp","Wen_data_day.csv")) %>% subset(StreamName %in% c("Chiwawa River","Nason Creek","White River")) %>% group_by(StreamName) %>% filter(Elevation==min(Elevation)) %>% summarise(minY=min(Year),maxY=max(Year))
   
-  dish_temp<-full_join(all_dis,temp_dat) %>% pivot_longer(c(flow,temp_c)) %>% mutate(name=case_when(name=="flow"~"Discharge~(m^3*s^2)",TRUE~"Temperature~( degree*C )")) %>% rename(Stream=stream)
+  dish_temp<-full_join(all_dis,temp_dat) %>% pivot_longer(c(flow,temp_c)) %>% mutate(name=case_when(name=="flow"~"Discharge~(m^3*s^{-1})",TRUE~"Temperature~( degree*C )")) %>% rename(Stream=stream)
   
   
   temp_disch_plot<-ggplot(data=dish_temp,aes(x=doy,y=value))+facet_wrap(~name,scales = "free_y",nrow=2,strip.position = "left",labeller = label_parsed) + geom_line(size=1.,aes(color=Stream))+ ylab("")+xlab("") + scale_x_continuous(breaks=c(1,32,60,91,121,152,182,213,244,274,305,335,366),labels=c("Jan","","","Apr","","","Jul","","","Oct","","","Jan"))+ theme(strip.background = element_blank(),strip.placement = "outside")+ scale_color_viridis(option="D",discrete=T,end=.7)

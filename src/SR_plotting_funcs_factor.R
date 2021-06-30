@@ -9,8 +9,7 @@
 #----------------------------------------------------------------------------------------
 
 ggplot_spawner_juveniles<-function(mod_fit , mod_dat, mod_rep){
-  
-  
+
   #----------------------------------------------------------------------------------------
   #----------------------------------------------------------------------------------------
   #Function to plot spawners vs juvenles with fits for all stream sand life histories
@@ -19,7 +18,6 @@ ggplot_spawner_juveniles<-function(mod_fit , mod_dat, mod_rep){
   #----------------------------------------------------------------------------------------
   
   plot_fun_pan<-function(plot_fit=FALSE){
-    
     
     #----------------------------------------------------------------------------------------
     #----------------------------------------------------------------------------------------
@@ -67,6 +65,11 @@ ggplot_spawner_juveniles<-function(mod_fit , mod_dat, mod_rep){
         # Linear
         mod_pred<-alpha*(S_hat)
       } 
+        else{if(mod[i]==5){
+          # Linear
+          mod_pred<-Jmax * (1-exp(-(S_hat/alpha)^fifty))
+        }
+      }
       }
       }
       }
@@ -125,14 +128,14 @@ ggplot_spawner_juveniles<-function(mod_fit , mod_dat, mod_rep){
         sl_out<- plot_SR(stream=i, life_hist = j, y_ax=TRUE,x_ax=ifelse(j==4,TRUE,FALSE),plot_fit = plot_fit)
         #Y_max=y_max[(j)], y_ax=ifelse(i==0,TRUE,FALSE)
         
-        out_df<-bind_rows(out_df,bind_cols(spawners=sl_out$preds$S_hat,juveniles=sl_out$preds$mod_pred,LH=c("Fry","Summer","Fall","Smolt")[j],stream=c("Chiwawa","Nason","White")[(i+1)],eps=sl_out$preds$eps))
+        out_df<-bind_rows(out_df,bind_cols(spawners=sl_out$preds$S_hat,juveniles=sl_out$preds$mod_pred,LH=c("Spr-0","Sum-0","Fall-0","Spr-1")[j],stream=c("Chiwawa","Nason","White")[(i+1)],eps=sl_out$preds$eps))
         
-        out_year_df<-bind_rows(out_year_df,bind_cols(spawners=sl_out$vals$pred_s,juveniles=sl_out$vals$pred_em,LH=c("Fry","Summer","Fall","Smolt")[j],stream=c("Chiwawa","Nason","White")[(i+1)]))
+        out_year_df<-bind_rows(out_year_df,bind_cols(spawners=sl_out$vals$pred_s,juveniles=sl_out$vals$pred_em,LH=c("Spr-0","Sum-0","Fall-0","Spr-1")[j],stream=c("Chiwawa","Nason","White")[(i+1)]))
         
         out[[i*4+j]]<-sl_out
         if(plot_fit){
           if(j==1) mtext(c("Chiwawa","Nason","White")[(i+1)],3)
-          if(i==0) mtext(c("Fry","Summer","Fall","Smolt")[j],2,3)
+          if(i==0) mtext(c("Spr-0","Sum-0","Fall-0","Spr-1")[j],2,3)
         }
       }
     }
@@ -160,10 +163,10 @@ ggplot_spawner_juveniles<-function(mod_fit , mod_dat, mod_rep){
   log_J_pred<-tibble(juveniles =mod_fit$SD$value[log_J_pred_pos]) %>%
     as_tibble() %>% mutate(juveniles_sd=mod_fit$SD$sd[log_J_pred_pos])
   #juveniles and SEs and combine with spawners 
-  sum_out<- log_J_pred %>% as_tibble() %>%  mutate(stream=c("Chiwawa","Nason","White")[(mod_dat$s_i+1)],LH=c("Fry","Summer","Fall","Smolt")[(mod_dat$l_i+1)]) %>% bind_cols(log_s_pred[as.numeric(mod_dat$st_i),]) %>% mutate(LH=fct_relevel(LH,"Fry","Summer","Fall","Smolt"))
+  sum_out<- log_J_pred %>% as_tibble() %>%  mutate(stream=c("Chiwawa","Nason","White")[(mod_dat$s_i+1)],LH=c("Spr-0","Sum-0","Fall-0","Spr-1")[(mod_dat$l_i+1)]) %>% bind_cols(log_s_pred[as.numeric(mod_dat$st_i),]) %>% mutate(LH=fct_relevel(LH,"Spr-0","Sum-0","Fall-0","Spr-1"))
   
   #predictions of expected juveniles over a range of spawner abundances
-  preds<-as_tibble(all_dat_plot$pred_mat) %>% mutate(total_sd=sqrt(eps^2))%>% mutate(LH=fct_relevel(LH,"Fry","Summer","Fall","Smolt"))
+  preds<-as_tibble(all_dat_plot$pred_mat) %>% mutate(total_sd=sqrt(eps^2))%>% mutate(LH=fct_relevel(LH,"Spr-0","Sum-0","Fall-0","Spr-1"))
   
   #Begin plot of spawners vs juveniles 
   scale_juv<-100
@@ -239,7 +242,7 @@ return(list(sum_out=sum_out,preds=preds))
 
 plot_cor<-function(mod_rep,mod_fit, mod_dat,nsim=100000){
 
-lh_s_names<-paste(rep(c("Fry","Summ.","Fall","Smolt"),times=3),rep(c("Chiw.","Nason","White"),each=4),sep=" ")
+lh_s_names<-paste(rep(c("Spr-0","Sum-0","Fall-0","Spr-1"),times=3),rep(c("Chiw.","Nason","White"),each=4),sep=" ")
 loadings2<-cbind(mod_rep$Loadings_pf,diag(mod_rep$sigma_eta))
 #marg_var<-rowSums(loadings2^2)
 cor_mat<-cov2cor( loadings2%*%t(loadings2)) 
@@ -281,23 +284,24 @@ bootstrap_corr<-function(mle=mod_fit$par,cov_mat=mod_fit$SD$cov.fixed,n_f=mod_da
   corr_array
 }
 
-corr_boot<-bootstrap_corr()
+# corr_boot<-bootstrap_corr()
 
-p_corr<-apply(corr_boot,1:2,function(x){sum(sign(x)<=0)/nsim})*sign(cor_mat)+as.numeric(sign(cor_mat)<=0)
+# p_corr<-apply(corr_boot,1:2,function(x){sum(sign(x)<=0)/nsim})*sign(cor_mat)+as.numeric(sign(cor_mat)<=0)
 
 corrplot::corrplot(cor_mat,type="lower",method = "circle",
-                   p.mat =p_corr*2,  insig = "p-value", sig.level = -.05,mar=c(0,0,0,0),oma=c(0,0,0,0),tl.cex=1.5,tl.col="black",cl.cex=1.5,tl.srt=45)
+                   # p.mat =p_corr*2,  insig = "p-value", sig.level = -.05,
+                   
+                   mar=c(0,0,0,0),oma=c(0,0,0,0),tl.cex=1.5,tl.col="black",cl.cex=1.5,tl.srt=45)
 
 }
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-#Functon to plot spawners  and juveniles by year
+#Functon to plot spawners and juveniles by year
 #----------------------------------------------------------------------------------------
 plot_spawn_em_year<-function(mod_dat,sum_out){
 # spawners/Km
 spawner_dat<-tibble(Spawners= exp(sum_out$spawners) ,stream=c("Chiwawa","Nason","White")[(mod_dat$s_i+1)],BY=mod_dat$BY) %>% distinct()
-  
 
 sum_spawn<-spawner_dat %>% group_by(BY) %>% summarise(Spawners=sum(Spawners)/n(),n=n()) %>% ungroup() %>% mutate(stream="Average") %>% filter(n==3)
 
@@ -307,14 +311,14 @@ spawner_dat<-bind_rows(spawner_dat,sum_spawn)%>%
 
 
 #juveniles/km
-juvenile_dat<-bind_cols(Juveniles  = exp(sum_out$juveniles)/100,stream=c("Chiwawa","Nason","White")[mod_dat$s_i+1],BY=mod_dat$BY,LH=c("Fry","Summer","Fall","Smolt")[mod_dat$l_i+1]) %>% mutate(LH=fct_relevel(LH,"Fry","Summer","Fall","Smolt")) %>%   #drop first and last brood years which have incomplete juvenile data
+juvenile_dat<-bind_cols(Juveniles  = exp(sum_out$juveniles)/100,stream=c("Chiwawa","Nason","White")[mod_dat$s_i+1],BY=mod_dat$BY,LH=c("Spr-0","Sum-0","Fall-0","Spr-1")[mod_dat$l_i+1]) %>% mutate(LH=fct_relevel(LH,"Spr-0","Sum-0","Fall-0","Spr-1")) %>%   #drop first and last brood years which have incomplete juvenile data
   group_by(stream) %>% mutate(max_BY=max(BY),min_BY=min(BY)) %>% ungroup() %>% filter(BY<max_BY,BY>min_BY)
 
 sum_juv<-juvenile_dat %>% group_by(BY,LH) %>% summarise(Juveniles = sum(Juveniles)/n(),count=n()) %>% ungroup() %>% mutate(stream="Average") %>% filter(count==3)
 
 juvenile_dat<-bind_rows(juvenile_dat,sum_juv) %>% group_by(BY,stream) %>% mutate(prop=Juveniles/sum(Juveniles))
 
-all_dat<-bind_rows(juvenile_dat,spawner_dat) %>%  pivot_longer(c(Juveniles,prop,Spawners))%>% mutate(name=fct_relevel(name,"Spawners","Juveniles","prop")) %>%  mutate(stream=fct_relevel(stream,"Chiwawa","Nason","White"))%>%  mutate(stream=fct_relevel(stream,"Chiwawa","Nason","White")) %>% mutate(LH=fct_relevel(LH,"Spawner","Fry","Summer","Fall","Smolt"))
+all_dat<-bind_rows(juvenile_dat,spawner_dat) %>%  pivot_longer(c(Juveniles,prop,Spawners))%>% mutate(name=fct_relevel(name,"Spawners","Juveniles","prop")) %>%  mutate(stream=fct_relevel(stream,"Chiwawa","Nason","White"))%>%  mutate(stream=fct_relevel(stream,"Chiwawa","Nason","White")) %>% mutate(LH=fct_relevel(LH,"Spawner","Spr-0","Sum-0","Fall-0","Spr-1"))
 
 #stacked counts
 juv_2<-ggplot(data=all_dat,
@@ -334,7 +338,7 @@ juv_2
 expec_spawn_em_ploft_func<-function(preds){
 ##expected emigrants vs. spawners
 
-pred_mat<-preds %>%  mutate(juveniles =juveniles /100,LH=fct_relevel(LH,"Fry","Summer","Fall","Smolt")) %>% group_by(stream,spawners) %>%  mutate(prop=juveniles/sum(juveniles)) %>% pivot_longer(c(juveniles,prop))
+pred_mat<-preds %>%  mutate(juveniles =juveniles /100,LH=fct_relevel(LH,"Spr-0","Sum-0","Fall-0","Spr-1")) %>% group_by(stream,spawners) %>%  mutate(prop=juveniles/sum(juveniles)) %>% pivot_longer(c(juveniles,prop))
   
 
 juvenile_plot<-ggplot(data=pred_mat,
@@ -358,10 +362,10 @@ bootstrap_env_cov<-function(dat, last_best=fit$par , precis=fit$SD$cov.fixed ,n_
   test_sim<-mvtnorm::rmvnorm(n_sim,last_best ,
                              precis , checkSymmetry = FALSE)
   
-  row_beta_e<-which(names(last_best)=="beta_e")
+  row_beta_e<-which(names(last_best)=="beta_e")[1:8]
   
-  out<-cbind(LH=c("Fry","Summer","Fall","Smolt","Summer","Fall","Smolt","Smolt"),
-             season=c(rep("Winter 1 max discharge",4),rep("Summer 1 mean discharge",3),"Winter 2\n max disch."),t(test_sim[,row_beta_e])) %>% as_tibble() %>%  pivot_longer(!c(LH,season),names_to=NULL,values_to="value") %>% mutate(value=as.numeric(value)) %>% mutate(LH=fct_relevel(LH,"Fry","Summer","Fall","Smolt"),season=fct_relevel(season,"Winter 1 max discharge","Summer 1 mean discharge" ,"Winter 2\n max disch."))
+  out<-cbind(LH=c("Spr-0","Sum-0","Fall-0","Spr-1","Sum-0","Fall-0","Spr-1"),
+             season=c(rep("Winter 1 max discharge",4),rep("Summer 1 mean discharge",3),"Winter 2\n max disch."),t(test_sim[,row_beta_e])) %>% as_tibble() %>%  pivot_longer(!c(LH,season),names_to=NULL,values_to="value") %>% mutate(value=as.numeric(value)) %>% mutate(LH=fct_relevel(LH,"Spr-0","Sum-0","Fall-0","Spr-1"),season=fct_relevel(season,"Winter 1 max discharge","Summer 1 mean discharge" ,"Winter 2\n max disch."))
   
   out<-ggplot(data=out,aes(x=LH,y=value)) + facet_grid(~season,scale="free_x", space = "free_x")+ geom_hline(yintercept=0,linetype=2)+geom_violin(fill="black")+ xlab("Life History") +ylab("Coefficient value")
   

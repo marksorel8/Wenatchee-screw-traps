@@ -2,11 +2,11 @@
 
 
 ##-------------------------------------------------------------------------------------------------------------------
-##function to create data input for models. returns a list of data inputs to feed to TMB model "Stock_recruit_DFA". 
+##function to create data input for models. returns a list of data inputs to feed to TMB model "Stock_recruit_LVM". 
 make_dat_func<-function(streams=c( 0:2), #streams to model 0 = chiwawa, 1 = nason, 2 = white
                         LHs=c(1:4),
-                        n_f=2,        #life histories to model 1=fry, 2=sumemr, 3=fall, 4=smolt
-                        no_rand_FF = 0){  # use hierarchical structure for functional form parameters if > 1 stream
+                        n_f=1,        #life histories to model 1=fry, 2=sumemr, 3=fall, 4=smolt
+                        no_rand_FF = 0,rate,fold_exclude){  # use hierarchical structure for functional form parameters if > 1 stream
   
   
   # concatenate log mean of observed emigrant distributions,
@@ -50,21 +50,21 @@ make_dat_func<-function(streams=c( 0:2), #streams to model 0 = chiwawa, 1 = naso
       X_s<-matrix(NA,nrow=n_year,ncol=24)
       #$ winter discharge brood year (incubation)
       X_s[(1:n_year),j]<-#(j+1)] <-##j+i*4] <-
-        scale(flow_covs$winter_high[match((years-ifelse(j==4,2,1)), #Year of incubation 
-                                          flow_covs$winter_high$Year),(i+2)]) 
-      
+        scale(flow_covs$winter_high[match((years-ifelse(j==4,2,1)), #Year of incubation
+                                          flow_covs$winter_high$Year),(i+2)])
+
       #summer discharge brood year +1 (summer rearing)
       if(j>1){
         X_s[(1:n_year),(j+3)] <-##(j+3)]<-# (j+i*3)+11] <-
-          scale(flow_covs$summer_low[match((years-ifelse(j==4,1,0)), #Year of incubation 
-                                           flow_covs$summer_low$Year),(i+2)]) 
+          scale(flow_covs$summer_low[match((years-ifelse(j==4,1,0)), #Year of incubation
+                                           flow_covs$summer_low$Year),(i+2)])
       }
-      
+
       #winter discharge brood year +1 (overwintering)
       if(j==4){
         X_s[(1:n_year),8] <- ##(i)+22] <-
-          scale(flow_covs$winter_high[match((years-1), #Year of overwintering as parr 
-                                            flow_covs$winter_high$Year),(i+2)]) 
+          scale(flow_covs$winter_high[match((years-1), #Year of overwintering as parr
+                                            flow_covs$winter_high$Year),(i+2)])
       }
       # add rows to design matrix
       X<-rbind(X,X_s)
@@ -92,15 +92,33 @@ make_dat_func<-function(streams=c( 0:2), #streams to model 0 = chiwawa, 1 = naso
     }
   }
   
+  
+
+  
   #get rid of columns not used in envornmental cpovariate design matrix
   X<-X[,which(apply(X,2,function(x)sum(!is.na(x)))>0),drop=FALSE]
   #scale
-  X<-scale(X)
+  # X<-scale(X)
   #fill in NAs with zeros
   X[is.na(X)]<-0
   #check scaling
   apply(X,2,sd,na.rm=T)
   apply(X,2,mean,na.rm=T)
+  
+  # Cov_dat<-tibble(BY=BY,LH=factor(l_i,labels=c("fry","summer","fall","smolts")),stream=factor(s_i,labels=c("Chiwawa","Nason","White"))) %>% mutate(Y0=BY+1) %>% left_join(pivot_longer(flow_covs$winter_high,2:4,names_to = "stream", values_to="win_0") %>% rename("BY"="Year")) %>%
+  #   left_join(pivot_longer(flow_covs$summer_low ,2:4,names_to = "stream", values_to="sum_0") %>% rename("Y0"="Year")) %>%
+  #   left_join(pivot_longer(flow_covs$winter_high,2:4,names_to = "stream", values_to="win_1") %>% rename("Y0"="Year"))    %>%
+  #   left_join(pHOS %>% rename("BY"="Brood_year","stream"="Stream") %>% select(-(n_carcasses:n_hatchery))) %>%
+  #   group_by(stream,LH) %>% summarize(win_0=c(scale(win_0)),sum_0=c(scale(sum_0)),win_1=c(scale(win_1)),pHOS=c(scale(pHOS_weighted)))
+  
+  
+  # X2<-model.matrix(BY~-1+win_0:LH:stream+sum_0:LH:stream+win_1:stream:LH+stream:LH:pHOS,data=Cov_dat) %>% as_tibble %>% select(-c(`LHfry:streamChiwawa:sum_0`,`LHfry:streamNason:sum_0`,`LHfry:streamWhite:sum_0`,`LHfry:streamChiwawa:win_1`:`LHfall:streamChiwawa:win_1`,`LHfry:streamNason:win_1`:`LHfall:streamNason:win_1`,`LHfry:streamWhite:win_1`:`LHfall:streamWhite:win_1`)) %>% as.matrix()
+  
+  # X2<-model.matrix(BY~-1+win_0:LH+sum_0:LH+win_1:LH,data=Cov_dat) %>% as_tibble() %>% select(-c(`LHfry:sum_0`,`LHfry:win_1`:`LHfall:win_1`)) %>% as.matrix()
+  # +pHOS:LH:stream
+  
+
+  
   
   #construct data list
   dat<-list(n_sl = length(unique(sl_i)),           #n umber of distinct life history by stream combinations
@@ -122,8 +140,16 @@ make_dat_func<-function(streams=c( 0:2), #streams to model 0 = chiwawa, 1 = naso
             no_rand_FF = no_rand_FF,               # flag for whether to treat eps_alpha, eps_gamm, and eps_Jmax as random effects or fixed effects
             s_i = s_i,                             # stream index for reference (not used in model)
             l_i = l_i,                             # LHP index for reference (not used in model)
-            BY=BY)                                 # Brood year for reference (not used in model)
-  return(dat)
+            BY=BY,                                 # Brood year for reference (not used in model)
+            beta_e_ind=as.numeric(as.factor(paste(c(rep(c("Spr. Sub","Sum. Sub","Fall Sub", "Spr. Yrl."),times=3),
+                                                    rep(c("Sum. Sub","Fall Sub", "Spr. Yrl."),times=3),
+                                                    rep(c( "Spr. Yrl."),times=3),
+                                                    rep(c("Spr. Sub","Sum. Sub","Fall Sub", "Spr. Yrl."),times=3)),c(substr(colnames(X)[1:12],1,5),
+                                                                                                                     substr(colnames(X)[13:24],nchar(colnames(X)[13:24])-4,nchar(colnames(X)[13:24])))) %>% as.factor() %>% as.numeric()))-1,
+            rate=rate,
+            fold_exclude=fold_exclude
+  )
+            return(dat)
 }   
 
 ##-------------------------------------------------------------------------------------------------------------------
@@ -133,7 +159,7 @@ make_params_func<-function(dat){
   
   params<-list( beta_alpha=ifelse(rep(dat$no_rand_FF,dat$n_l),
                                   rep(0,dat$n_l),
-                                  rnorm(dat$n_l,log(500),2)),   # log alpha interceptrs (by life-history)
+                                  rnorm(dat$n_l,log(10),2)),   # log alpha interceptrs (by life-history)
                 beta_Jmax= ifelse(rep(dat$no_rand_FF,dat$n_l),
                                   rep(0,dat$n_l),
                                   rnorm(dat$n_l,log(1000),1)), # log asymptotic maximum recruitment (Jmax) coefficients (by life-history) intercept
@@ -144,7 +170,8 @@ make_params_func<-function(dat){
                 log_sigma_alpha=rep(0,dat$n_l),                    # log alpha random effect SD
                 log_sigma_Jmax=rep(0,dat$n_l),                   # log Jmax random effect SD
                 log_sigma_gamma=rep(0,dat$n_l),                    # log gamma random effect SD
-                
+                log_sigma_BJmax=rep(0,dat$n_l), 
+                log_loadings_sd=rep(0,dat$n_f*(dat$n_sl)-dat$n_f*(dat$n_f-1)/2),
                 beta_e=rep(0,ncol(dat$X)),                     # environmental covariate coefficients for process error
                 Loadings_vec=rnorm(dat$n_f*(dat$n_sl)-dat$n_f*(dat$n_f-1)/2), # latent variable factor loadings
                 log_sigma_eta=log(abs(rnorm(dat$n_sl,.5,.1))),# idiosyncratic process error log SDs
@@ -161,8 +188,13 @@ make_params_func<-function(dat){
                                   rep(0,dat$n_sl)),                         # log gamma random effects
                 log_S_hat = rnorm(length(dat$log_S_obs), dat$log_S_obs,.1), # latent spawners random effects
                 Omega_xf=matrix(0,dat$n_t,dat$n_f),            #  latenct variable factors
-                eta=numeric(dat$n_i)                         #  idisyncratic process error random effects
-  )                       
+                eta=numeric(dat$n_i),                         #  idisyncratic process error random effects
+                # log_sd_beta_e=rep(log(1),times=ncol(dat$X)),
+                mu_beta_e=rep(0,times=ncol(dat$X)/3),
+                log_sd_beta_e=rep(log(1),times=ncol(dat$X)),
+                log_sigma_Bgamma=rep(0,dat$n_l)
+
+                )                       
   
   return(params)
 }
@@ -235,8 +267,8 @@ make_map<-function(mod_dat,fit_env=TRUE){
 ##-------------------------------------------------------------------------------------------------------------------
 
 ## function to attempt model fitting a specified number of times. Returns list of bets fit model (based on BIC), model and "fit", objects, and a vector of the BICs for all fitting attempts. Plus a "report" object and input data.
-fit_mod_func<-function(mods, streams, LHs, n_f, no_rand_FF, fit_env, fit_attempts){
-  dat<-make_dat_func(streams,LHs,n_f,no_rand_FF) # make model data
+fit_mod_func<-function(mods, streams, LHs, n_f, no_rand_FF, fit_env, fit_attempts,rate,fold_exclude){
+  dat<-make_dat_func(streams,LHs,n_f,no_rand_FF,rate,fold_exclude) # make model data
   dat$mod<-mods                                  # specify functional forms
   mod_map<-make_map(mod_dat=dat,fit_env = fit_env)                 # create map
   fit<-mod<-report<-NA # placeholders for converged model and "fit" objects
@@ -245,10 +277,10 @@ fit_mod_func<-function(mods, streams, LHs, n_f, no_rand_FF, fit_env, fit_attempt
     params<-make_params_func(dat)        # make initial parameter values
     if(no_rand_FF){
       mod_i<-TMB::MakeADFun(dat,params,random=c("log_S_hat","eta","Omega_xf"),DLL="Stock_recruit_LVM",map=mod_map,silent = TRUE)}else{
-        mod_i<-TMB::MakeADFun(dat,params,random=c("log_S_hat","eta","Omega_xf","eps_alpha","eps_gamma","eps_Jmax"),DLL="Stock_recruit_LVM",map=mod_map,silent = TRUE)
+        mod_i<-TMB::MakeADFun(dat,params,random=c("log_S_hat","eta","Omega_xf","eps_alpha","eps_gamma","eps_Jmax","beta_gamma","beta_Jmax"),DLL="Stock_recruit_LVM",map=mod_map,silent = TRUE)#,"eps_gamma"
       }
     fit_i<-NA # clear previous fit object 
-    try(fit_i<-TMBhelper::fit_tmb(mod_i, newtonsteps = 1)) # optimize
+    try(fit_i<-TMBhelper::fit_tmb(mod_i, newtonsteps = 1,getJointPrecision = TRUE)) # optimize
     BIC_mod<- NA #clear previous BIC
     try(BIC_mod<-(2*fit_i$objective+log(dat$n_t)*fit_i$number_of_coefficients[2])) # calculate  BIC
     try(if(min(BIC_vec,na.rm = TRUE)>BIC_mod){ # save model and "fit" object if BIC is lower than previous
@@ -258,15 +290,16 @@ fit_mod_func<-function(mods, streams, LHs, n_f, no_rand_FF, fit_env, fit_attempt
     })
     try(BIC_vec[i]<-BIC_mod) # save BIC
   }
+  if(is.na(mod))mod<-mod_i
   return(list(mod=mod,fit=fit,BIC_vec=BIC_vec,report=report,dat=dat))
 }
 
 #function to try a few more iterations if didn't converge in initial tries
-fit_mod_iter<-function(mods, streams, LHs, n_f, no_rand_FF, fit_env, fit_attempts, additional_attempts){
-  x<-fit_mod_func(mods, streams, LHs, n_f, no_rand_FF, fit_env, fit_attempts)
+fit_mod_iter<-function(mods, streams, LHs, n_f, no_rand_FF, fit_env, fit_attempts, additional_attempts,rate=c(.5,10,.1),fold_exclude){
+  x<-fit_mod_func(mods, streams, LHs, n_f, no_rand_FF, fit_env, fit_attempts,rate,fold_exclude)
     i<-0
     while(i<=additional_attempts & (min(x$BIC_vec,na.rm=TRUE)==Inf)){
-      x<-fit_mod_func(mods, streams, LHs, n_f, no_rand_FF, fit_env, fit_attempts=1)
+      x<-fit_mod_func(mods, streams, LHs, n_f, no_rand_FF, fit_env, fit_attempts=1,rate,fold_exclude)
       i<-i+1
     }
     

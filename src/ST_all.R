@@ -45,6 +45,9 @@ ts<-Sys.time()
 all_emigrants_estimates<-fit_all(all_data_lists=all_data_lists,do_boot=FALSE)
 Sys.time()-ts
 
+
+summary(unlist(lapply(all_emigrants_estimates,function(x)plogis(x$mod$env$last.par.best["logit_phi_e"]))))
+
 #save as ".Rdata" object
 save(all_emigrants_estimates,file=here("results",paste0("emigrant_estimates",substr(date(),4,10),substr(date(),20,25),".Rdata")))
 }

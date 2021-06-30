@@ -36,7 +36,7 @@ Type objective_function<Type>::operator() ()
 
    
     PARAMETER_VECTOR(mu_M);   // intercept of log-mean daily outmigrants
-    PARAMETER(logit_phi_d);   // logit AR(1) coefficient for across-year errors in log-mean daily emigrants 
+    // PARAMETER(logit_phi_d);   // logit AR(1) coefficient for across-year errors in log-mean daily emigrants
     PARAMETER(logit_phi_e);   // logit AR(1) coefficient for year-specific erros in log-mean daily outmigrants
     PARAMETER(ln_tau_d);      // log AR(1) process error precission for across year erros in log-mean daily emigrants
     PARAMETER(ln_tau_e);      // log AR(1) process error precission for year-specific errors in log-mean daily emmigrants 
@@ -56,7 +56,7 @@ vector<Type> jnll_comp(3);     // declare vector of 3 likelihood componenets (AR
 jnll_comp.setZero();           // set likelihood componenets to zero
 
 //Variables
-Type phi_d=invlogit(logit_phi_d);// transform correlation coefficient for across-year daily outmigrant errors to "0-1" space. I don't thing a negative correlation would ever be the case here, and must be >1 to be stationar
+// Type phi_d=invlogit(logit_phi_d);// transform correlation coefficient for across-year daily outmigrant errors to "0-1" space. I don't thing a negative correlation would ever be the case here, and must be >1 to be stationar
 Type phi_e=invlogit(logit_phi_e);// transform  correlation coefficient for yearly daily outmigrant errors to "0-1" space. I don't thing a negative correlation would ever be the case here, and must be >1 to be stationary
 Type sigma_d = 1/exp(ln_tau_d);  // transorm log precision to standard deviation 
 Type sigma_e = 1/exp(ln_tau_e);  // transorm log precision to standard deviation 
@@ -69,11 +69,22 @@ Type phi_NB=exp(log_phi_NB);     // transform negative binomial "phi" paramater
 
 //likelihood of random effects (errors)
 
+//random walk for across-year daily erros
+////first time step (assuming value at time 1 is 0)
+jnll_comp(0)-= dnorm(Type(delta(0)),Type(0),sigma_d,true);
+////subsequent time steps
+for(int i =1; i<(N_day-1); i++){
+  jnll_comp(0)-= dnorm(Type(delta(i)-delta(i-1)),Type(0),sigma_d,true);
+  }
+
+vector<Type> delta2(N_day);
+delta2 << Type(0),delta;
+
 //AR1 likelihood for across-year daily errors (representing the daily deviation from the mean in a "average year")
 // delta[1] ~ N(0,sigma_e)
 // delta[t] ~ phi_d*delta[t-1] + sqrt(1-phi_d^2)*e[t], e[t] ~ N(0,sigma_e)
-jnll_comp(0)+=SCALE(AR1(phi_d),
-          sigma_d)(delta); //uses AR1 likelihood from density namespace of TMB, which is fast. Returns negative log likelihood. 
+// jnll_comp(0)+=SCALE(AR1(phi_d),
+          // sigma_d)(delta); //uses AR1 likelihood from density namespace of TMB, which is fast. Returns negative log likelihood.
                            //SCALE function allows us to set the standard deviation of the AR1 marginal distribution
 
 //AR1 likelihood for year-specific daily errors (representing daily deviations on top the average within a given year)
@@ -93,10 +104,14 @@ for( int Iyear=0; Iyear<Nyears; Iyear++){        //loop through years
   M_hat.col(Iyear)=
     vector<Type>(exp(
         Type(mu_M(Iyear)) +                      // annual mean 
-          delta +                                // across-year daily error
+          delta2 +                                // across-year daily error
           vector<Type> (epsilon.col(Iyear))));   // year-specific daily error
   
 }
+
+
+// jnll_comp(0)-=(dexp(sigma_d,Type(1),true)+ln_tau_d);
+// jnll_comp(0)-=(dexp(sigma_e,Type(1),true)+ln_tau_e);
 
 //-----------------------------------------------------------------
 //-----------------------------------------------------------------

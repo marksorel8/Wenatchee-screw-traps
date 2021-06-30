@@ -67,7 +67,7 @@ make_screw_trap_model_inits<-function(data_in){
                logit_phi_e=qlogis(.99),
                ln_tau_d=0,
                ln_tau_e=0,
-               delta=numeric(data_in$N_day),
+               delta=numeric((data_in$N_day)-1),
                epsilon=matrix(0,nrow=data_in$N_day,ncol=data_in$Nyears),
                log_phi_NB=0)
   
@@ -77,15 +77,15 @@ make_screw_trap_model_inits<-function(data_in){
 
 
 #function to fit model 
-fit_model<-function(data_in,get_jp=TRUE ,do_boot){
+fit_model<-function(data_in,get_jp=TRUE ,do_boot=FALSE){
   setwd(here("src","TMB"))
   TMB::compile("screw_trap_LP_3.cpp") #compile TMB model
   dyn.load("screw_trap_LP_3") #load TMB model
   params<-make_screw_trap_model_inits(data_in) #initial parameters
   str(params)
-  if(data_in$Use_NB) map<-list() else map=list(logit_p_NB=factor(rep(NA,1))) #if using Poisson, dont optimize NB "prob" param
-  map$logit_phi_d<-factor(NA)
-  map$logit_phi_e<-factor(NA)
+  if(data_in$Use_NB) map<-list() else map=list(log_phi_NB=factor(rep(NA,1))) #if using Poisson, dont optimize NB "prob" param
+  # map$logit_phi_d<-factor(NA)
+  # map$logit_phi_e<-factor(NA)
   mod<-TMB::MakeADFun(data_in,params,random=c("epsilon","delta"),DLL="screw_trap_LP_3",silent=T,map=map)# construct model
   fit3<-TMBhelper::fit_tmb(mod,mod$fn,mod$gr, getsd = TRUE,newtonsteps = 1,getJointPrecision = get_jp) #optimize model
   
@@ -97,8 +97,13 @@ fit_model<-function(data_in,get_jp=TRUE ,do_boot){
     rownames(LH_sums)<-rownames(LH_sums_sd)<-levels(as.factor(data_in$years))
   })
   
+    
+    
   if(do_boot){
   #bootstrap log juvenile sums and sds
+  test<- with(all_emigrants_estimates$chiw_subs,
+         
+         boot<-   bootstrap_juves(all_data_lists[[1]], mod$env$last.par.best, fit3$SD$jointPrecision, n_sim=1000,seed=1234))
   boot<-bootstrap_juves(data_in, mod$env$last.par.best, fit3$SD$jointPrecision, n_sim=50000,seed=1234)
   }else{boot=NULL}
   
@@ -120,20 +125,24 @@ rmvnorm_prec <- function(mu, prec, n.sims, random_seed ) {
 
 #function to boostrap juvenile abundances
 bootstrap_juves<-function(dat, last_best , joint_precis ,n_sim, seed){
+  # browser()
   test_sim<-rmvnorm_prec(last_best ,
                          joint_precis ,
                          n_sim,seed)
+  
   Nyears<-dat$Nyears
   Ndays<-dat$N_day
   first_rand<-min(which(names(last_best)=="delta"))
-  first_year_rand<-first_rand+Ndays
+  first_year_rand<-first_rand+(Ndays-1)
   first_day<-dat$first_DOY
   breaks<-dat$breaks
   stream_length<-dat$stream_length
   
   sim_array<-array(NA,dim=c(Ndays,n_sim,Nyears))
   for ( year in 1:Nyears){
-    sim_array[,,year]<- exp(matrix(rep(test_sim[year,1:n_sim],each=Ndays),ncol=n_sim)+test_sim[first_rand:(first_year_rand-1),1:n_sim]+test_sim[seq((first_year_rand+((year-1)*Ndays)),length=Ndays),1:n_sim])
+    sim_array[,,year]<- exp(matrix(rep(test_sim[year,1:n_sim],each=Ndays),ncol=n_sim)+
+                              rbind(matrix(0,nrow=1,ncol=n_sim),test_sim[first_rand:(first_year_rand-1),1:n_sim])+ 
+                              test_sim[seq((first_year_rand+((year-1)*Ndays)),length=Ndays),1:n_sim])
   }
   
   LH_test<-apply(sim_array,2:3,function(x){
@@ -153,12 +162,12 @@ bootstrap_juves<-function(dat, last_best , joint_precis ,n_sim, seed){
 
 #function to fit models for all streams and ages
 fit_all<-function(all_data_lists,do_boot){
-  chiw_subs<-fit_model(all_data_lists[[1]],do_boot=do_boot)
-  chiw_yrlngs<-fit_model(all_data_lists[[2]],do_boot=do_boot)
-  nason_subs<-fit_model(all_data_lists[[3]],do_boot=do_boot)
-  nason_yrlngs<-fit_model(data=all_data_lists[[4]],do_boot=do_boot)
-  white_subs<-fit_model(all_data_lists[[5]],do_boot=do_boot)
-  white_yrlngs<-fit_model(all_data_lists[[6]],do_boot=do_boot)
+  chiw_subs<-fit_model(all_data_lists[[1]])
+  chiw_yrlngs<-fit_model(all_data_lists[[2]])
+  nason_subs<-fit_model(all_data_lists[[3]])
+  nason_yrlngs<-fit_model(data=all_data_lists[[4]])
+  white_subs<-fit_model(all_data_lists[[5]])
+  white_yrlngs<-fit_model(all_data_lists[[6]])
   
   return(list(chiw_subs=chiw_subs, chiw_yrlngs=chiw_yrlngs,
               nason_subs=nason_subs, nason_yrlngs=nason_yrlngs,

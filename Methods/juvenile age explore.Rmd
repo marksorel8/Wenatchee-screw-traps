@@ -3,9 +3,9 @@ title: "Juvenile Chinook age estimation"
 author: "mark sorel"
 date: "11/18/2020"
 output:
-  word_document: default
-  html_document: default
   pdf_document: default
+  html_document: default
+  word_document: default
 ---
 
 Ih this document we show how we assigned ages of juvenile Chinook captured in screw traps in the  Wenatchee River Basin.
@@ -26,14 +26,18 @@ library(readxl)
 library(mixtools)
 #The first step is to read in the data with lengths and dates of individual fish captured
 #CHIWAWA DATA
-chiw_fry_biod<-read_excel(here("data","Chiwawa","originals","RSTChiwawaSpringChinookTotalCaptures1997_2018_new.xlsx"),sheet=5) %>% mutate(DOY=as.numeric(format(DATE,form="%j")),year=as.numeric(format(DATE,form="%Y"))) #fry
+# chiw_fry_biod<-read_excel(here("data","Chiwawa","originals","RSTChiwawaSpringChinookTotalCaptures1997_2018_new.xlsx"),sheet=5) %>% mutate(DOY=as.numeric(format(DATE,form="%j")),year=as.numeric(format(DATE,form="%Y"))) #fry
+# 
+# chiw_sub_biod<-read_excel(here("data","Chiwawa","originals","RSTChiwawaSpringChinookTotalCaptures1997_2018_new.xlsx"),sheet=6)%>% mutate(DOY=as.numeric(format(DATE,form="%j")),year=as.numeric(format(DATE,form="%Y"))) #parr
+# 
+# chiw_smolt_biod<-read_excel(here("data","Chiwawa","originals","RSTChiwawaSpringChinookTotalCaptures1997_2018_new.xlsx"),sheet=7)%>% mutate(DOY=as.numeric(format(DATE,form="%j")),year=as.numeric(format(DATE,form="%Y"))) #yearlings
+# 
+# chiw_biod<-rbind(chiw_fry_biod,chiw_sub_biod,chiw_smolt_biod) %>% rename(Length=`FORK (mm)`) #all combined
 
-chiw_sub_biod<-read_excel(here("data","Chiwawa","originals","RSTChiwawaSpringChinookTotalCaptures1997_2018_new.xlsx"),sheet=6)%>% mutate(DOY=as.numeric(format(DATE,form="%j")),year=as.numeric(format(DATE,form="%Y"))) #parr
 
-chiw_smolt_biod<-read_excel(here("data","Chiwawa","originals","RSTChiwawaSpringChinookTotalCaptures1997_2018_new.xlsx"),sheet=7)%>% mutate(DOY=as.numeric(format(DATE,form="%j")),year=as.numeric(format(DATE,form="%Y"))) #yearlings
+chiw_biod<-read_csv(here("data","Chiwawa","Chiw_biodata_05132021.csv")) %>% mutate(DATE=lubridate::mdy(DATE),year=lubridate::year (DATE), DOY=lubridate::yday(DATE), stream="Chiwawa")%>% rename(Length=`FORK (mm)`)
 
-chiw_biod<-rbind(chiw_fry_biod,chiw_sub_biod,chiw_smolt_biod) %>% rename(Length=`FORK (mm)`) #all combined
-
+# chiw_biod$year %>% table()
 
 #NASON and WHITE
  #read in biological tagging data
@@ -55,6 +59,9 @@ chiw_biod<-rbind(chiw_fry_biod,chiw_sub_biod,chiw_smolt_biod) %>% rename(Length=
   #add DOY
   DOY=as.numeric(format(Date2,format="%j")),
   
+  #add Year
+  year=as.numeric(format(Date2,format="%Y")),
+  
   #make "length" numeric
   Length=as.numeric(as.character(Length))) %>% droplevels()
   
@@ -63,8 +70,12 @@ chiw_biod<-rbind(chiw_fry_biod,chiw_sub_biod,chiw_smolt_biod) %>% rename(Length=
   wSpC_White<-subset(bioD,stream=="White",)
 
 #combining all rivers
-  all_bio_data<- full_join(bioD,chiw_biod,by=c("Length","DOY")) %>% 
-    filter(Length>=20 & Length<=200)                  #filter 3 outliers
+  all_bio_data<- bind_rows(chiw_biod %>% select(stream,DOY,year,Length),bioD %>% select(stream,DOY,year,Length)) %>% 
+    filter(Length>=20 & Length<=200) 
+    
+    
+    # full_join(bioD,chiw_biod,by=c("Length","DOY")) %>% 
+                    #filter 3 outliers
 ```  
 
 
@@ -161,7 +172,7 @@ for ( i in 1:n_knots){                #loop through intervals
   x<-subset(all_bio_data,DOY>=knots[i]
             & DOY<(knots[i]+10))      #subset to interval
   
- hist(x[,"Length"],xlab="Length",xlim=c(20,140),
+ hist(x=x$Length,xlab="Length",xlim=c(20,140),
      breaks=seq(0,200,2),freq = FALSE,main=paste0("Days ",knots[i],"-",knots[i]+9))#plot histogram
  
   
@@ -240,9 +251,9 @@ all_bio_data<-all_bio_data %>% mutate( age = case_when(
     DOY<=262 ~"summer",
     TRUE ~"fall",
     
-  ))
+  )) %>% filter(year<=2018)
 
-write.csv(select(all_bio_data,stream,DOY,Length,LH,year,DATE),file = here("data","processed","all_bio_data.csv"))
+write.csv(all_bio_data,file = here("data","processed","all_bio_data.csv"))
 ```
 **Cutoff line to delineate ages of fish cpatured before day  `r quantile(interrogation[interrogation$Mark_to_mig==0,"Release.Day.Number"],.999) `**
 
