@@ -14,6 +14,7 @@ library(readxl)
 refit<-FALSE # whether to refit models rather that loading existing fitted model objects if they exist
 
 #fit/load model
+here::i_am("src/ST_all.R")
 source(here("src","ST_all.R"))
 ST_all<-ST_all_func(refit=refit)
 
