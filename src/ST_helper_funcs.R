@@ -1,14 +1,13 @@
 #function to make data lists for model
-make_screw_trap_model_data<-function(data_in,stream="Chiwawa", lifestage="yrlng",Use_NB=1,subyearlings=0,breaks=c(139,262)){
+make_screw_trap_model_data<-function(data_in,stream="Chiwawa", lifestage="yrlng",Use_NB=1,subyearlings=0){
   
   #subset data to days when there was catch data (including 0 catch)
   data_in<-filter(data_in,!is.na(data_in[,paste0("count.",lifestage)]))
   
   #design matrix for trap efficiency model
-  #if(stream=="Nason")
-  #pdat<-model.matrix(~moved*scale(Disch.cfs) , data=data_in) else
-  pdat<-model.matrix(~scale(Disch.cfs) , data=data_in)
   
+  pdat<-glmmTMB::glmmTMB(DOY~scale(Disch.cfs)+diag(1+scale(Disch.cfs)|year_factor) +(1|Week)+(1|Week:year_factor),data=data_in,dispformula = ~0,doFit=FALSE)
+  #
   #list of data inputs for model
   data_list<-list(subyearlings=subyearlings,                                       #flag indicating if model is of subyearlings or yearling migrants
                   rel=c(na.exclude(data_in[,paste0(lifestage,"_rel")])),   # releases in efficiency trils
@@ -19,13 +18,19 @@ make_screw_trap_model_data<-function(data_in,stream="Chiwawa", lifestage="yrlng"
                   catch_DOY = data_in$DOY-min(data_in$DOY),             # vector of DOY of trap day
                   first_DOY = min(data_in$DOY),                         # first day of year, for reference
                   seriesFac = data_in$year_factor-1,                    # vector of year index of trap day
-                  years=data_in$Year,                                   # years, for reference
-                  pDat=pdat,                                            # design matrix for model of efficiency on each trap day
+                  years=data_in$Year,                             # years, for reference
+                  beta= pdat$parameters$beta,
+                  b= pdat$parameters$b,
+                  theta = pdat$parameters$theta,
+                  terms_p = pdat$data.tmb$terms,
+                  X = pdat$data.tmb$X,
+                  Z = pdat$data.tmb$Z,
+                  
+                  # design matrix for model of efficiency on each trap day
                   N_trap=length(data_in[,paste0("count.",lifestage)]),  # number of trap days
                   N_day=diff(range(data_in$DOY))+1,                     # number of days per year to estimate emigrant abundance
                   Nyears=length(unique(data_in$year_factor)),           # number of years
-                  Use_NB=Use_NB,
-                  breaks=breaks,                                        # flag to use negative binomial observation model.
+                  Use_NB=Use_NB,                             # flag to use negative binomial observation model.
                   stream_length = ifelse(stream=="Chiwawa",32.5,
                                          ifelse(stream=="Nason",15.4,
                                                 16.1)))                 # tributary lengths (km) for standardizing juvenile emigrants  
@@ -61,15 +66,21 @@ make_data_list_func<-function(chiw_data=chiw_data,nas_whi_data=nas_whi_data,Use_
 
 #function to make initial parameters for a model for a given data set
 make_screw_trap_model_inits<-function(data_in){
-  params<-list(pCoefs=rep(-.5,ncol(data_in$pDat)),
+  params<-list(#pCoefs=rep(-.5,ncol(data_in$pDat)),
+               beta=data_in$beta,
+               b=data_in$b,
+               theta=data_in$theta,
                mu_M=log(c(tapply(data_in$Catch *3,data_in$seriesFac,mean))),
-               logit_phi_d=qlogis(.99),
-               logit_phi_e=qlogis(.99),
+               logit_phi_d=qlogis(.9),
+               logit_phi_e=qlogis(.9),
                ln_tau_d=0,
                ln_tau_e=0,
                delta=numeric((data_in$N_day)-1),
                epsilon=matrix(0,nrow=data_in$N_day,ncol=data_in$Nyears),
-               log_phi_NB=0)
+               log_phi_NB=0,
+               ln_tau_edp=0,
+               logit_phi_edp=qlogis(.9),
+               eps_doy_p=rep(.1,data_in$N_day))
   
   return(params)
 }
@@ -79,14 +90,14 @@ make_screw_trap_model_inits<-function(data_in){
 #function to fit model 
 fit_model<-function(data_in,get_jp=TRUE ,do_boot=FALSE){
   setwd(here("src","TMB"))
-  TMB::compile("screw_trap_LP_3.cpp") #compile TMB model
-  dyn.load("screw_trap_LP_3") #load TMB model
+  TMB::compile("screw_trap_LP_4.cpp") #compile TMB model
+  dyn.load("screw_trap_LP_4") #load TMB model
   params<-make_screw_trap_model_inits(data_in) #initial parameters
   str(params)
   if(data_in$Use_NB) map<-list() else map=list(log_phi_NB=factor(rep(NA,1))) #if using Poisson, dont optimize NB "prob" param
   # map$logit_phi_d<-factor(NA)
   # map$logit_phi_e<-factor(NA)
-  mod<-TMB::MakeADFun(data_in,params,random=c("epsilon","delta"),DLL="screw_trap_LP_3",silent=T,map=map)# construct model
+  mod<-TMB::MakeADFun(data_in,params,random=c("epsilon","delta","b"),DLL="screw_trap_LP_4",silent=T,map=map)# construct model
   fit3<-TMBhelper::fit_tmb(mod,mod$fn,mod$gr, getsd = TRUE,newtonsteps = 1,getJointPrecision = get_jp) #optimize model
   
   #extract log sums of emigrants within life history migration windows, and standard errors
@@ -104,7 +115,7 @@ fit_model<-function(data_in,get_jp=TRUE ,do_boot=FALSE){
   test<- with(all_emigrants_estimates$chiw_subs,
          
          boot<-   bootstrap_juves(all_data_lists[[1]], mod$env$last.par.best, fit3$SD$jointPrecision, n_sim=1000,seed=1234))
-  boot<-bootstrap_juves(data_in, mod$env$last.par.best, fit3$SD$jointPrecision, n_sim=50000,seed=1234)
+  boot<-bootstrap_juves(data_in, mod$env$last.par.best, fit3$SD$jointPrecision, n_sim=10000,seed=1234)
   }else{boot=NULL}
   
   return(list(LH_sums=LH_sums,LH_sums_sd=LH_sums_sd,boot=boot,fit3=fit3,mod=mod,M_hat=mod$report()$M_hat, dat=data_in))
@@ -130,6 +141,7 @@ bootstrap_juves<-function(dat, last_best , joint_precis ,n_sim, seed){
                          joint_precis ,
                          n_sim,seed)
   
+  
   Nyears<-dat$Nyears
   Ndays<-dat$N_day
   first_rand<-min(which(names(last_best)=="delta"))
@@ -140,21 +152,24 @@ bootstrap_juves<-function(dat, last_best , joint_precis ,n_sim, seed){
   
   sim_array<-array(NA,dim=c(Ndays,n_sim,Nyears))
   for ( year in 1:Nyears){
-    sim_array[,,year]<- exp(matrix(rep(test_sim[year,1:n_sim],each=Ndays),ncol=n_sim)+
+    sim_array[,,year]<- (matrix(rep(test_sim[year,1:n_sim],each=Ndays),ncol=n_sim)+
                               rbind(matrix(0,nrow=1,ncol=n_sim),test_sim[first_rand:(first_year_rand-1),1:n_sim])+ 
                               test_sim[seq((first_year_rand+((year-1)*Ndays)),length=Ndays),1:n_sim])
   }
   
   LH_test<-apply(sim_array,2:3,function(x){
-    c(sum(x[1:(breaks[1]-first_day)]),
-      sum(x[((breaks[1]-first_day)+1):(breaks[2]-first_day)]),
-      sum(x[(breaks[2]-first_day+1):Ndays]))
+    c(sum(exp(x[1:(breaks[1]-first_day)])),
+      sum(exp(x[((breaks[1]-first_day)+1):(breaks[2]-first_day)])),
+      sum(exp(x[(breaks[2]-first_day+1):Ndays])))
   })/stream_length
+  
+  quants_geom_mean_DAY<-apply(exp(apply(sim_array,1:2,mean)),1,quantile,probs=c(.025,.5,.975))
   
   return(list(
     boot_log_means=t(apply(LH_test,c(1,3),function(x)mean(log(x)))),
     boot_log_sds=t(apply(LH_test,c(1,3),function(x)sd(log(x)))),
-    big_array=LH_test
+    quants_geom_mean_DAY=quants_geom_mean_DAY#,
+    # big_array=LH_test
   ))
   
 }

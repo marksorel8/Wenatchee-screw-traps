@@ -12,7 +12,7 @@ ggplot_spawner_juveniles<-function(mod_fit , mod_dat, mod_rep){
 
   #----------------------------------------------------------------------------------------
   #----------------------------------------------------------------------------------------
-  #Function to plot spawners vs juvenles with fits for all stream sand life histories
+  #Function to plot spawners vs juvenles with fits for all streams and life histories
   ## optionally create a plot with base R and return list with all the values needed for the ggplot:
   ## latent spawners and juveniles and standard errors, and expected juveniles over a range of spawners and process error
   #----------------------------------------------------------------------------------------
@@ -26,7 +26,6 @@ ggplot_spawner_juveniles<-function(mod_fit , mod_dat, mod_rep){
     
     plot_SR<-function(stream, life_hist, main_title="",Y_max=NULL,y_ax=TRUE,x_ax=TRUE,plot_fit=FALSE){
       i<-stream*4+life_hist
-      mod<-mod_dat$mod
       if(is.na(mod_fit[1])){
         pred_em<-log(mod_rep$J_pred)[mod_dat$sl_i==(i)]
         pred_s<-log(mod_rep$S_hat)[unclass(mod_dat$st_i)[which(mod_dat$sl_i==i)]]
@@ -48,31 +47,11 @@ ggplot_spawner_juveniles<-function(mod_fit , mod_dat, mod_rep){
       fifty<-mod_rep$gamma[i]
       
       
-      if(mod[i]==1){
+     
         # Depensatory Beverton Holt I
         mod_pred<-((alpha*(S_hat)^(fifty))/
                      (1+alpha*(S_hat)^(fifty)/Jmax))
-      } else{if(mod[i]==2){
-        #Beverton Holt 
-        mod_pred<-  (alpha*(S_hat))/
-          (1+alpha*(S_hat)/Jmax)
-      } else{if(mod[i]==3){
-        
-        #power
-        mod_pred =  alpha*S_hat^fifty
-        
-      } else{if(mod[i]==4){
-        # Linear
-        mod_pred<-alpha*(S_hat)
-      } 
-        else{if(mod[i]==5){
-          # Linear
-          mod_pred<-Jmax * (1-exp(-(S_hat/alpha)^fifty))
-        }
-      }
-      }
-      }
-      }
+     
       
       #calculate total process erros (idiosyncratic and correlated)
       var_mat<-cbind(mod_rep$Loadings_pf,mod_rep$sigma_eta)^2 # combine latent factor loadings and idiosyncratic error loadings
@@ -244,6 +223,7 @@ plot_cor<-function(mod_rep,mod_fit, mod_dat,nsim=100000){
 
 lh_s_names<-paste(rep(c("Spr-0","Sum-0","Fall-0","Spr-1"),times=3),rep(c("Chiw.","Nason","White"),each=4),sep=" ")
 loadings2<-cbind(mod_rep$Loadings_pf,diag(mod_rep$sigma_eta))
+# loadings2<-mod_rep$Loadings_pf
 #marg_var<-rowSums(loadings2^2)
 cor_mat<-cov2cor( loadings2%*%t(loadings2)) 
 dimnames(cor_mat)<-list(lh_s_names,lh_s_names)
@@ -291,7 +271,7 @@ bootstrap_corr<-function(mle=mod_fit$par,cov_mat=mod_fit$SD$cov.fixed,n_f=mod_da
 corrplot::corrplot(cor_mat,type="lower",method = "circle",
                    # p.mat =p_corr*2,  insig = "p-value", sig.level = -.05,
                    
-                   mar=c(0,0,0,0),oma=c(0,0,0,0),tl.cex=1.5,tl.col="black",cl.cex=1.5,tl.srt=45)
+                   mar=c(0,0,0,0),oma=c(0,0,0,0),tl.cex=1.5,tl.col="black",cl.cex=1.5,tl.srt=45,diag=FALSE)
 
 }
 
@@ -301,13 +281,13 @@ corrplot::corrplot(cor_mat,type="lower",method = "circle",
 #----------------------------------------------------------------------------------------
 plot_spawn_em_year<-function(mod_dat,sum_out){
 # spawners/Km
-spawner_dat<-tibble(Spawners= exp(sum_out$spawners) ,stream=c("Chiwawa","Nason","White")[(mod_dat$s_i+1)],BY=mod_dat$BY) %>% distinct()
+spawner_dat<-tibble(Spawners= exp(sum_out$spawners) ,stream=c("Chiwawa","Nason","White")[(mod_dat$s_i+1)],BY=mod_dat$BY) %>% left_join(pHOS %>% rename(BY=1,stream=Stream)) %>% distinct()
 
-sum_spawn<-spawner_dat %>% group_by(BY) %>% summarise(Spawners=sum(Spawners)/n(),n=n()) %>% ungroup() %>% mutate(stream="Average") %>% filter(n==3)
+sum_spawn<-spawner_dat %>% group_by(BY) %>% summarise(Spawners=sum(Spawners)/n(),n=n(),pHOS_weighted=sum(pHOS_weighted)/n()) %>% ungroup() %>% mutate(stream="Average") %>% filter(n==3)
 
 spawner_dat<-bind_rows(spawner_dat,sum_spawn)%>% 
   #drop birst and last brood years which have incomplete juvenile data
-  group_by(stream) %>% mutate(max_BY=max(BY),min_BY=min(BY)) %>% ungroup() %>% filter(BY<max_BY,BY>min_BY) %>% mutate(LH="Spawner")
+  group_by(stream) %>% mutate(max_BY=max(BY),min_BY=min(BY)) %>% ungroup() %>% filter(BY<max_BY,BY>min_BY) %>% mutate(Wild=Spawners*(1-pHOS_weighted),Hatchery=Spawners*pHOS_weighted) %>% pivot_longer(c(Wild,Hatchery),names_to = "LH") %>% select(-Spawners) %>% rename(Spawners=value)
 
 
 #juveniles/km
@@ -324,7 +304,7 @@ all_dat<-bind_rows(juvenile_dat,spawner_dat) %>%  pivot_longer(c(Juveniles,prop,
 juv_2<-ggplot(data=all_dat,
               aes(fill=LH, x=BY, y=value))+ geom_bar(stat="identity", width=.8)+facet_grid(name~ stream, scales="free_y", switch="y", labeller = labeller(name=function(x){c("Spawners/ km)", "Emigrants x100/ km","Proportion")}))+  scale_fill_discrete(name="Life Stage", type="viridis")+ theme_grey()+  ylab(NULL) + labs(x="Brood Year")+
   theme(strip.background = element_blank(),
-        strip.placement = "outside")+ scale_x_continuous(breaks =seq(2000,2020,10))+ scale_fill_viridis(option="B", discrete=TRUE, end=.9)
+        strip.placement = "outside")+ scale_x_continuous(breaks =seq(2000,2020,10))+ scale_fill_manual(values=c(viridis(option="B",end=.9,begin=.225,n=4),"grey40","black"))
 
 juv_2
 }
@@ -338,11 +318,11 @@ juv_2
 expec_spawn_em_ploft_func<-function(preds){
 ##expected emigrants vs. spawners
 
-pred_mat<-preds %>%  mutate(juveniles =juveniles /100,LH=fct_relevel(LH,"Spr-0","Sum-0","Fall-0","Spr-1")) %>% group_by(stream,spawners) %>%  mutate(prop=juveniles/sum(juveniles)) %>% pivot_longer(c(juveniles,prop))
+pred_mat<-preds %>%  mutate(juveniles =juveniles /100,LH=fct_relevel(LH,"Spr-0","Sum-0","Fall-0","Spr-1")) %>% group_by(stream,spawners) %>%  mutate(prop=juveniles/sum(juveniles)) %>% pivot_longer(c(juveniles,prop)) %>% mutate(name=as_factor(name),name= fct_relevel(name,c("prop","juveniles")))
   
 
 juvenile_plot<-ggplot(data=pred_mat,
-                      aes(x=spawners/10,y=value,fill=LH))+geom_bar(stat="identity",width=.02)+facet_grid(name~stream, scales="free_y",switch="y", labeller = labeller(name=function(x){c("Emigrants x100/ km", "Proportion")}))+ scale_fill_discrete( name="Life Stage")+ theme_grey()+  ylab(NULL) + labs(x="Spawners (x10/ km)")+
+                      aes(x=spawners/10,y=value,fill=LH))+geom_bar(stat="identity",width=.02)+facet_grid(name~stream, scales="free_y",switch="y", labeller = labeller(name=function(x){c( "Proportion","Emigrants x100/ km")}))+ scale_fill_discrete( name="Life Stage")+ theme_grey()+  ylab(NULL) + labs(x="Spawners (x10/ km)")+
   theme(strip.background = element_blank(),
         strip.placement = "outside")+ scale_fill_viridis(option="B",discrete=TRUE,end=.9,begin=.225)
 
@@ -356,11 +336,10 @@ juvenile_plot
 ## returns a ggplot
 #----------------------------------------------------------------------------------------
 
-
 bootstrap_env_cov<-function(dat, last_best=fit$par , precis=fit$SD$cov.fixed ,n_sim=50000){
   
   test_sim<-mvtnorm::rmvnorm(n_sim,last_best ,
-                             precis , checkSymmetry = FALSE)
+                             precis )
   
   row_beta_e<-which(names(last_best)=="beta_e")[1:8]
   
@@ -371,3 +350,4 @@ bootstrap_env_cov<-function(dat, last_best=fit$par , precis=fit$SD$cov.fixed ,n_
   
   return(out)
 }
+
