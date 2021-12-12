@@ -99,14 +99,19 @@ Type objective_function<Type>::operator() ()
   int Count = 0;
   for(int fac=0; fac<n_f; fac++){
     for(int p=0; p<(n_sl); p++){
+      if(p==fac){
+        Loadings_pf(p,fac) = exp(Loadings_vec(Count));
+        Count++;
+      }else{
       if(p>=fac){
         Loadings_pf(p,fac) = Loadings_vec(Count);
-        // if(p==fac){Loadings_pf(p,fac) = exp(Loadings_pf(p,fac));}
+      
         Count++;
       }else{
         Loadings_pf(p,fac) = 0.0;
       }
     }
+  }
   }
   REPORT(Loadings_pf);
     
@@ -181,7 +186,7 @@ Type objective_function<Type>::operator() ()
         (Type(1.0)+   alpha(sl_i(i))* pow(S_hat(st_i(i)),gamma(sl_i(i))) / Jmax(sl_i(i)));
 
     
-        //// multiplicitive process error
+   
         J_pred(i) = J_hat(i) * exp(cov_e(i)+ LV_effects(sl_i(i), t_i(i))+
     eta(i)*sigma_eta(sl_i(i)));
 
@@ -228,7 +233,7 @@ Type objective_function<Type>::operator() ()
     jnll_comp(0) -= (dexp(exp(log_sigma_eta),Type(exp(rate(3))),true).sum() +
     log_sigma_eta.sum());
 
-
+   
   
   //// latent factor variables
   for(int t = 0; t<(n_t); t++){ // loop over years
@@ -252,6 +257,8 @@ Type objective_function<Type>::operator() ()
   
   ////  Latent spawners
   jnll_comp(2) -= dnorm(log_S_obs ,log_S_hat  ,S_obs_CV , true ).sum();
+  
+  
   
 
 //Reporting

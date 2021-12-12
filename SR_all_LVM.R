@@ -80,27 +80,48 @@ source(here("src","SR_helper_functions.R"))
  dyn.load(dynlib("Stock_recruit_LVM"))
  
  
+ dat<-make_dat_func(0:2,1:4,1,log(15000)) # make model data
+ mod_map<-make_map(mod_dat=dat,fit_env = 1)    
+ params<-make_params_func(dat)        # make initial parameter values
+ mod_i<-TMB::MakeADFun(dat,params,random=c("log_S_hat","Omega_xf","eps_alpha","eps_gamma","eps_Jmax","beta_gamma","beta_Jmax","eta"),DLL="Stock_recruit_LVM",map=mod_map,silent = TRUE)
+ 
+ 
+ stan_run<- tmbstan::tmbstan(mod_i,chains=1,cores=1,iter=1000,
+                             control=list(adapt_delta=0.9))
+ 
+ test_sum<-rstan::summary(stan_run)
+ test_sum$summary[,"Rhat"] %>% sort %>% tail(20)
 
-
+ shinystan::launch_shinystan(stan_run)
+ 
+ 
+ fit_i<-NA # clear previous fit object 
+ try(fit_i<-TMBhelper::fit_tmb(mod_i, newtonsteps = 1,getJointPrecision = TRUE)) # optimize
+ 
 #---------------------------------------------------------------------
 
-#sometimes have to run this a few times to get a model to converge (takes ~ 1 minute)
+#sometimes have to try a number of times with different starting calues to get a model to converge (takes several minutes)
+#there should ideally be multiple converged model with the same BIC = 612.95
+ ## if its not working, I recommend closing r and then trying again
+ set.seed(1234)
 fit_mod_result<-fit_mod_iter(streams=0:2,     #streams to include (Chiwawa, Nason, White)
                              LHs=1:4,         #life histories to include (spring subs, sumemr subs, fall subs, spring yearlings)
                              n_f=1,           # number of latent variable factors to include
                              fit_env =1,      #whether to fit environmentel covariates (1=year, 0 = no)
-                             fit_attempts=10, # numebr of times to attempt to fit model
-                             additional_attempts = 0, #additional attempts after that 
+                             fit_attempts=100, # numebr of times to attempt to fit model
+                             additional_attempts = 0, #additional attempts after that until a model converges
                              log_J_max_prior=log(15000))   # prior mean on Jmax hyper-mean
  
 #BIC value from each iteration running the model with different initial parameters
+##There should ideally be multiple converged model with the same BIC = 612.9517
 fit_mod_result$BIC_vec                      
 # AIC of best fit
 fit_mod_result$fit$AIC
 
+save(fit_mod_result,file=here("results","fit_mod_result_12_10_21.Rdata"))
 
 #list of final parameter values
-par_out<-fit_mod_result$mod$env$parList()
+par_out<-fit_mod_result$mod$env$parList(par=fit_mod_result$mod$env$last.par.best)
 par_out$rate %>% exp() #penalty parameters
 gc() #garbage clean
   
@@ -204,10 +225,15 @@ sim_post[which(names(fit_mod_result$mod$env$last.par.best) =="beta_e"),] %>% app
 
 
 #sometimes have to run this a few times to get a model to converge
-fit_mod_result_no_env<-fit_mod_iter(streams=0:2,LHs=1:4,n_f=1,fit_env =0, fit_attempts=10,additional_attempts = 0,log_J_max_prior=log(15000))   
+fit_mod_result_no_env<-fit_mod_iter(streams=0:2,LHs=1:4,n_f=1,fit_env =0, fit_attempts=50,additional_attempts = 0,log_J_max_prior=log(15000))   
 
-#look at BIG of fitted model to ensure that at least one converged and hopefully multiple with the same BIC
-fit_mod_result_no_env$BIC_vec 
+#BIC value from each iteration running the model with different initial parameters
+##There should ideally be multiple converged model with the same BIC = 606.946
+fit_mod_result_no_env$BIC_vec                      
+# AIC of best fit
+fit_mod_result_no_env$fit$AIC
+
+save(fit_mod_result_no_env,file=here("results","fit_mod_result_no_env_12_10_21.Rdata"))
 
 # plot process error correlation (takes a minute for bootstrapping p-values)
 ## png(here("results","plots","correlation.png"),units="in",res=300,height=10,width=10)

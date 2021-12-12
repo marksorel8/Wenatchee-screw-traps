@@ -112,9 +112,6 @@ fit_model<-function(data_in,get_jp=TRUE ,do_boot=FALSE){
     
   if(do_boot){
   #bootstrap log juvenile sums and sds
-  test<- with(all_emigrants_estimates$chiw_subs,
-         
-         boot<-   bootstrap_juves(all_data_lists[[1]], mod$env$last.par.best, fit3$SD$jointPrecision, n_sim=1000,seed=1234))
   boot<-bootstrap_juves(data_in, mod$env$last.par.best, fit3$SD$jointPrecision, n_sim=10000,seed=1234)
   }else{boot=NULL}
   

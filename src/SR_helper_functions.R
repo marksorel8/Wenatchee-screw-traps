@@ -125,11 +125,11 @@ make_dat_func<-function(streams=c( 0:2), #streams to model 0 = chiwawa, 1 = naso
 ##-------------------------------------------------------------------------------------------------------------------
 
 #function to construct parameters list. returns a list of initial values for paramaters to feed to TMB model "Stock_recruit_LVM.
-make_params_func<-function(dat,rate){
+make_params_func<-function(dat){
   
   params<-list( 
                 #fixed effects
-                 beta_alpha=rnorm(dat$n_l,log(10),1),   # log alpha interceptrs (by life-history)
+                 beta_alpha=rnorm(dat$n_l,log(5),1),   # log alpha interceptrs (by life-history)
               
                 log_sigma_alpha=rep(0,dat$n_l),                   # log alpha random effect SD
                 log_sigma_Jmax=rep(0,dat$n_l),                   # log Jmax random effect SD
@@ -140,19 +140,19 @@ make_params_func<-function(dat,rate){
                 beta_e=rep(0,ncol(dat$X)),                     # environmental covariate coefficients for process error
                 Loadings_vec=rnorm(dat$n_f*(dat$n_sl)-dat$n_f*(dat$n_f-1)/2,0,.1), # latent variable factor loadings
                 log_sigma_eta=log(abs(rnorm(dat$n_sl,-1,.1))),# idiosyncratic process error log SDs
-                rate=rnorm(4,log(c(1,.5,.5,1)),.5),                                     #penalty rates of regularizing penalties/priors
+                rate=rnorm(4,log(c(10,.5,.5,100)),.5),                                     #penalty rates of regularizing penalties/priors
                 
                 #random effects
-                beta_Jmax= rnorm(dat$n_l,log(15000),1), # log asymptotic maximum recruitment (Jmax) coefficients (by life-history) intercept
+                beta_Jmax= rnorm(dat$n_l,log(15000),.01), # log asymptotic maximum recruitment (Jmax) coefficients (by life-history) intercept
                 beta_gamma= rnorm(dat$n_l,0,.2),        # log gamma coefficients (by life history)
                 
-                eps_alpha=rnorm(dat$n_sl,0,.1),                         # log alpha random effects
-                eps_Jmax=rnorm(dat$n_sl,0,.1),                       # log Jmax random effects
-                eps_gamma= rnorm(dat$n_sl,0,.1),                        # log gamma random effects
+                eps_alpha=numeric(dat$n_sl),                         # log alpha random effects
+                eps_Jmax=numeric(dat$n_sl),                       # log Jmax random effects
+                eps_gamma= numeric(dat$n_sl),                        # log gamma random effects
                 log_S_hat = rnorm(length(dat$log_S_obs), dat$log_S_obs,.1), # latent spawners random effects
                 Omega_xf=matrix(0,dat$n_t,dat$n_f),            #  latenct variable factors
-                eta=numeric(dat$n_i)                         #  idisyncratic process error random effects
-
+                eta=numeric(dat$n_i),                         #  idisyncratic process error random effects
+log_sigma_loading=0
                 )                       
   
   return(params)
@@ -184,7 +184,7 @@ fit_mod_func<-function(streams, LHs, n_f, fit_env, fit_attempts,log_J_max_prior)
   fit<-mod<-report<-NA # placeholders for converged model and "fit" objects
   BIC_vec<-rep(Inf,fit_attempts)
   for ( i in 1:fit_attempts){
-    params<-make_params_func(dat,rate)        # make initial parameter values
+    params<-make_params_func(dat)        # make initial parameter values
         mod_i<-TMB::MakeADFun(dat,params,random=c("log_S_hat","Omega_xf","eps_alpha","eps_gamma","eps_Jmax","beta_gamma","beta_Jmax","eta"),DLL="Stock_recruit_LVM",map=mod_map,silent = TRUE)
     fit_i<-NA # clear previous fit object 
     try(fit_i<-TMBhelper::fit_tmb(mod_i, newtonsteps = 1,getJointPrecision = TRUE)) # optimize
