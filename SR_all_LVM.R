@@ -79,29 +79,10 @@ source(here("src","SR_helper_functions.R"))
  TMB::compile("Stock_recruit_LVM.cpp")
  dyn.load(dynlib("Stock_recruit_LVM"))
  
- 
- dat<-make_dat_func(0:2,1:4,1,log(15000)) # make model data
- mod_map<-make_map(mod_dat=dat,fit_env = 1)    
- params<-make_params_func(dat)        # make initial parameter values
- mod_i<-TMB::MakeADFun(dat,params,random=c("log_S_hat","Omega_xf","eps_alpha","eps_gamma","eps_Jmax","beta_gamma","beta_Jmax","eta"),DLL="Stock_recruit_LVM",map=mod_map,silent = TRUE)
- 
- 
- stan_run<- tmbstan::tmbstan(mod_i,chains=1,cores=1,iter=1000,
-                             control=list(adapt_delta=0.9))
- 
- test_sum<-rstan::summary(stan_run)
- test_sum$summary[,"Rhat"] %>% sort %>% tail(20)
-
- shinystan::launch_shinystan(stan_run)
- 
- 
- fit_i<-NA # clear previous fit object 
- try(fit_i<-TMBhelper::fit_tmb(mod_i, newtonsteps = 1,getJointPrecision = TRUE)) # optimize
- 
 #---------------------------------------------------------------------
 
 #sometimes have to try a number of times with different starting calues to get a model to converge (takes several minutes)
-#there should ideally be multiple converged model with the same BIC = 612.95
+#there should ideally be multiple converged model with the same BIC = 612.9517
  ## if its not working, I recommend closing r and then trying again
  set.seed(1234)
 fit_mod_result<-fit_mod_iter(streams=0:2,     #streams to include (Chiwawa, Nason, White)
