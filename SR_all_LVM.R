@@ -99,7 +99,7 @@ fit_mod_result$BIC_vec
 # AIC of best fit
 fit_mod_result$fit$AIC
 
-save(fit_mod_result,file=here("results","fit_mod_result_12_10_21.Rdata"))
+save(fit_mod_result,file=here("results","fit_mod_result_12_14_21.Rdata"))
 
 #list of final parameter values
 par_out<-fit_mod_result$mod$env$parList(par=fit_mod_result$mod$env$last.par.best)

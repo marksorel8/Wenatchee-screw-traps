@@ -146,9 +146,9 @@ make_params_func<-function(dat){
                 beta_Jmax= rnorm(dat$n_l,log(15000),.01), # log asymptotic maximum recruitment (Jmax) coefficients (by life-history) intercept
                 beta_gamma= rnorm(dat$n_l,0,.2),        # log gamma coefficients (by life history)
                 
-                eps_alpha=numeric(dat$n_sl),                         # log alpha random effects
-                eps_Jmax=numeric(dat$n_sl),                       # log Jmax random effects
-                eps_gamma= numeric(dat$n_sl),                        # log gamma random effects
+                eps_alpha=rnorm(dat$n_sl,log(5),1),                         # log alpha random effects
+                eps_Jmax=rnorm(dat$n_sl,log(15000),.1),                       # log Jmax random effects
+                eps_gamma= rnorm(dat$n_sl,0,.1),                        # log gamma random effects
                 log_S_hat = rnorm(length(dat$log_S_obs), dat$log_S_obs,.1), # latent spawners random effects
                 Omega_xf=matrix(0,dat$n_t,dat$n_f),            #  latenct variable factors
                 eta=numeric(dat$n_i),                         #  idisyncratic process error random effects
