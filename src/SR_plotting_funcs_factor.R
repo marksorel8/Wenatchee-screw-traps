@@ -10,142 +10,48 @@
 
 ggplot_spawner_juveniles<-function(mod_fit , mod_dat, mod_rep){
 
-  #----------------------------------------------------------------------------------------
-  #----------------------------------------------------------------------------------------
-  #Function to plot spawners vs juvenles with fits for all streams and life histories
-  ## optionally create a plot with base R and return list with all the values needed for the ggplot:
-  ## latent spawners and juveniles and standard errors, and expected juveniles over a range of spawners and process error
-  #----------------------------------------------------------------------------------------
+  #tibble of estimated spawner and emigrant abundances
+  sum_out<- tibble(
+    juveniles=mod_fit$SD$value[names(mod_fit$SD$value)=="log(J_pred)"],
+    juveniles_sd=mod_fit$SD$sd[names(mod_fit$SD$value)=="log(J_pred)"],
+    stream=  mod_dat$s_i,
+    LH= mod_dat$l_i,
+    t=mod_dat$t_i,
+    S_fac=mod_dat$st_i) %>% left_join(  
+      tibble(
+        spawners=mod_fit$SD$value[names(mod_fit$SD$value)=="log_S_hat"],
+        spawner_sd=mod_fit$SD$sd[names(mod_fit$SD$value)=="log_S_hat"],
+        S_fac=mod_dat$st_i %>% levels())) %>% 
+    mutate(stream=c("Chiwawa","Nason","White")[stream+1],
+           stream=fct_relevel(stream,c("Chiwawa","Nason","White")),
+           LH=c("Spr.0","Sum.0","Fal.0","Spr.1")[LH+1],
+           LH=fct_relevel(LH,c("Spr.0","Sum.0","Fal.0","Spr.1")))
   
-  plot_fun_pan<-function(plot_fit=FALSE){
-    
-    #----------------------------------------------------------------------------------------
-    #----------------------------------------------------------------------------------------
-    # Function to plot spawners vs juveniles with fits.
-    ## optionally plots and returns a list of values for plotting: latent spawners and juveniles and standard errors, plus expected juveniles for a range of spawners and process errors
-    
-    plot_SR<-function(stream, life_hist, main_title="",Y_max=NULL,y_ax=TRUE,x_ax=TRUE,plot_fit=FALSE){
-      i<-stream*4+life_hist
-      if(is.na(mod_fit[1])){
-        pred_em<-log(mod_rep$J_pred)[mod_dat$sl_i==(i)]
-        pred_s<-log(mod_rep$S_hat)[unclass(mod_dat$st_i)[which(mod_dat$sl_i==i)]]
-        x_max<-max(exp(pred_s))
-      }else{
-        pred_em<-mod_fit$SD$value[names(mod_fit$SD$value)=="log(R_pred)"][mod_dat$sl_i==(i)]
-        pred_sd<-mod_fit$SD$sd[names(mod_fit$SD$value)=="log(R_pred)"][mod_dat$sl_i==(i)]
-        pred_s<-mod_fit$SD$value[names(mod_fit$SD$value)=="log_S_hat"][unclass(mod_dat$st_i)[which(mod_dat$sl_i==i)]]
-        pred_s_sd<-mod_fit$SD$sd[names(mod_fit$SD$value)=="log_S_hat"][unclass(mod_dat$st_i)[which(mod_dat$sl_i==i)]]
-        
-        x_max<-max(exp(pred_s+1.96*pred_s_sd))
-      }
-      
-      
-      
-      alpha<-mod_rep$alpha[i]
-      Jmax<-mod_rep$Jmax[i]
-      S_hat<-seq(0,x_max,.2)
-      fifty<-mod_rep$gamma[i]
-      
-      
-     
-        # Depensatory Beverton Holt I
-        mod_pred<-((alpha*(S_hat)^(fifty))/
-                     (1+alpha*(S_hat)^(fifty)/Jmax))
-     
-      
-      #calculate total process erros (idiosyncratic and correlated)
-      var_mat<-cbind(mod_rep$Loadings_pf,mod_rep$sigma_eta)^2 # combine latent factor loadings and idiosyncratic error loadings
-      eps<-sqrt(rowSums(var_mat))[i] # total process error standard deviations
-      
-      
-      if(plot_fit){
-        
-        Y_max<-max(c(mod_pred*exp(1.96*eps),exp(pred_em+1.96*pred_sd))) #y max for plot
-        
-        plot(exp(pred_s)/100,exp(pred_em)/100,ylim=c(0,Y_max)/100,xlim=c(0,x_max/10),main=main_title,xlab="",ylab="",yaxt="n",xaxt="n",font=2,cex=1,type="n",pch=19)#max(r_hats*2)/Riv_length)
-        
-        if(y_ax) axis(2)
-        if(x_ax) axis(1,labels=TRUE,font=1,cex=1)
-        
-        
-        polygon(x=c(S_hat,rev(S_hat))/10,c(mod_pred*exp(1.96*eps),rev(mod_pred*exp(-1.96*eps)))/100,border=FALSE,col=rgb(.7,.1,.1,.2))
-        
-        
-        
-        if(!is.na(fit[1])){
-          segments(exp(pred_s)/10,exp(pred_em+1.96*pred_sd)/100,exp(pred_s)/10,exp(pred_em-1.96*pred_sd)/100)
-          
-          segments(exp(pred_s+1.96*pred_s_sd)/10,exp(pred_em)/100,exp(pred_s-1.96*pred_s_sd)/10,exp(pred_em)/100)
-        }
-        
-        
-        points(exp(pred_s)/10,exp(pred_em)/100,main=i,pch=19)
-        
-        
-        points(S_hat/10,mod_pred/100,type="l",col="firebrick3",lwd=2)
-        
-      }
-      
-      if(!is.na(mod_fit[1])){
-        list(pred_em=pred_em,pred_sd=pred_sd,pred_s=pred_s,pred_s_sd=pred_s_sd,B_years=mod_dat$BY[mod_dat$sl_i==(i)])
-        list(pred_s=exp(pred_s),pred_em=exp(pred_em)) 
-        
-        return(list(vals=list(pred_em=pred_em,pred_sd=pred_sd,pred_s=pred_s,pred_s_sd=pred_s_sd,B_years=mod_dat$BY[mod_dat$sl_i==(i)]),
-                    preds= list(S_hat=S_hat,mod_pred=mod_pred,eps=eps)))
-      }
-    } # end of function
-    #----------------------------------------------------------------------------------------  
-    
-    
-    out<-list()
-    out_df<-tibble()
-    out_year_df<-tibble()
-    #dev.new()
-    par(mfcol=c(4,3),mar=c(1,3,0,0),oma=c(6,6,4,14))
-    for ( i in 0:2) {  #stream
-      for ( j in 1:4){ #life history
-        sl_out<- plot_SR(stream=i, life_hist = j, y_ax=TRUE,x_ax=ifelse(j==4,TRUE,FALSE),plot_fit = plot_fit)
-        #Y_max=y_max[(j)], y_ax=ifelse(i==0,TRUE,FALSE)
-        
-        out_df<-bind_rows(out_df,bind_cols(spawners=sl_out$preds$S_hat,juveniles=sl_out$preds$mod_pred,LH=c("Spr-0","Sum-0","Fall-0","Spr-1")[j],stream=c("Chiwawa","Nason","White")[(i+1)],eps=sl_out$preds$eps))
-        
-        out_year_df<-bind_rows(out_year_df,bind_cols(spawners=sl_out$vals$pred_s,juveniles=sl_out$vals$pred_em,LH=c("Spr-0","Sum-0","Fall-0","Spr-1")[j],stream=c("Chiwawa","Nason","White")[(i+1)]))
-        
-        out[[i*4+j]]<-sl_out
-        if(plot_fit){
-          if(j==1) mtext(c("Chiwawa","Nason","White")[(i+1)],3)
-          if(i==0) mtext(c("Spr-0","Sum-0","Fall-0","Spr-1")[j],2,3)
-        }
-      }
-    }
-    
-    if(plot_fit){
-      mtext("Spawners x 10/ km",side=1,line=3,outer=TRUE,cex = 1,font=1)
-      mtext("Emigrants x 100/ km",side=2,line=3,outer=TRUE,cex = 1,font=1)
-      
-      legend(x=.7,y=10,xjust = 0,yjust=0,legend=c("Stream x LH","Stream"),fill=c(rgb(.7,.1,.1,.2),rgb(.7,.1,.1,.4)),xpd=NA,border=F,bty="n",cex=1.4,title="process error")
-    }
-    return(list(all=out,pred_mat=out_df,pred_mat_2=out_year_df))
-  } # end of function
-  #----------------------------------------------------------------------------------------  
+  
+  #tibble of model prediction of emigrant abundances over a range of spawner abundances
+  preds<-tibble(
+    alpha=mod_rep$alpha,
+    gamma=mod_rep$gamma,
+    Jmax=mod_rep$Jmax,
+    stream=rep(0:2,each=4),
+    LH=rep(0:3,times=3),
+    loadings=abs(c(log(mod_rep$Loadings_pf[1]),mod_rep$Loadings_pf[-1])),
+    idio_var=mod_rep$sigma_eta^2) %>% 
+    mutate(eps=sqrt(loadings+idio_var)) %>% 
+    mutate(stream=c("Chiwawa","Nason","White")[stream+1],
+           stream=fct_relevel(stream,c("Chiwawa","Nason","White")),
+           LH=c("Spr.0","Sum.0","Fal.0","Spr.1")[LH+1],
+           LH=fct_relevel(LH,c("Spr.0","Sum.0","Fal.0","Spr.1")))%>% 
+    left_join(
+      sum_out %>% group_by(stream) %>% summarize (S_max=max(exp(spawners+2*spawner_sd)))) %>% 
+    crossing(
+      spawners=seq(from=0,to=max(exp(sum_out$spawners+2*sum_out$spawner_sd)),by=.1)) %>% 
+    filter(spawners<=S_max) %>% 
+    mutate(juveniles=((alpha*(spawners)^(gamma)/
+                         (1+alpha*(spawners)^(gamma)/Jmax))))
   
   
   
-  all_dat_plot<-plot_fun_pan(plot_fit = FALSE)
-  #predicted spawners 
-  log_s_pred_pos<-which(names(mod_fit$SD$value)=="log_S_hat")
-  log_s_pred<-tibble(spawners=mod_fit$SD$value[log_s_pred_pos]) %>% 
-    mutate(spawner_sd=mod_fit$SD$sd[log_s_pred_pos])
-  
-  #predicted jvueniles
-  log_J_pred_pos<-which(names(mod_fit$SD$value)=="log(J_pred)")
-  log_J_pred<-tibble(juveniles =mod_fit$SD$value[log_J_pred_pos]) %>%
-    as_tibble() %>% mutate(juveniles_sd=mod_fit$SD$sd[log_J_pred_pos])
-  #juveniles and SEs and combine with spawners 
-  sum_out<- log_J_pred %>% as_tibble() %>%  mutate(stream=c("Chiwawa","Nason","White")[(mod_dat$s_i+1)],LH=c("Spr-0","Sum-0","Fall-0","Spr-1")[(mod_dat$l_i+1)]) %>% bind_cols(log_s_pred[as.numeric(mod_dat$st_i),]) %>% mutate(LH=fct_relevel(LH,"Spr-0","Sum-0","Fall-0","Spr-1"))
-  
-  #predictions of expected juveniles over a range of spawner abundances
-  preds<-as_tibble(all_dat_plot$pred_mat) %>% mutate(total_sd=sqrt(eps^2))%>% mutate(LH=fct_relevel(LH,"Spr-0","Sum-0","Fall-0","Spr-1"))
   
   #Begin plot of spawners vs juveniles 
   scale_juv<-100
@@ -322,7 +228,7 @@ pred_mat<-preds %>%  mutate(juveniles =juveniles /100,LH=fct_relevel(LH,"Spr-0",
   
 
 juvenile_plot<-ggplot(data=pred_mat,
-                      aes(x=spawners/10,y=value,fill=LH))+geom_bar(stat="identity",width=.02)+facet_grid(name~stream, scales="free_y",switch="y", labeller = labeller(name=function(x){c( "Proportion","Emigrants x100/ km")}))+ scale_fill_discrete( name="Life Stage")+ theme_grey()+  ylab(NULL) + labs(x="Spawners (x10/ km)")+
+                      aes(x=spawners/10,y=value,fill=LH))+geom_bar(stat="identity",width=.02)+facet_grid(name~stream, scales="free",switch="y", space="free_x", labeller = labeller(name=function(x){c( "Proportion","Emigrants x100/ km")}))+ scale_fill_discrete( name="Life Stage")+ theme_grey()+  ylab(NULL) + labs(x="Spawners (x10/ km)")+
   theme(strip.background = element_blank(),
         strip.placement = "outside")+ scale_fill_viridis(option="B",discrete=TRUE,end=.9,begin=.225)
 

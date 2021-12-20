@@ -116,45 +116,30 @@ Type objective_function<Type>::operator() ()
   REPORT(Loadings_pf);
     
   
-  vector<Type> log_alpha(n_sl); // empty vector to hold log alphas
-  vector<Type> log_Jmax(n_sl);  // empty vector to hold log Jmaxes
-  vector<Type> log_gamma(n_sl); // empty vector to hold log gammas
-  
-  
-  
-  vector<Type>eps_alpha_corrected(n_sl);// bias correction for lognormal mean  
-  vector<Type>eps_Jmax_corrected(n_sl);// bias correction for lognormal mean  
-  vector<Type>eps_gamma_corrected(n_sl);// bias correction for lognormal mean  
+
+  Type alpha_bias_correction = 0;// bias correction for lognormal mean  
+  Type gamma_bias_correction = 0;
+  Type Jmax_bias_correction = 0;
+
   //// calculate alphas, gammas, and Jmaxes
   //////linear predictors on log scale
   for(int j=0; j<n_l; j++){          // loop over life histories
+    alpha_bias_correction = pow(exp(log_sigma_alpha(j)),2)/2.0;
+    Jmax_bias_correction = pow(exp(log_sigma_Jmax(j)),2)/2.0;
+    gamma_bias_correction = pow(exp(log_sigma_gamma(j)),2)/2.0;
     for( int i=0; i<n_s; i++){       // loop over streams
       
-      eps_alpha_corrected(i*n_l+j)= ((eps_alpha(i*n_l+j)*
-        exp(log_sigma_alpha(j)))-
-        ((exp(log_sigma_alpha(j))*exp(log_sigma_alpha(j)))/2.0)); // bias correction for lognormal mean  
+      jnll_comp(0) -= dnorm( Type(eps_alpha(i*n_l+j)),
+                Type(beta_alpha(j) -alpha_bias_correction),
+                Type(exp(log_sigma_alpha(j))),true );
       
-      log_alpha(i*n_l+j) =           // log alpha
-        beta_alpha(j) +              // life-history intercept
-        eps_alpha_corrected(i*n_l+j) ;
+      jnll_comp(0) -= dnorm( Type(eps_Jmax(i*n_l+j)),
+                Type(beta_Jmax(j) -Jmax_bias_correction),
+                Type(exp(log_sigma_Jmax(j))),true );
       
-      eps_Jmax_corrected(i*n_l+j) = ((eps_Jmax(i*n_l+j)*
-        exp(log_sigma_Jmax(j))) - 
-        ((exp(log_sigma_Jmax(j))*exp(log_sigma_Jmax(j)))/2.0)); // bias correction for lognormal mean
-      
-      log_Jmax(i*n_l+j) =            // log maximum recruitment
-        beta_Jmax(j) +             // life-history intercept
-        eps_Jmax_corrected(i*n_l+j)  ;            
-      
-      
-      eps_gamma_corrected(i*n_l+j)=((eps_gamma(i*n_l+j)*
-        exp(log_sigma_gamma(j)))-
-        ((exp(log_sigma_gamma(j))*exp(log_sigma_gamma(j)))/2.0));   // bias correction for lognormal mean
-      
-      log_gamma(i*n_l+j) =            // log gamma 
-        beta_gamma(j) +               // life-history intercept
-        eps_gamma_corrected(i*n_l+j);         
-      
+      jnll_comp(0) -= dnorm( Type(eps_gamma(i*n_l+j)),
+                Type(beta_gamma(j) -gamma_bias_correction),
+                Type(exp(log_sigma_gamma(j))),true );
       
     }
   }
@@ -162,9 +147,9 @@ Type objective_function<Type>::operator() ()
   
   
   ////// transform to positive real space
-  vector<Type> alpha = exp(log_alpha);
-  vector<Type> Jmax = exp(log_Jmax);
-  vector<Type> gamma =  exp(log_gamma);
+  vector<Type> alpha = exp(eps_alpha);
+  vector<Type> Jmax = exp(eps_Jmax);
+  vector<Type> gamma =  exp(eps_gamma);
 
   
   // calculate latent juvenile emigrants
@@ -198,15 +183,7 @@ Type objective_function<Type>::operator() ()
   // 
   PARAMETER_VECTOR(rate);
     
-  //// stream-specific random effects on log alphas, log gammas, and log Jmaxes
-  for ( int i = 0; i<n_sl; i++){ // loop over stream x LHP combinations
-      jnll_comp(0) -= dnorm(eps_alpha(i),Type(0),Type(1),true);
-      jnll_comp(0) -= dnorm(eps_gamma(i),Type(0),Type(1),true);
-      jnll_comp(0) -= dnorm(eps_Jmax(i),Type(0),Type(1),true);
-      }
- 
 
-  
   //regulatizing priors on hyper-standard deviations of random effects on log alphas, log gammas, and log Jmaxes
   jnll_comp(0) -= (dexp(exp(log_sigma_alpha),Type(exp(rate(0))),true).sum() + 
     log_sigma_alpha.sum());
