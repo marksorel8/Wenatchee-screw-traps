@@ -89,7 +89,7 @@ fit_mod_result<-fit_mod_iter(streams=0:2,     #streams to include (Chiwawa, Naso
                              LHs=1:4,         #life histories to include (spring subs, sumemr subs, fall subs, spring yearlings)
                              n_f=1,           # number of latent variable factors to include
                              fit_env =1,      #whether to fit environmentel covariates (1=year, 0 = no)
-                             fit_attempts=100, # numebr of times to attempt to fit model
+                             fit_attempts=20, # numebr of times to attempt to fit model
                              additional_attempts = 0, #additional attempts after that until a model converges
                              log_J_max_prior=log(15000))   # prior mean on Jmax hyper-mean
  
@@ -99,7 +99,7 @@ fit_mod_result$BIC_vec
 # AIC of best fit
 fit_mod_result$fit$AIC
 
-save(fit_mod_result,file=here("results","fit_mod_result_12_14_21.Rdata"))
+save(fit_mod_result,file=here("results","fit_mod_result_12_21_21.Rdata"))
 
 #list of final parameter values
 par_out<-fit_mod_result$mod$env$parList(par=fit_mod_result$mod$env$last.par.best)
@@ -206,7 +206,7 @@ sim_post[which(names(fit_mod_result$mod$env$last.par.best) =="beta_e"),] %>% app
 
 
 #sometimes have to run this a few times to get a model to converge
-fit_mod_result_no_env<-fit_mod_iter(streams=0:2,LHs=1:4,n_f=1,fit_env =0, fit_attempts=50,additional_attempts = 0,log_J_max_prior=log(15000))   
+fit_mod_result_no_env<-fit_mod_iter(streams=0:2,LHs=1:4,n_f=1,fit_env =0, fit_attempts=20,additional_attempts = 0,log_J_max_prior=log(15000))   
 
 #BIC value from each iteration running the model with different initial parameters
 ##There should ideally be multiple converged model with the same BIC = 606.946
@@ -214,7 +214,7 @@ fit_mod_result_no_env$BIC_vec
 # AIC of best fit
 fit_mod_result_no_env$fit$AIC
 
-save(fit_mod_result_no_env,file=here("results","fit_mod_result_no_env_12_10_21.Rdata"))
+save(fit_mod_result_no_env,file=here("results","fit_mod_result_no_env_12_21_21.Rdata"))
 
 # plot process error correlation (takes a minute for bootstrapping p-values)
 ## png(here("results","plots","correlation.png"),units="in",res=300,height=10,width=10)

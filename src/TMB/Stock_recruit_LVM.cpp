@@ -194,15 +194,23 @@ Type objective_function<Type>::operator() ()
   jnll_comp(0) -= (dexp(exp(log_sigma_Jmax),Type(exp(rate(0))),true).sum() +
     log_sigma_Jmax.sum());
 
-  
 
+vector<Type> sigma_Bgamma= exp(log_sigma_Bgamma);
+vector<Type> sigma_BJmax= exp(log_sigma_BJmax);
+  
+  
     //reluarizing prior on hyper-means for log gammas
-    jnll_comp(0) -= dnorm(beta_gamma,Type(0),exp(log_sigma_Bgamma),true).sum();
+    jnll_comp(0) -= dnorm(beta_gamma,
+              vector<Type>(sigma_Bgamma*sigma_Bgamma/-2.0),//lognormal bias correction
+                            sigma_Bgamma,true).sum();
     jnll_comp(0) -= (dexp(exp(log_sigma_Bgamma),Type(exp(rate(1))),true).sum() +
       log_sigma_Bgamma.sum());
 
     //regularizing prior on hyper-mean of log-Jmaxes
-    jnll_comp(0) -= dnorm(beta_Jmax,log_J_max_prior,exp(log_sigma_BJmax),true).sum();
+    jnll_comp(0) -= dnorm(beta_Jmax,
+              vector<Type>(log_J_max_prior-
+                (sigma_BJmax*sigma_BJmax/2.0)),//lognormal bias correction
+              sigma_BJmax,true).sum();
     jnll_comp(0) -= (dexp(exp(log_sigma_BJmax),Type(exp(rate(2))),true).sum() +
       log_sigma_BJmax.sum());
     
@@ -228,12 +236,17 @@ Type objective_function<Type>::operator() ()
   //Likelihood
   
   ////  Latent juveniles
-  vector<Type> juv_like= dnorm(J_obs ,vector<Type>(log(J_pred)) ,J_obs_sd , true );
+  vector<Type> juv_like= dnorm(J_obs ,
+                               vector<Type>(log(J_pred)),              
+    J_obs_sd , true );
+  
   REPORT(juv_like);
   jnll_comp(2) -= juv_like.sum();  
   
   ////  Latent spawners
-  jnll_comp(2) -= dnorm(log_S_obs ,log_S_hat  ,S_obs_CV , true ).sum();
+  jnll_comp(2) -= dnorm(log_S_obs ,
+              log_S_hat,
+              S_obs_CV , true ).sum();
   
   
   

@@ -24,8 +24,8 @@ ggplot_spawner_juveniles<-function(mod_fit , mod_dat, mod_rep){
         S_fac=mod_dat$st_i %>% levels())) %>% 
     mutate(stream=c("Chiwawa","Nason","White")[stream+1],
            stream=fct_relevel(stream,c("Chiwawa","Nason","White")),
-           LH=c("Spr.0","Sum.0","Fal.0","Spr.1")[LH+1],
-           LH=fct_relevel(LH,c("Spr.0","Sum.0","Fal.0","Spr.1")))
+           LH=c("Spr-0","Sum-0","Fall-0","Spr-1")[LH+1],
+           LH=fct_relevel(LH,c("Spr-0","Sum-0","Fall-0","Spr-1")))
   
   
   #tibble of model prediction of emigrant abundances over a range of spawner abundances
@@ -35,13 +35,13 @@ ggplot_spawner_juveniles<-function(mod_fit , mod_dat, mod_rep){
     Jmax=mod_rep$Jmax,
     stream=rep(0:2,each=4),
     LH=rep(0:3,times=3),
-    loadings=abs(c(log(mod_rep$Loadings_pf[1]),mod_rep$Loadings_pf[-1])),
+    loadings=(mod_rep$Loadings_pf[1])^2,
     idio_var=mod_rep$sigma_eta^2) %>% 
     mutate(eps=sqrt(loadings+idio_var)) %>% 
     mutate(stream=c("Chiwawa","Nason","White")[stream+1],
            stream=fct_relevel(stream,c("Chiwawa","Nason","White")),
-           LH=c("Spr.0","Sum.0","Fal.0","Spr.1")[LH+1],
-           LH=fct_relevel(LH,c("Spr.0","Sum.0","Fal.0","Spr.1")))%>% 
+           LH=c("Spr-0","Sum-0","Fall-0","Spr-1")[LH+1],
+           LH=fct_relevel(LH,c("Spr-0","Sum-0","Fall-0","Spr-1")))%>% 
     left_join(
       sum_out %>% group_by(stream) %>% summarize (S_max=max(exp(spawners+2*spawner_sd)))) %>% 
     crossing(
@@ -230,7 +230,8 @@ pred_mat<-preds %>%  mutate(juveniles =juveniles /100,LH=fct_relevel(LH,"Spr-0",
 juvenile_plot<-ggplot(data=pred_mat,
                       aes(x=spawners/10,y=value,fill=LH))+geom_bar(stat="identity",width=.02)+facet_grid(name~stream, scales="free",switch="y", space="free_x", labeller = labeller(name=function(x){c( "Proportion","Emigrants x100/ km")}))+ scale_fill_discrete( name="Life Stage")+ theme_grey()+  ylab(NULL) + labs(x="Spawners (x10/ km)")+
   theme(strip.background = element_blank(),
-        strip.placement = "outside")+ scale_fill_viridis(option="B",discrete=TRUE,end=.9,begin=.225)
+        strip.placement = "outside")+ scale_fill_viridis(option="B",discrete=TRUE,end=.9,begin=.225)+
+  scale_x_continuous(guide = guide_axis(check.overlap = TRUE))
 
 juvenile_plot
 }
