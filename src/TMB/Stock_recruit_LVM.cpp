@@ -200,16 +200,12 @@ vector<Type> sigma_BJmax= exp(log_sigma_BJmax);
   
   
     //reluarizing prior on hyper-means for log gammas
-    jnll_comp(0) -= dnorm(beta_gamma,
-              vector<Type>(sigma_Bgamma*sigma_Bgamma/-2.0),//lognormal bias correction
-                            sigma_Bgamma,true).sum();
+    jnll_comp(0) -= dnorm(beta_gamma,0.0, sigma_Bgamma,true).sum();
     jnll_comp(0) -= (dexp(exp(log_sigma_Bgamma),Type(exp(rate(1))),true).sum() +
       log_sigma_Bgamma.sum());
 
     //regularizing prior on hyper-mean of log-Jmaxes
-    jnll_comp(0) -= dnorm(beta_Jmax,
-              vector<Type>(log_J_max_prior-
-                (sigma_BJmax*sigma_BJmax/2.0)),//lognormal bias correction
+    jnll_comp(0) -= dnorm(beta_Jmax,log_J_max_prior,
               sigma_BJmax,true).sum();
     jnll_comp(0) -= (dexp(exp(log_sigma_BJmax),Type(exp(rate(2))),true).sum() +
       log_sigma_BJmax.sum());

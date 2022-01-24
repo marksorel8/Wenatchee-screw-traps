@@ -183,7 +183,7 @@ gc() #garbage clean
 # png(here("results","plots","juv_LH.png"),units="in",res=300,height=4,width=5)
    expec_spawn_em_ploft_func(preds=spawn_em$preds)
   # dev.off()
-  
+  # ggsave(here("results","plots","juv_LH.png"))
 
 
 # Probability environmental covariate coefficients are not equal to zero
