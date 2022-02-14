@@ -43,11 +43,6 @@ rm(list=ls()[which(ls()!="ST_all")])#remove all all the functions used for screw
   #read redd data from Hatchery program annual report (Hillman et al 2020)
   redds<-read_csv(here("data","redd_counts.csv")) %>% pivot_longer(c("Chiwawa","Nason","White"),"stream",values_to="redds") 
   
-  pHOS<-read_excel(here("data","adult data.xlsx"),2)
-  
-  test<-full_join(redds,pHOS %>% rename("Year"="Brood_year","stream"="Stream"))
-  
-  summary(lm(redds~stream+pHOS_weighted:stream-1,data = test))
   
   ##emigrant abundance estimates (log means and standard deviations from screw trap model)
   all_emigrants_estimates<-ST_all$all_emigrants_estimates; rm("ST_all")
@@ -128,26 +123,25 @@ gc() #garbage clean
   
  ## table of  functional relationship fit parameters
    FF_params<- tibble(stream=rep(c("Chiwawa","Nason","White"),each=4),
-  LH=factor(rep(c("Spr-0","Sum-0","Fall-0", "Spr-1"),times=3),levels=c("Spr-0","Sum-0","Fall-0", "Spr-1")),           
-  alpha=fit_mod_result$report$alpha,
-
-  alpha_lcl=quant_FF[1,,1],
-  alpha_ucl=quant_FF[3,,1],
+  LH=factor(rep(c("Spr-0","Sum-0","Fall-0", "Spr-1"),times=3),levels=c("Spr-0","Sum-0","Fall-0", "Spr-1")),           #alpha parameters
+  alpha=fit_mod_result$report$alpha, #mean
+  alpha_lcl=quant_FF[1,,1], #lower 95% confidence limit
+  alpha_ucl=quant_FF[3,,1], #upper 95% confidence limie
+  #gamma
   gamma=fit_mod_result$report$gamma,
-
   gamma_lcl=quant_FF[1,,2],
   gamma_ucl=quant_FF[3,,2],
+  #Jmax
   Jmax=fit_mod_result$report$Jmax,
-
   Jmax_lcl=quant_FF[1,,3],
   Jmax_ucl=quant_FF[3,,3],) %>% 
 
     arrange(LH,stream) %>% 
     mutate(across(3:11,round,2))
   
-  View(FF_params)
+  View(FF_params) # View table
 
- write.csv(FF_params,here("results","FF_params.csv"))
+ write.csv(FF_params,here("results","FF_params.csv")) #write table CSV file
  
  
  #hyper means of parameters
@@ -214,7 +208,7 @@ fit_mod_result_no_env$BIC_vec
 # AIC of best fit
 fit_mod_result_no_env$fit$AIC
 
-save(fit_mod_result_no_env,file=here("results","fit_mod_result_no_env_12_21_21.Rdata"))
+save(fit_mod_result_no_env,file=here("results","fit_mod_result_no_env_12_21_21.Rdata")) #save fitted model object
 
 # plot process error correlation (takes a minute for bootstrapping p-values)
 ## png(here("results","plots","correlation.png"),units="in",res=300,height=10,width=10)
