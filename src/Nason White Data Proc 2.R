@@ -63,6 +63,7 @@ load(here("data","processed","cutoffs_and_props.Rdata")) #load delineation line
   
   #add DOY
   mutate(DOY=as.numeric(format(Date2,form="%j"))) %>% 
+  mutate(Week=as.numeric(format(Date2,form="%W"))) %>% 
   
   #make "length" numeric
   mutate(Length=as.numeric(as.character(Length))) %>% 
@@ -124,7 +125,8 @@ load(here("data","processed","cutoffs_and_props.Rdata")) #load delineation line
   
   #add year and DOY
   mutate(year=as.numeric(format(Date2,form="%Y")),
-          DOY=as.numeric(format(Date2,form="%j")))
+          DOY=as.numeric(format(Date2,form="%j")),
+         Week=as.numeric(format(Date2,form="%W")))
 
 
   
@@ -231,7 +233,7 @@ load(here("data","processed","cutoffs_and_props.Rdata")) #load delineation line
     #rename
     rename(count.sub=SBC,count.yrlng=YCW,Year=year.x,Disch.cfs=Discharge) %>% 
     
-    select(TrapNames,sub_rel:yrlng_recap,count.sub,count.yrlng,DOY,Year,Disch.cfs) #select certain columns that will be used in modeling
+    select(TrapNames,sub_rel:yrlng_recap,count.sub,count.yrlng,DOY,Week,Year,Disch.cfs) #select certain columns that will be used in modeling
   
   
   

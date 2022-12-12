@@ -28,16 +28,29 @@ Chiw_dat_Proc<-function(){
 
   # change column names
   rename("Lifestage"="Species" ,"Date"="X1st.day.of.collections","rel"="X..Released","recap"="X..Recaptured","Disch.cfs"="Discharge..cfs.") %>% 
+    
 
-  
 #drop some rows that have comments suggesting that the data is not valid
   filter( !Notes %in% c("Cant find any trial similar to flow, sample size in 2007?","Cant find anything close to these groups","crossed out on datasheet","Nothing close in records","YCW from Lake Trap trial","Only used YCW. From Lake Trap trial, not sure why it was used in Chiwawa Model - JW")) %>% 
   
+    
    #format recapture dates 
 mutate(Date= as.Date(as.character(Date),format = ifelse(grepl("-",as.character(Date)),"%d-%b-%y","%m/%d/%Y"))) %>% 
   
+    #add day, week, and year
+    mutate(DOY=as.numeric(format(Date,form="%j"))) %>% 
+    mutate(Week=as.numeric(format(Date,form="%W"))) %>% 
+    mutate(Year=as.numeric(format(Date,form="%Y"))) %>% 
+  
+  
 #rename lifestages YCW=yearlings, SBC=subyearling chinook
-    mutate(LifeStage=recode(Lifestage,"YCW only"="YCW","Only used YCW"="YCW","SBC only"="SBC","Most likely SBC based on date"="SBC")) %>% 
+    mutate(LifeStage=recode(Lifestage,"YCW only"="YCW","Only used YCW"="YCW","SBC only"="SBC","Most likely SBC based on date"="SBC"),
+           LifeStage=case_when(Notes%in%c("Only used YCW","YCW only")~"YCW",
+                                      Notes%in%c("Most likely SBC based on date","SBC only")~"SBC",
+                               DOY<150~"YCW",
+                                      TRUE~LifeStage
+                  )) %>% 
+    filter(LifeStage%in%c("YCW","SBC")) %>% 
     
     arrange(LifeStage) %>% #sort so that "YCW" and "SBC" comes before "YCW & SBC" so when duplicates removed, "YCW & SBC" are removed first
   
@@ -45,19 +58,16 @@ mutate(Date= as.Date(as.character(Date),format = ifelse(grepl("-",as.character(D
  distinct(Date,.keep_all = TRUE) %>% 
     
     #make columns with releases and recaps for trials that included subyearling or yearlings, with trials that had both included in both columns. 
-    mutate(sub_rel=ifelse(LifeStage%in%c("SBC","YCW & SBC"),rel,NA),
-           sub_recap=ifelse(LifeStage%in%c("SBC","YCW & SBC"),recap,NA),
-           yrlng_rel=ifelse(LifeStage%in%c("YCW","YCW & SBC"),rel,NA),
-           yrlng_recap=ifelse(LifeStage%in%c("YCW","YCW & SBC"),recap,NA)) %>% 
+    mutate(sub_rel=ifelse(LifeStage%in%c("SBC"),rel,NA),
+           sub_recap=ifelse(LifeStage%in%c("SBC"),recap,NA),
+           yrlng_rel=ifelse(LifeStage%in%c("YCW"),rel,NA),
+           yrlng_recap=ifelse(LifeStage%in%c("YCW"),recap,NA)) %>% 
     
   
   #make a new "position" column where "low flow" is changed to "upper", because only a few data points for "low flow"
-  mutate(Position2 = as.character(recode(Position,"Low Flow"="Upper"))) %>% 
+  mutate(Position2 = as.character(recode(Position,"Low Flow"="Upper")))
   
-  #add day, week, and year
-  mutate(DOY=as.numeric(format(Date,form="%j"))) %>% 
-  mutate(Week=as.numeric(ceiling(DOY/7))) %>% 
-  mutate(Year=as.numeric(format(Date,form="%Y")))
+  
 
 ###########################################################
 ###########################################################
@@ -82,7 +92,7 @@ mutate(Date= as.Date(as.character(Date),format = ifelse(grepl("-",as.character(D
     
   #add day, week, and year
   mutate(DOY=as.numeric(format(Date,form="%j"))) %>% 
-  mutate(Week=as.numeric(ceiling(DOY/7))) %>% 
+  mutate(Week=as.numeric(format(Date,form="%W"))) %>% 
   mutate(Year=as.numeric(format(Date,form="%Y")))  %>% 
                   
   #drop levels
@@ -147,15 +157,16 @@ mutate(Date= as.Date(as.character(Date),format = ifelse(grepl("-",as.character(D
     full_join(trapOps,by=c("Date","Year")) %>% 
     
     mutate(DOY=as.numeric(format(Date,form="%j"))) %>% 
+    mutate(Week=as.numeric(format(Date,form="%W"))) %>%
     
     #fill in the few missing discharges with data obtained with dataRetrieval package
     mutate(Disch.cfs=coalesce(Mean.discharge..CFS., as.integer(round(chiwDis$flow[match(Date,chiwDis$date-1)])))) %>% 
     
     
-  dplyr::full_join(select(ChiwEfficTrials,sub_rel:yrlng_recap,DOY ,Year)) %>%  #join with efficiency trial data
+  dplyr::full_join(select(ChiwEfficTrials,sub_rel:yrlng_recap,DOY,Week,Year)) %>%  #join with efficiency trial data
     
   mutate(year_factor=as.numeric(as.factor(Year))) %>% #year as factor
-    select(sub_rel:yrlng_recap,count.sub,count.yrlng,DOY,Year,year_factor,Position2,Disch.cfs) #select certain columns that will be used in modeling
+    select(sub_rel:yrlng_recap,count.sub,count.yrlng,DOY,Week,Year,year_factor,Position2,Disch.cfs) #select certain columns that will be used in modeling
   
   
 

@@ -3,6 +3,12 @@ title: "Discrete Density-Dependent Patterns in a Continuous Survival and Emigrat
 author: "Eric Buhle"
 date: "`r format(Sys.time(), '%Y-%m-%d')`"
 output: 
+  html_document:
+    fig_caption: yes
+    theme: cerulean
+    toc: yes
+    toc_depth: 3
+    toc_float: yes
   github_document:
     toc: TRUE
 ---

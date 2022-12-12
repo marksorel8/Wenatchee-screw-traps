@@ -1,12 +1,16 @@
 
 #function to create a ggplot of average daily emigrants with mixture distribution and breaks for LHP emigration windows
 ggplot_timing_func<-function(all_emigrants_estimates,all_data_lists,across_stream_geomean,mix_geomean_dens, breaks){
+
+
   #long tibble of geometric mean number of emigrants on each day of year
-  daily_ave_mat<-tibble(juveniles=unlist(lapply(all_emigrants_estimates, function(x)x$fit3$SD$value[names(x$fit3$SD$value)=="mean_day_log_M"])),
-                        juvenile_se=unlist(lapply(all_emigrants_estimates, function(x)x$fit3$SD$sd[names(x$fit3$SD$value)=="mean_day_log_M"])),
-                        doy=unlist(lapply(all_data_lists,function(x) seq(from = x$first_DOY,length.out =  x$N_day)-365*(x$subyearlings-1))),
-                        age=unlist(lapply(all_data_lists,function(x) rep(x$subyearlings, x$N_day))),
-                        stream=apply(matrix(1:6),2,function(x)rep(c("Chiwawa","Nason","White")[ceiling(x/2)],unlist(lapply(all_data_lists,function(x) x$N_day))[x]))) %>% rename(stream=5)
+  daily_ave_mat<-tibble(juveniles=unlist(lapply(all_emigrants_estimates, function(x) c(apply(log(x$M_hat),1,mean),NA))),
+                        upper=unlist(lapply(all_emigrants_estimates, function(x) c(x$boot$quants_geom_mean_DAY[3,],NA))),
+                        lower=unlist(lapply(all_emigrants_estimates, function(x) c(x$boot$quants_geom_mean_DAY[1,],NA))),
+                                                # juvenile_se=unlist(lapply(all_emigrants_estimates, function(x)x$fit3$SD$sd[names(x$fit3$SD$value)=="mean_day_log_M"])),
+                        doy=unlist(lapply(all_data_lists,function(x) seq(from = x$first_DOY,length.out =  x$N_day+1)-365*(x$subyearlings-1))),
+                        age=unlist(lapply(all_data_lists,function(x) rep(x$subyearlings, x$N_day+1))),
+                        stream=apply(matrix(1:6),2,function(x)rep(c("Chiwawa","Nason","White")[ceiling(x/2)],unlist(lapply(all_data_lists,function(x) x$N_day+1))[x]))) %>% rename(stream=6)
   
   #geometric mean accross all days and years from the global environment
   #add the fit of the mixture distributions (also from the gloabl environement)
@@ -17,19 +21,43 @@ ggplot_timing_func<-function(all_emigrants_estimates,all_data_lists,across_strea
   
   #text of lif ehistories to go on first fecet pannel
   dat_text <- data.frame(
-    label = c("Spr-0","Sum-0","Fall-0","Spr-1"),
+    label = c("Spring\nage-0","Summer\nage-0","Fall\nage-0","Spring\nage-1"),
     stream   = factor(rep("Chiwawa",4),levels = c("Chiwawa","Nason","White","Average")),
     x     = c(91,200,325,535),
     y     = rep(635,4)
   )
-  
-  #plot
-  ggplot(data=daily_ave_mat,aes(x=doy,y=exp(juveniles)))+geom_ribbon(aes(ymin=exp(juveniles-1.96*juvenile_se   ),ymax=exp(juveniles+1.96*juvenile_se),group=age),fill=rgb(.5,.5,.5,.8))+
+
+  # plot
+  ggplot(data=daily_ave_mat,aes(x=doy,y=exp(juveniles)))+
+    # geom_ribbon(aes(ymin=exp(juveniles-1.96*juvenile_se   ),ymax=exp(juveniles+1.96*juvenile_se),group=age),fill=rgb(.5,.5,.5,.8))+
+    geom_ribbon(aes(ymin=lower,ymax=upper),fill=rgb(.5,.5,.5,.8))+
     geom_path(aes(group=age),size=1.01)+
     facet_wrap(~stream,scale="free_y")+scale_x_continuous(breaks=c(1,91,182,274,366,456,547),labels=c("Jan","Apr","Jul","Oct","Jan","Apr","Jul"))+xlab("")+ylab("Emigrants/ day")+geom_path(aes(x=doy,y=mix_dist),color=rgb(.8,.1,.1,.7),size=1.1)+geom_vline(xintercept=breaks,linetype=2,color=rgb(.8,.1,.1,.7))+ geom_text(
       data    = dat_text,
       mapping = aes(x = x, y = y, label = label)
-    )
+    )+
+
+
+    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+          panel.background = element_blank(), axis.line = element_line(colour = "black"))
+
+  # daily_ave_mat2<-daily_ave_mat %>% filter(stream=="Average")
+  # ggplot(data=daily_ave_mat2,aes(x=doy,y=exp(juveniles)))+
+  #   # geom_ribbon(aes(ymin=exp(juveniles-1.96*juvenile_se   ),ymax=exp(juveniles+1.96*juvenile_se),group=age),fill=rgb(.5,.5,.5,.8))+
+  #   geom_path(aes(group=age),size=1.01)+scale_x_continuous(breaks=c(1,91,182,274,366,456,547),labels=c("Jan","Apr","Jul","Oct","Jan","Apr","Jul"))+xlab("")+ylab("Emigrants/ day")+geom_path(aes(x=doy,y=mix_dist),color=rgb(.8,.1,.1,.7),size=1.1)+geom_vline(xintercept=breaks,linetype=2,color=rgb(.8,.1,.1,.7))+ 
+  #   # geom_text(
+  #   #   data    = dat_text,
+  #   #   mapping = aes(x = x, y = y-495, label = label)
+  #   # )+
+  #   geom_text(data = data.frame(x=c(200,490),y=180,label=c("Downstream rearing","Natal-reach rearing")), mapping = aes(x = x, y = y, label = label),size=4.0)+
+  # 
+  # 
+  #   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+  #         panel.background = element_blank(), axis.line = element_line(colour = "black"),
+  #         axis.text = element_text(size=12),
+  #         plot.margin= margin(.5, .5, 0, .25, "cm"))
+
+# ggsave(file=here("results","plots","timing_ave.png"))
   
 }
 

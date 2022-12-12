@@ -37,7 +37,7 @@ if(file.exists(here("nas_whi_dis.Rdata"))){
 
 #functions to calculat winter maximum flow and summer minimum flow, code copied from M. Sheuerell. https://github.com/mdscheuerell/skagit_sthd/blob/master/analysis/App_1_Retrieve_covariates.pdf
 
-#winter aximum (in year when winter begins)
+#winter log maximum (in year when winter begins)
 winter_max_func<-function(dat_flow){
   ## autumn flows in year t
   flow_aut <- subset(dat_flow, (month>=10 & month<=12))
@@ -47,7 +47,11 @@ winter_max_func<-function(dat_flow){
   ## change spr year index to match aut
   flow_spr[,"Year"] <- as.integer(flow_spr[,"Year"]) - 1
   ## combine flows indexed to winter start year & calculate max flow
+<<<<<<< HEAD
   dat_flow_wtr <- aggregate(flow ~ Year, data = rbind(flow_aut,flow_spr),function(x)log (max(x)))
+=======
+  dat_flow_wtr <- aggregate(flow ~ Year, data = rbind(flow_aut,flow_spr), function(x)log(max(x)))
+>>>>>>> 7a07d9ad79c9bab3c05112cc0965b9ad8574f2b9
   dat_flow_wtr[,"flow"] <- round(dat_flow_wtr[,"flow"], 1) 
  
  return(dat_flow_wtr) 

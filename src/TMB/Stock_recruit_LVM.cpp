@@ -1,5 +1,28 @@
 #include <TMB.hpp>
 
+//  This model estimates production of juvenile emigrants exprexssing different life history strategies as a density -depenent function
+//  of spawwner abundance with process error as a function of environmental covariates and synchronoys and idiosyncratic random effects. 
+// 
+// Copyright (C) 2021  Mark Sorel
+// 
+// This program is free software: you can redistribute it and/or modify
+//   it under the terms of the GNU Affero General Public License as
+//   published by the Free Software Foundation, either version 3 of the
+//   License, or (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//   GNU Affero General Public License for more details.
+//   
+//   You should have received a copy of the GNU Affero General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//     
+//     I can be contacted at marks6@uw.edu or at:
+//       Mark Sorel
+//       1122 NE Boat Street,
+//       Seattle, WA 98105
+// 
 
 template<class Type>
 Type objective_function<Type>::operator() ()
@@ -12,14 +35,12 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER( n_s );                 // number of streams 
   DATA_INTEGER( n_f );                 // number of latent variable factors
   
-  DATA_IVECTOR( mod );                 // process model vector (e.g. Beverton Holt) for each stream x LH
-  DATA_INTEGER( no_rand_FF  );         // flag for whether to use hierarchical structure for functional form parameters
-  
-  
   DATA_VECTOR(J_obs);                  // Observed log juveniles (posterior mean from juvenile model)
   DATA_VECTOR(J_obs_sd);               // Observed log juveniles standard error (posterior mean from juvenile modle)
   DATA_VECTOR(log_S_obs);              // log mean of observed spawners (log(redd count)-.5 CV^2)
   DATA_SCALAR(S_obs_CV);               // Observed spawners (from redd counts)
+  
+  DATA_SCALAR(log_J_max_prior);        // lognormal prior mean for Jmax hyper-means
   
   DATA_FACTOR(st_i);                   // stream by year index for observation i
   DATA_FACTOR(sl_i);                   // stream and life history index for observation i
@@ -50,12 +71,19 @@ Type objective_function<Type>::operator() ()
   PARAMETER_VECTOR(log_sigma_beta_e);
   vector<Type>sigma_beta_e=exp(log_sigma_beta_e);
   
+<<<<<<< HEAD
   PARAMETER_VECTOR(log_sigma_Bgamma);
   PARAMETER_VECTOR(log_sigma_BJmax);
   PARAMETER(log_sigma_loading);
   
   PARAMETER_VECTOR(rate);
   
+=======
+  PARAMETER_VECTOR(log_sigma_Bgamma);  // standard deviation of regularizing prior on hyper-means of log gamma
+  PARAMETER_VECTOR(log_sigma_BJmax);   // standard deviation of regularizing prior on hyper-means of log Jmax
+
+
+>>>>>>> 7a07d9ad79c9bab3c05112cc0965b9ad8574f2b9
   // Random effects
   PARAMETER_VECTOR(eps_alpha);         // random effect for stream- and LHP-specific alpa
   REPORT(eps_alpha);
@@ -89,6 +117,7 @@ Type objective_function<Type>::operator() ()
   int Count = 0;
   for(int fac=0; fac<n_f; fac++){
     for(int p=0; p<(n_sl); p++){
+<<<<<<< HEAD
     if(p==fac){
       Loadings_pf(p,fac) = exp(Loadings_vec(Count))*exp(log_sigma_loading);
       Count++;
@@ -97,6 +126,15 @@ Type objective_function<Type>::operator() ()
       if(p>=fac){
         Loadings_pf(p,fac) = Loadings_vec(Count)*exp(log_sigma_loading);//
         // if(p==fac){Loadings_pf(p,fac) = exp(Loadings_pf(p,fac));}
+=======
+      if(p==fac){
+        Loadings_pf(p,fac) = exp(Loadings_vec(Count));
+        Count++;
+      }else{
+      if(p>=fac){
+        Loadings_pf(p,fac) = Loadings_vec(Count);
+      
+>>>>>>> 7a07d9ad79c9bab3c05112cc0965b9ad8574f2b9
         Count++;
       }else{
         Loadings_pf(p,fac) = 0.0;
@@ -105,6 +143,7 @@ Type objective_function<Type>::operator() ()
   }
   }
   REPORT(Loadings_pf);
+<<<<<<< HEAD
   
   // PARAMETER_VECTOR(log_loadings_sd);
   // jnll_comp(0) -= dnorm(Loadings_vec,Type(0),vector<Type>(exp(log_loadings_sd)),true).sum()+
@@ -120,11 +159,24 @@ Type objective_function<Type>::operator() ()
   vector<Type>eps_alpha_corrected(n_sl);// bias correction for lognormal mean  
   vector<Type>eps_Jmax_corrected(n_sl);// bias correction for lognormal mean  
   vector<Type>eps_gamma_corrected(n_sl);// bias correction for lognormal mean  
+=======
+    
+  
+
+  Type alpha_bias_correction = 0;// bias correction for lognormal mean  
+  Type gamma_bias_correction = 0;
+  Type Jmax_bias_correction = 0;
+
+>>>>>>> 7a07d9ad79c9bab3c05112cc0965b9ad8574f2b9
   //// calculate alphas, gammas, and Jmaxes
   //////linear predictors on log scale
   for(int j=0; j<n_l; j++){          // loop over life histories
+    alpha_bias_correction = pow(exp(log_sigma_alpha(j)),2)/2.0;
+    Jmax_bias_correction = pow(exp(log_sigma_Jmax(j)),2)/2.0;
+    gamma_bias_correction = pow(exp(log_sigma_gamma(j)),2)/2.0;
     for( int i=0; i<n_s; i++){       // loop over streams
       
+<<<<<<< HEAD
       eps_alpha_corrected(i*n_l+j)= ((eps_alpha(i*n_l+j)*
         exp(log_sigma_alpha(j)))-
         ((exp(log_sigma_alpha(j))*exp(log_sigma_alpha(j)))/2.0)); // bias correction for lognormal mean  
@@ -150,6 +202,19 @@ Type objective_function<Type>::operator() ()
         beta_gamma(j)*exp(log_sigma_Bgamma(j)) +               // life-history intercept
         eps_gamma_corrected(i*n_l+j);         
       
+=======
+      jnll_comp(0) -= dnorm( Type(eps_alpha(i*n_l+j)),
+                Type(beta_alpha(j) -alpha_bias_correction),
+                Type(exp(log_sigma_alpha(j))),true );
+      
+      jnll_comp(0) -= dnorm( Type(eps_Jmax(i*n_l+j)),
+                Type(beta_Jmax(j) -Jmax_bias_correction),
+                Type(exp(log_sigma_Jmax(j))),true );
+      
+      jnll_comp(0) -= dnorm( Type(eps_gamma(i*n_l+j)),
+                Type(beta_gamma(j) -gamma_bias_correction),
+                Type(exp(log_sigma_gamma(j))),true );
+>>>>>>> 7a07d9ad79c9bab3c05112cc0965b9ad8574f2b9
       
     }
   }
@@ -157,10 +222,17 @@ Type objective_function<Type>::operator() ()
   
   
   ////// transform to positive real space
+<<<<<<< HEAD
   vector<Type> alpha = exp(log_alpha);
   vector<Type> Jmax = exp(log_Jmax);
   vector<Type> gamma =  exp(log_gamma);
   
+=======
+  vector<Type> alpha = exp(eps_alpha);
+  vector<Type> Jmax = exp(eps_Jmax);
+  vector<Type> gamma =  exp(eps_gamma);
+
+>>>>>>> 7a07d9ad79c9bab3c05112cc0965b9ad8574f2b9
   
   // calculate latent juvenile emigrants
   vector<Type> J_hat(n_i);      // vector to hold latent juveniles expectations (without process error)
@@ -174,6 +246,7 @@ Type objective_function<Type>::operator() ()
   REPORT(LV_effects);
   
   for( int i=0; i<n_i; i++){      // loop over all observations of streams, life-histories, and years
+<<<<<<< HEAD
     
     ///// calculate expected juveniles based on spawners and functional form (without process error)
     if(mod(sl_i(i))==1){
@@ -207,12 +280,26 @@ Type objective_function<Type>::operator() ()
     J_pred(i) = J_hat(i) * exp(cov_e(i)+ LV_effects(sl_i(i), t_i(i))+
       eta(i)*sigma_eta(sl_i(i)));
     
+=======
+   
+   ///// calculate expected juveniles based on spawners and functional form (without process error)
+      //depensatory Beverton holt II (Myers et al 1995)
+      J_hat(i)=  (alpha(sl_i(i))* pow(S_hat(st_i(i)),gamma(sl_i(i)))) /
+        (Type(1.0)+   alpha(sl_i(i))* pow(S_hat(st_i(i)),gamma(sl_i(i))) / Jmax(sl_i(i)));
+
+    
+   
+        J_pred(i) = J_hat(i) * exp(cov_e(i)+ LV_effects(sl_i(i), t_i(i))+
+    eta(i)*sigma_eta(sl_i(i)));
+
+>>>>>>> 7a07d9ad79c9bab3c05112cc0965b9ad8574f2b9
   }
   REPORT(J_pred);
   //---------------------------------------------------------------------------------------------------  
   
   // Probabilities of random effects
   // 
+<<<<<<< HEAD
   
   //// stream-specific random effects on log alphas, log gammas, and log Jmaxes
   // if(!no_rand_FF){
@@ -234,17 +321,27 @@ Type objective_function<Type>::operator() ()
   
   
   
+=======
+  PARAMETER_VECTOR(rate);
+    
+
+  //regulatizing priors on hyper-standard deviations of random effects on log alphas, log gammas, and log Jmaxes
+>>>>>>> 7a07d9ad79c9bab3c05112cc0965b9ad8574f2b9
   jnll_comp(0) -= (dexp(exp(log_sigma_alpha),Type(exp(rate(0))),true).sum() + 
     log_sigma_alpha.sum());
   
   jnll_comp(0) -= (dexp(exp(log_sigma_gamma),Type(exp(rate(0))),true).sum() + 
     log_sigma_gamma.sum());
   
+<<<<<<< HEAD
   // if((mod(i)==1) | (mod(i)==2)){   // only include if Jmax is in the model for stream X LHP i
+=======
+>>>>>>> 7a07d9ad79c9bab3c05112cc0965b9ad8574f2b9
   jnll_comp(0) -= (dexp(exp(log_sigma_Jmax),Type(exp(rate(0))),true).sum() +
     log_sigma_Jmax.sum());
   
 
+<<<<<<< HEAD
   jnll_comp(0) -= dnorm(beta_gamma,Type(0),Type(1),true).sum();
   jnll_comp(0) -= (dexp(exp(log_sigma_Bgamma),Type(exp(rate(1))),true).sum() +
     log_sigma_Bgamma.sum());
@@ -280,28 +377,71 @@ Type objective_function<Type>::operator() ()
   
   REPORT(beta_e);  
   
+=======
+
+vector<Type> sigma_Bgamma= exp(log_sigma_Bgamma);
+vector<Type> sigma_BJmax= exp(log_sigma_BJmax);
+  
+  
+    //reluarizing prior on hyper-means for log gammas
+    jnll_comp(0) -= dnorm(beta_gamma,0.0, sigma_Bgamma,true).sum();
+    jnll_comp(0) -= (dexp(exp(log_sigma_Bgamma),Type(exp(rate(1))),true).sum() +
+      log_sigma_Bgamma.sum());
+
+    //regularizing prior on hyper-mean of log-Jmaxes
+    jnll_comp(0) -= dnorm(beta_Jmax,log_J_max_prior,
+              sigma_BJmax,true).sum();
+    jnll_comp(0) -= (dexp(exp(log_sigma_BJmax),Type(exp(rate(2))),true).sum() +
+      log_sigma_BJmax.sum());
+    
+    //regularizing prior on idiosyncratic process error standard deviations
+    jnll_comp(0) -= (dexp(exp(log_sigma_eta),Type(exp(rate(3))),true).sum() +
+    log_sigma_eta.sum());
+
+   
+>>>>>>> 7a07d9ad79c9bab3c05112cc0965b9ad8574f2b9
   
   //// latent factor variables
   for(int t = 0; t<(n_t); t++){ // loop over years
     jnll_comp(1)-= dnorm(vector<Type>(Omega_xf.row(t)),Type(0),Type(1),true).sum();
   }
+<<<<<<< HEAD
   
+=======
+
+>>>>>>> 7a07d9ad79c9bab3c05112cc0965b9ad8574f2b9
   // idiosyncratic process error
   jnll_comp(1)-=dnorm(eta ,
             Type(0.0) ,
             //            sigma_eta,
             Type(1.0),
             true ).sum();
+<<<<<<< HEAD
   
   ////  Latent spawners
   jnll_comp(2) -= dnorm(log_S_obs ,log_S_hat  ,S_obs_CV , true ).sum();
+=======
+
+>>>>>>> 7a07d9ad79c9bab3c05112cc0965b9ad8574f2b9
   
   //Likelihood
   
   ////  Latent juveniles
-  vector<Type> juv_like= dnorm(J_obs ,vector<Type>(log(J_pred)) ,J_obs_sd , true );
-  REPORT(juv_like);
+  vector<Type> juv_like= dnorm(J_obs ,
+                               vector<Type>(log(J_pred)),              
+    J_obs_sd , true );
   
+  REPORT(juv_like);
+  jnll_comp(2) -= juv_like.sum();  
+  
+  ////  Latent spawners
+  jnll_comp(2) -= dnorm(log_S_obs ,
+              log_S_hat,
+              S_obs_CV , true ).sum();
+  
+  
+  
+<<<<<<< HEAD
   // DATA_IVECTOR(fold_exclude);
   // Type ll_exclude=0;
   // for(int i = 0; i<fold_exclude.size(); i++){
@@ -325,9 +465,17 @@ Type objective_function<Type>::operator() ()
   REPORT(Jmax);
   REPORT(alpha);
   
+=======
+
+//Reporting
+  REPORT(gamma);
+  REPORT(Jmax);
+  REPORT(alpha);
+  REPORT(beta_e); 
+>>>>>>> 7a07d9ad79c9bab3c05112cc0965b9ad8574f2b9
   REPORT(jnll_comp);
-  Type obj_fun = jnll_comp.sum();
   ADREPORT(log(J_pred));   //get standard errors for log unobserved juveniles
   ADREPORT(log_S_hat);     //get standard errors for log unobserved spaweners
+  Type obj_fun = jnll_comp.sum();
   return(obj_fun); 
 }

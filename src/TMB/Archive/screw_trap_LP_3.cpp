@@ -43,11 +43,12 @@ Type objective_function<Type>::operator() ()
     PARAMETER_VECTOR(pCoefs); // coefficients in trap capture efficiency model
     PARAMETER(log_phi_NB);    // log -transformed overdispersion paramater for negative binomial 
 
-   
+    // PARAMETER(ln_tau_edp);
+    // PARAMETER(logit_phi_edp);
 //Random Effects   
     PARAMETER_VECTOR(delta);   // accross-year errors of log-means of daily emigrants 
     PARAMETER_MATRIX(epsilon); // year-specific errors of log-means of daily emigrants
-     
+    // PARAMETER_VECTOR(eps_doy_p); 
      
     
 //objective function
@@ -61,7 +62,8 @@ Type phi_e=invlogit(logit_phi_e);// transform  correlation coefficient for yearl
 Type sigma_d = 1/exp(ln_tau_d);  // transorm log precision to standard deviation 
 Type sigma_e = 1/exp(ln_tau_e);  // transorm log precision to standard deviation 
 Type phi_NB=exp(log_phi_NB);     // transform negative binomial "phi" paramater 
-
+// Type phi_edp=invlogit(logit_phi_edp);
+// Type sigma_edp = 1/exp(ln_tau_edp);
 //-----------------------------------------------------------------
 //-----------------------------------------------------------------
 //emigrant process
@@ -95,6 +97,8 @@ for( int Iyear=0; Iyear<(Nyears); Iyear++){     //loop through years
              sigma_e)(epsilon.col(Iyear)); 
   }
 
+// jnll_comp(0)+= SCALE(AR1(phi_edp),
+          // sigma_edp)(eps_doy_p); 
 
 //calculated expected emigrants abundance (M_hat)
 
@@ -121,15 +125,25 @@ for( int Iyear=0; Iyear<Nyears; Iyear++){        //loop through years
 //capture efficiency (p) on all days with catch  data
 vector<Type>  logit_p  =  pDat * pCoefs;    //logit trap efficiency for each catch day  
                                             //(design matrix %*% coefficient vector) 
- 
+      // for (int I =0; I< logit_p.size(); I++){ 
+      //   logit_p(I)  += eps_doy_p(catch_DOY(I));
+      // }
+      
+      
 //likelihood of "trap capture efficiency" data
 // recaps[t,y] ~ binomial( releases[t,y], p[t,y])
+vector<Type> sim_rec(rel.size());
 for (int I =0; I<rel.size(); I++){          //loop over all release-recapture experiments
   jnll_comp(1)-= dbinom_robust(rec(I),      
             rel(I),
             logit_p(efficIndex(I)),true);   
+  
+  SIMULATE {
+    sim_rec(I) = rbinom_robust(rel(I),
+            logit_p(efficIndex(I)));
+  }
 }
-
+REPORT(sim_rec);
 
 // likleihood of catch data 
 
@@ -140,6 +154,8 @@ for (int I =0; I<rel.size(); I++){          //loop over all release-recapture ex
 
 // if using Poisson distribution
 // observed catch[t,y] ~ Poisson(expected_catch[t,y])
+vector<Type> sim_catch(N_trap);
+
 for( int Iday=0; Iday<N_trap; Iday++){ // loop over all days with catch data
   Type expected_catch = Type(M_hat(catch_DOY(Iday),seriesFac(Iday))*
     invlogit(logit_p(Iday)));
@@ -147,11 +163,16 @@ for( int Iday=0; Iday<N_trap; Iday++){ // loop over all days with catch data
     jnll_comp(2) -= dnbinom2 (Catch(Iday), expected_catch,
               expected_catch+(pow(expected_catch,2)/phi_NB), true);
     
+    SIMULATE {
+      sim_catch(Iday) = rnbinom2(expected_catch,
+                expected_catch+(pow(expected_catch,2)/phi_NB));
+      }
+    
   }else{                               // otherwise use Poisson observation likelihood
     jnll_comp(2) -= dpois(Catch(Iday),expected_catch, true);
   }
 }
-
+REPORT(sim_catch);
 
 //objective function
       Type obj_fun = sum(jnll_comp);         //sum likelihood components
