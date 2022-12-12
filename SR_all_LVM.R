@@ -14,12 +14,13 @@ library(readxl)
 refit<-FALSE # whether to refit models rather that loading existing fitted model objects if they exist
 
 #fit/load model
+setwd(here("Wenatchee-screw-traps"))
 here::i_am("src/ST_all.R")
 source(here("src","ST_all.R"))
 ST_all<-ST_all_func(refit=refit)
 
 
-load(here("results","emigrant_estimates May 13 2021.Rdata"))
+load(here("results","emigrant_estimates Jul 06 2021.Rdata"))
 
 
 # load functions to calculate geometric means of dialy emigrants and plot
@@ -272,7 +273,7 @@ test_x<-apply(test_sim,2,function(x){fit_mod_result$mod$report(x)[["juv_like"]]}
 loo::loo(t(test_x))
 
 
-fit_mod_result<-fit_mod_iter(rep(c(1,1,1,1),times=3),streams=0:2,LHs=1:4,n_f=1,no_rand_FF =0, fit_env =1, fit_attempts=5,additional_attempts = 2,rate=c(5,5,5,5,1,log(5000)),fold_exclude=integer(0)) 
+fit_mod_result<-fit_mod_iter(rep(c(1,1,1,1),times=3),streams=0:2,LHs=1:4,n_f=1,no_rand_FF =0, fit_env =1, fit_attempts=5,additional_attempts = 2,rate=c(5,5,5,5,1,log(100000)),fold_exclude=integer(0)) 
 
 lower<-rep(-Inf,length(fit_mod_result$mod$env$last.par.best))
 lower[which(names(fit_mod_result$mod$env$last.par.best)=="Loadings_vec")[5]]<-0

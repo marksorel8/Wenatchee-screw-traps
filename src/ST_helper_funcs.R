@@ -7,8 +7,12 @@ make_screw_trap_model_data<-function(data_in,stream="Chiwawa", lifestage="yrlng"
   #design matrix for trap efficiency model
   #if(stream=="Nason")
   #pdat<-model.matrix(~moved*scale(Disch.cfs) , data=data_in) else
-  pdat<-model.matrix(~scale(Disch.cfs) , data=data_in)
-  
+ if(subyearlings){
+   pdat<-model.matrix(~scale(Disch.cfs)+scale(DOY)+scale(I((DOY/sd(DOY))^2)), data=data_in)
+ }else{
+   pdat<-model.matrix(~scale(Disch.cfs) , data=data_in) 
+ }
+   
   #list of data inputs for model
   data_list<-list(subyearlings=subyearlings,                                       #flag indicating if model is of subyearlings or yearling migrants
                   rel=c(na.exclude(data_in[,paste0(lifestage,"_rel")])),   # releases in efficiency trils
@@ -61,7 +65,7 @@ make_data_list_func<-function(chiw_data=chiw_data,nas_whi_data=nas_whi_data,Use_
 
 #function to make initial parameters for a model for a given data set
 make_screw_trap_model_inits<-function(data_in){
-  params<-list(pCoefs=rep(-.5,ncol(data_in$pDat)),
+  params<-list(pCoefs=rep(0,ncol(data_in$pDat)),
                mu_M=log(c(tapply(data_in$Catch *3,data_in$seriesFac,mean))),
                logit_phi_d=qlogis(.99),
                logit_phi_e=qlogis(.99),

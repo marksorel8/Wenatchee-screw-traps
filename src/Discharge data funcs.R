@@ -17,7 +17,7 @@ Chiw_discharge_func<-function(){
   pkgTest("here")
   require("here")
   Chiw.flowDV<- readNWISdv(siteNumber="12456500",
-                           "00060", "1990-01-01", "2018-12-31",statCd="00003")
+                           "00060", "1900-01-01", "2018-12-31",statCd="00003")
   #munging
   colnames(Chiw.flowDV)[4]<-"flow"
   Chiw.flowDV$date<-as.Date(Chiw.flowDV$Date,format="%Y-%m-%d")
@@ -27,7 +27,10 @@ Chiw_discharge_func<-function(){
   
   Chiw.flowDV$day<-as.integer(format(Chiw.flowDV$date,"%d"))
   Chiw.flowDV$doy<-as.integer(format(Chiw.flowDV$date,"%j"))
-  return(Chiw.flowDV)
+  
+  Chiw.flowDV<-Chiw.flowDV %>% filter(Year%in% (((pull(.,Year) %>% table())[(pull(.,Year) %>% table())>363]) %>% names()))
+  
+   return(Chiw.flowDV)
 }
 
 
@@ -43,6 +46,7 @@ Nason_White_Discharge_Func<-function(){
   loadDis<-function(loc){
     if(loc=="Nason"){
       site_num<-"45J070/45J070_"
+      # "https://fortress.wa.gov/ecy/eap/flows/stafiles/"
       start_year<-2002
       break_year<-2004
     }else{
@@ -53,10 +57,10 @@ Nason_White_Discharge_Func<-function(){
       
     out<-data.frame()
     for ( i in start_year:2019){
-      if(i<=break_year) {test<-read_table2(paste0("https://fortress.wa.gov/ecy/eap/flows/stafiles/",site_num,i,"_DSG_DV.txt"),skip=ifelse(i==2002,250,4),n_max=366,col_names=c("date","time","flow","data.code")) 
+      if(i<=break_year) {test<-read_table2(paste0("https://apps.ecology.wa.gov/ContinuousFlowAndWQ/StationData/Prod/",site_num,i,"_DSG_DV.txt"),skip=ifelse(i==2002,250,4),n_max=366,col_names=c("date","time","flow","data.code")) 
       test<-test[,-2]}else{
         
-        test<-read_table2(paste0("https://fortress.wa.gov/ecy/eap/flows/stafiles/",site_num,i,"_DSG_DV.txt"),skip=12,n_max=366,col_names=c("date","flow","data.code"))}
+        test<-read_table2(paste0("https://apps.ecology.wa.gov/ContinuousFlowAndWQ/StationData/Prod/",site_num,i,"_DSG_DV.txt"),skip=12,n_max=366,col_names=c("date","flow","data.code"))}
       
       out<-rbind(out,test)
     }
